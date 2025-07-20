@@ -1,0 +1,304 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kosto.js 后台监控</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@6.1.1/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .dashboard {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .table-responsive {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .status-online {
+            background-color: #28a745;
+        }
+        .status-offline {
+            background-color: #dc3545;
+        }
+        .gitcode-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="mb-4">
+                    <i class="fas fa-chart-line"></i> Kosto.js 后台监控
+                </h1>
+            </div>
+        </div>
+
+        <!-- 总览面板 -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card text-white bg-primary mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">在线用户总数</h5>
+                        <h1 class="card-text" id="onlineCount">0</h1>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">今日活跃用户</h5>
+                        <h1 class="card-text" id="activeToday">0</h1>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-info mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">总用户数</h5>
+                        <h1 class="card-text" id="totalUsers">0</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 在线用户列表 -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="dashboard">
+                    <h3>在线用户列表</h3>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>用户ID</th>
+                                    <th>用户名</th>
+                                    <th>登录时间</th>
+                                    <th>最后活动时间</th>
+                                    <th>在线时长</th>
+                                    <th>状态</th>
+                                </tr>
+                            </thead>
+                            <tbody id="onlineUsersTable">
+                                <!-- 用户数据将通过JavaScript动态填充 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 用户行为统计 -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="dashboard">
+                    <h3>用户行为统计</h3>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card text-white bg-warning mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">今日使用功能次数</h5>
+                                    <h1 class="card-text" id="todayUsage">0</h1>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-white bg-danger mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">今日错误次数</h5>
+                                    <h1 class="card-text" id="todayErrors">0</h1>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-white bg-success mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">今日活跃时长</h5>
+                                    <h1 class="card-text" id="todayActiveTime">0</h1>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gitcode 仓库信息 -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="dashboard">
+                    <h3>Gitcode 仓库信息</h3>
+                    <div class="gitcode-info">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>仓库名称: <span id="repoName">Kosto.js</span></h5>
+                                <h5>最新版本: <span id="latestVersion">5.0</span></h5>
+                                <h5>更新时间: <span id="lastUpdated">2025-07-15</span></h5>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>作者: <span id="author">CN@Kosto1797867628</span></h5>
+                                <h5>Star 数: <span id="stars">0</span></h5>
+                                <h5>Fork 数: <span id="forks">0</span></h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 用户日志 -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="dashboard">
+                    <h3>用户日志</h3>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>时间</th>
+                                    <th>用户ID</th>
+                                    <th>操作</th>
+                                    <th>详细信息</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userLogs">
+                                <!-- 日志数据将通过JavaScript动态填充 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // 模拟数据，实际应用中应该从后端API获取
+        const mockData = {
+            onlineUsers: [
+                {
+                    userId: "123456",
+                    username: "测试用户1",
+                    loginTime: "2025-07-16 10:00:00",
+                    lastActivity: "2025-07-16 10:30:00",
+                    onlineDuration: "30分钟",
+                    status: "在线"
+                },
+                {
+                    userId: "654321",
+                    username: "测试用户2",
+                    loginTime: "2025-07-16 09:30:00",
+                    lastActivity: "2025-07-16 10:15:00",
+                    onlineDuration: "45分钟",
+                    status: "在线"
+                }
+            ],
+            userLogs: [
+                {
+                    time: "2025-07-16 10:30:00",
+                    userId: "123456",
+                    action: "登录",
+                    details: "用户登录成功"
+                },
+                {
+                    time: "2025-07-16 10:15:00",
+                    userId: "654321",
+                    action: "使用功能",
+                    details: "使用自动战斗功能"
+                }
+            ],
+            statistics: {
+                todayUsage: 123,
+                todayErrors: 5,
+                todayActiveTime: "3小时"
+            },
+            gitcode: {
+                repoName: "Kosto.js",
+                latestVersion: "5.0",
+                lastUpdated: "2025-07-15",
+                stars: 42,
+                forks: 15
+            }
+        };
+
+        // 初始化页面数据
+        function initializePage() {
+            // 更新在线用户总数
+            document.getElementById('onlineCount').textContent = mockData.onlineUsers.length;
+
+            // 更新用户列表
+            const onlineUsersTable = document.getElementById('onlineUsersTable');
+            onlineUsersTable.innerHTML = '';
+            mockData.onlineUsers.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.userId}</td>
+                    <td>${user.username}</td>
+                    <td>${user.loginTime}</td>
+                    <td>${user.lastActivity}</td>
+                    <td>${user.onlineDuration}</td>
+                    <td>
+                        <span class="status-indicator ${user.status === '在线' ? 'status-online' : 'status-offline'}"></span>
+                        ${user.status}
+                    </td>
+                `;
+                onlineUsersTable.appendChild(row);
+            });
+
+            // 更新用户行为统计
+            document.getElementById('todayUsage').textContent = mockData.statistics.todayUsage;
+            document.getElementById('todayErrors').textContent = mockData.statistics.todayErrors;
+            document.getElementById('todayActiveTime').textContent = mockData.statistics.todayActiveTime;
+
+            // 更新Gitcode信息
+            document.getElementById('repoName').textContent = mockData.gitcode.repoName;
+            document.getElementById('latestVersion').textContent = mockData.gitcode.latestVersion;
+            document.getElementById('lastUpdated').textContent = mockData.gitcode.lastUpdated;
+            document.getElementById('stars').textContent = mockData.gitcode.stars;
+            document.getElementById('forks').textContent = mockData.gitcode.forks;
+
+            // 更新用户日志
+            const userLogsTable = document.getElementById('userLogs');
+            userLogsTable.innerHTML = '';
+            mockData.userLogs.forEach(log => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${log.time}</td>
+                    <td>${log.userId}</td>
+                    <td>${log.action}</td>
+                    <td>${log.details}</td>
+                `;
+                userLogsTable.appendChild(row);
+            });
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+        });
+    </script>
+</body>
+</html>
