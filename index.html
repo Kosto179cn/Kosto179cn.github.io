@@ -196,77 +196,107 @@
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
-        // 模拟数据，实际应用中应该从后端API获取
-        const mockData = {
-            onlineUsers: [
-                {
-                    userId: "123456",
-                    username: "测试用户1",
-                    loginTime: "2025-07-16 10:00:00",
-                    lastActivity: "2025-07-16 10:30:00",
-                    onlineDuration: "30分钟",
-                    status: "在线"
-                },
-                {
-                    userId: "654321",
-                    username: "测试用户2",
-                    loginTime: "2025-07-16 09:30:00",
-                    lastActivity: "2025-07-16 10:15:00",
-                    onlineDuration: "45分钟",
-                    status: "在线"
-                }
-            ],
-            userLogs: [
-                {
-                    time: "2025-07-16 10:30:00",
-                    userId: "123456",
-                    action: "登录",
-                    details: "用户登录成功"
-                },
-                {
-                    time: "2025-07-16 10:15:00",
-                    userId: "654321",
-                    action: "使用功能",
-                    details: "使用自动战斗功能"
-                }
-            ],
-            statistics: {
-                todayUsage: 123,
-                todayErrors: 5,
-                todayActiveTime: "3小时"
-            },
-            gitcode: {
-                repoName: "Kosto.js",
-                latestVersion: "5.0",
-                lastUpdated: "2025-07-15",
-                stars: 42,
-                forks: 15
+        // 从GitCode获取真实数据
+        async function fetchStatsData() {
+            try {
+                const response = await fetch(
+                    'https://gitcode.net/api/v4/projects/gcw_WLlWRZxY%2Fkosto-battle-clicker-new/repository/files/stats.json/raw?ref=master',
+                    {
+                        headers: {
+                            'PRIVATE-TOKEN': 'kpgqGoi-_T4vgRc9xk9_HMWt'
+                        }
+                    }
+                );
+                
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('获取数据失败:', error);
+                return null;
             }
-        };
+        }
+
+        // 计算在线时长
+        function calculateOnlineDuration(loginTime, lastActivity) {
+            const login = new Date(loginTime);
+            const last = new Date(lastActivity || new Date().toISOString());
+            const diffMs = last - login;
+            
+            const hours = Math.floor(diffMs / (1000 * 60 * 60));
+            const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            
+            return `${hours}小时${minutes}分钟`;
+        }
 
         // 初始化页面数据
-        function initializePage() {
+        async function initializePage() {
+            const statsData = await fetchStatsData();
+            
+            if (!statsData) {
+                console.log('使用模拟数据作为后备');
+                // 这里可以保留原有的模拟数据作为后备
+                return;
+            }
+            
+            // 获取最新的数据记录
+            const latestTimestamp = Object.keys(statsData).sort().pop();
+            const latestData = statsData[latestTimestamp];
+            
             // 更新在线用户总数
-            document.getElementById('onlineCount').textContent = mockData.onlineUsers.length;
-
+            const onlineCount = latestData.users.online.length;
+            document.getElementById('onlineCount').textContent = onlineCount;
+            
+            // 更新今日活跃用户数
+            document.getElementById('activeToday').textContent = latestData.users.todayActive.length;
+            
+            // 更新总用户数
+            document.getElementById('totalUsers').textContent = latestData.users.totalCount;
+            
             // 更新用户列表
             const onlineUsersTable = document.getElementById('onlineUsersTable');
             onlineUsersTable.innerHTML = '';
-            mockData.onlineUsers.forEach(user => {
+            
+            latestData.users.online.forEach(userId => {
+                const user = latestData.userDetails[userId] || {
+                    id: userId,
+                    username: '未知用户',
+                    loginTime: new Date().toISOString(),
+                    lastActivity: new Date().toISOString()
+                };
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${user.userId}</td>
+                    <td>${user.id}</td>
                     <td>${user.username}</td>
-                    <td>${user.loginTime}</td>
-                    <td>${user.lastActivity}</td>
-                    <td>${user.onlineDuration}</td>
+                    <td>${new Date(user.loginTime).toLocaleString()}</td>
+                    <td>${new Date(user.lastActivity).toLocaleString()}</td>
+                    <td>${calculateOnlineDuration(user.loginTime, user.lastActivity)}</td>
                     <td>
-                        <span class="status-indicator ${user.status === '在线' ? 'status-online' : 'status-offline'}"></span>
-                        ${user.status}
+                        <span class="status-indicator status-online"></span>
+                        在线
                     </td>
                 `;
                 onlineUsersTable.appendChild(row);
             });
+            
+            // 更新用户行为统计
+            document.getElementById('todayUsage').textContent = 
+                latestData.features.threeOpen.count + 
+                latestData.features.mine.count +
+                latestData.features.teamA.count +
+                latestData.features.teamB.count;
+                
+            document.getElementById('todayErrors').textContent = 
+                latestData.errors.clientErrors.length +
+                latestData.errors.networkErrors.length +
+                latestData.errors.apiErrors.length;
+                
+            // 更新Gitcode信息
+            document.getElementById('repoName').textContent = "Kosto.js";
+            document.getElementById('latestVersion').textContent = latestData.meta.kostoVersion;
+            document.getElementById('lastUpdated').textContent = new Date(latestData.timestamps.lastUpdate).toLocaleDateString();
 
             // 更新用户行为统计
             document.getElementById('todayUsage').textContent = mockData.statistics.todayUsage;
