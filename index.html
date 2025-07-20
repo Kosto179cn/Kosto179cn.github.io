@@ -1,333 +1,45 @@
-
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kosto.js 后台监控</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@6.1.1/css/all.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8f9fa;
-            padding: 20px;
-        }
-        .dashboard {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .card {
-            margin-bottom: 20px;
-        }
-        .table-responsive {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .status-indicator {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 5px;
-        }
-        .status-online {
-            background-color: #28a745;
-        }
-        .status-offline {
-            background-color: #dc3545;
-        }
-        .gitcode-info {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-        }
-    </style>
+    <title>在线人数统计</title>
+    <!-- 引入 Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
-    <div class="container">
-        <div class="row">
-            <div class="col-md-12">
-                <h1 class="mb-4">
-                    <i class="fas fa-chart-line"></i> Kosto.js 后台监控
-                </h1>
-            </div>
-        </div>
+    <h1>当前在线人数：<span id="onlineCount">0</span></h1>
 
-        <!-- 总览面板 -->
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card text-white bg-primary mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">在线用户总数</h5>
-                        <h1 class="card-text" id="onlineCount">0</h1>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-white bg-success mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">今日活跃用户</h5>
-                        <h1 class="card-text" id="activeToday">0</h1>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-white bg-info mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">总用户数</h5>
-                        <h1 class="card-text" id="totalUsers">0</h1>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 在线用户列表 -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="dashboard">
-                    <h3>在线用户列表</h3>
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>用户ID</th>
-                                    <th>用户名</th>
-                                    <th>登录时间</th>
-                                    <th>最后活动时间</th>
-                                    <th>在线时长</th>
-                                    <th>状态</th>
-                                </tr>
-                            </thead>
-                            <tbody id="onlineUsersTable">
-                                <!-- 用户数据将通过JavaScript动态填充 -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 用户行为统计 -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="dashboard">
-                    <h3>用户行为统计</h3>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="card text-white bg-warning mb-3">
-                                <div class="card-body">
-                                    <h5 class="card-title">今日使用功能次数</h5>
-                                    <h1 class="card-text" id="todayUsage">0</h1>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card text-white bg-danger mb-3">
-                                <div class="card-body">
-                                    <h5 class="card-title">今日错误次数</h5>
-                                    <h1 class="card-text" id="todayErrors">0</h1>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card text-white bg-success mb-3">
-                                <div class="card-body">
-                                    <h5 class="card-title">今日活跃时长</h5>
-                                    <h1 class="card-text" id="todayActiveTime">0</h1>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Gitcode 仓库信息 -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="dashboard">
-                    <h3>Gitcode 仓库信息</h3>
-                    <div class="gitcode-info">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h5>仓库名称: <span id="repoName">Kosto.js</span></h5>
-                                <h5>最新版本: <span id="latestVersion">5.0</span></h5>
-                                <h5>更新时间: <span id="lastUpdated">2025-07-15</span></h5>
-                            </div>
-                            <div class="col-md-6">
-                                <h5>作者: <span id="author">CN@Kosto1797867628</span></h5>
-                                <h5>Star 数: <span id="stars">0</span></h5>
-                                <h5>Fork 数: <span id="forks">0</span></h5>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 用户日志 -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="dashboard">
-                    <h3>用户日志</h3>
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>时间</th>
-                                    <th>用户ID</th>
-                                    <th>操作</th>
-                                    <th>详细信息</th>
-                                </tr>
-                            </thead>
-                            <tbody id="userLogs">
-                                <!-- 日志数据将通过JavaScript动态填充 -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
-        // 从GitCode获取真实数据
-        async function fetchStatsData() {
-            try {
-                const response = await fetch(
-                    'https://gitcode.net/api/v4/projects/gcw_WLlWRZxY%2Fkosto-battle-clicker-new/repository/files/stats.json/raw?ref=master',
-                    {
-                        headers: {
-                            'PRIVATE-TOKEN': 'kpgqGoi-_T4vgRc9xk9_HMWt'
-                        }
-                    }
-                );
-                
-                if (!response.ok) throw new Error('Network response was not ok');
-                
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                console.error('获取数据失败:', error);
-                return null;
-            }
-        }
+        // 初始化 Firebase
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-        // 计算在线时长
-        function calculateOnlineDuration(loginTime, lastActivity) {
-            const login = new Date(loginTime);
-            const last = new Date(lastActivity || new Date().toISOString());
-            const diffMs = last - login;
-            
-            const hours = Math.floor(diffMs / (1000 * 60 * 60));
-            const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-            
-            return `${hours}小时${minutes}分钟`;
-        }
+        // 生成随机用户ID
+        const userId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        const userRef = database.ref('onlineUsers/' + userId);
 
-        // 初始化页面数据
-        async function initializePage() {
-            const statsData = await fetchStatsData();
-            
-            if (!statsData) {
-                console.log('使用模拟数据作为后备');
-                // 这里可以保留原有的模拟数据作为后备
-                return;
-            }
-            
-            // 获取最新的数据记录
-            const latestTimestamp = Object.keys(statsData).sort().pop();
-            const latestData = statsData[latestTimestamp];
-            
-            // 更新在线用户总数
-            const onlineCount = latestData.users.online.length;
-            document.getElementById('onlineCount').textContent = onlineCount;
-            
-            // 更新今日活跃用户数
-            document.getElementById('activeToday').textContent = latestData.users.todayActive.length;
-            
-            // 更新总用户数
-            document.getElementById('totalUsers').textContent = latestData.users.totalCount;
-            
-            // 更新用户列表
-            const onlineUsersTable = document.getElementById('onlineUsersTable');
-            onlineUsersTable.innerHTML = '';
-            
-            latestData.users.online.forEach(userId => {
-                const user = latestData.userDetails[userId] || {
-                    id: userId,
-                    username: '未知用户',
-                    loginTime: new Date().toISOString(),
-                    lastActivity: new Date().toISOString()
-                };
-                
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${user.id}</td>
-                    <td>${user.username}</td>
-                    <td>${new Date(user.loginTime).toLocaleString()}</td>
-                    <td>${new Date(user.lastActivity).toLocaleString()}</td>
-                    <td>${calculateOnlineDuration(user.loginTime, user.lastActivity)}</td>
-                    <td>
-                        <span class="status-indicator status-online"></span>
-                        在线
-                    </td>
-                `;
-                onlineUsersTable.appendChild(row);
-            });
-            
-            // 更新用户行为统计
-            document.getElementById('todayUsage').textContent = 
-                latestData.features.threeOpen.count + 
-                latestData.features.mine.count +
-                latestData.features.teamA.count +
-                latestData.features.teamB.count;
-                
-            document.getElementById('todayErrors').textContent = 
-                latestData.errors.clientErrors.length +
-                latestData.errors.networkErrors.length +
-                latestData.errors.apiErrors.length;
-                
-            // 更新Gitcode信息
-            document.getElementById('repoName').textContent = "Kosto.js";
-            document.getElementById('latestVersion').textContent = latestData.meta.kostoVersion;
-            document.getElementById('lastUpdated').textContent = new Date(latestData.timestamps.lastUpdate).toLocaleDateString();
+        // 设置用户在线状态
+        userRef.set({
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => {
+            // 确保断开连接时删除节点
+            userRef.onDisconnect().remove();
+        });
 
-            // 更新用户行为统计
-            document.getElementById('todayUsage').textContent = mockData.statistics.todayUsage;
-            document.getElementById('todayErrors').textContent = mockData.statistics.todayErrors;
-            document.getElementById('todayActiveTime').textContent = mockData.statistics.todayActiveTime;
-
-            // 更新Gitcode信息
-            document.getElementById('repoName').textContent = mockData.gitcode.repoName;
-            document.getElementById('latestVersion').textContent = mockData.gitcode.latestVersion;
-            document.getElementById('lastUpdated').textContent = mockData.gitcode.lastUpdated;
-            document.getElementById('stars').textContent = mockData.gitcode.stars;
-            document.getElementById('forks').textContent = mockData.gitcode.forks;
-
-            // 更新用户日志
-            const userLogsTable = document.getElementById('userLogs');
-            userLogsTable.innerHTML = '';
-            mockData.userLogs.forEach(log => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${log.time}</td>
-                    <td>${log.userId}</td>
-                    <td>${log.action}</td>
-                    <td>${log.details}</td>
-                `;
-                userLogsTable.appendChild(row);
-            });
-        }
-
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            initializePage();
+        // 实时监听在线人数
+        database.ref('onlineUsers').on('value', (snapshot) => {
+            const onlineUsers = snapshot.val() || {};
+            const count = Object.keys(onlineUsers).length;
+            document.getElementById('onlineCount').textContent = count;
         });
     </script>
 </body>
