@@ -33,7 +33,7 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="index.html">首页</a>
                     </li>
@@ -41,6 +41,12 @@
                         <a class="nav-link active" href="whitelist-manager.html">白名单管理</a>
                     </li>
                 </ul>
+                <div class="d-flex align-items-center">
+                    <div class="input-group me-2" style="width: 250px;">
+                        <input type="password" id="githubToken" class="form-control form-control-sm" placeholder="GitHub Token">
+                        <button class="btn btn-outline-light btn-sm" type="button" id="saveTokenBtn">保存Token</button>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -417,23 +423,85 @@
         }
 
         /**
+         * 保存GitHub Token到本地存储
+         */
+        document.getElementById('saveTokenBtn').addEventListener('click', () => {
+            const token = document.getElementById('githubToken').value.trim();
+            if (token) {
+                localStorage.setItem('githubToken', token);
+                alert('Token已保存');
+            } else {
+                localStorage.removeItem('githubToken');
+                alert('Token已清除');
+            }
+        });
+
+        // 页面加载时恢复保存的Token
+        window.addEventListener('load', () => {
+            const savedToken = localStorage.getItem('githubToken');
+            if (savedToken) {
+                document.getElementById('githubToken').value = savedToken;
+            }
+        });
+
+        /**
+         * 通过GitHub API更新文件
+         */
+        async function updateGitHubFile(content) {
+            const token = localStorage.getItem('githubToken');
+            if (!token) {
+                alert('请先设置GitHub Token');
+                return false;
+            }
+
+            const apiUrl = 'https://api.github.com/repos/Kosto179cn/Kosto.github.io/contents/js/1/1.json';
+            const base64Content = btoa(unescape(encodeURIComponent(content)));
+
+            try {
+                // 先获取文件信息以获取SHA
+                const infoResponse = await fetch(apiUrl, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (!infoResponse.ok) throw new Error('获取文件信息失败');
+                const fileInfo = await infoResponse.json();
+
+                // 更新文件
+                const updateResponse = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/vnd.github.v3+json'
+                    },
+                    body: JSON.stringify({
+                        message: 'Update whitelist via manager',
+                        content: base64Content,
+                        sha: fileInfo.sha
+                    })
+                });
+
+                if (!updateResponse.ok) throw new Error('更新文件失败');
+                return true;
+            } catch (error) {
+                console.error('GitHub API错误:', error);
+                alert(`更新失败: ${error.message}`);
+                return false;
+            }
+        }
+
+        /**
          * 保存更改
          */
-        saveChangesBtn.addEventListener('click', () => {
-            // 创建JSON文件内容
+        saveChangesBtn.addEventListener('click', async () => {
             const jsonContent = JSON.stringify(whitelistData, null, 2);
-            // 创建下载链接
-            const blob = new Blob([jsonContent], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = '1.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-
-            alert('白名单数据已导出，请手动更新GitHub仓库中的js/1/1.json文件。');
+            const success = await updateGitHubFile(jsonContent);
+            if (success) {
+                alert('白名单已成功更新到GitHub');
+            }
         });
 
         // 初始化页面
