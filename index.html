@@ -352,7 +352,7 @@
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="userId" class="form-label">VUP用户浏览器ID</label>
+                            <label for="userId" class="form-label">VIP用户浏览器ID</label>
                             <input type="text" class="form-control" id="userId" required>
                         </div>
                         <div class="mb-3">
@@ -1348,17 +1348,13 @@
             /**
              * 保存更改
              */
-            saveChangesBtn.addEventListener('click', function() {
+            saveChangesBtn.addEventListener('click', async function() {
                 try {
-                    var data = JSON.stringify(whitelistData);
-                    var blob = new Blob([data], {type: 'application/json'});
-                    var url = URL.createObjectURL(blob);
-                    var link = document.createElement('a');
-                    link.href = url;
-                    link.download = '1.json';
-                    link.click();
-                    URL.revokeObjectURL(url);
-                    alert('保存成功');
+                    var data = JSON.stringify(whitelistData, null, 2);
+                    const success = await updateGitHubFile(data);
+                    if (success) {
+                        alert('保存到GitHub成功');
+                    }
                 } catch (e) {
                     alert('保存失败: ' + e.message);
                 }
