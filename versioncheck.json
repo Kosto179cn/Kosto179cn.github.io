@@ -1,10 +1,6 @@
-<<<<<<< HEAD
 {
-  "version": "2025.7.30",
-  "version_code": 35,
+  "version": "2025.7.29",
+  "version_code": 1,
   "update_info": "更新了一系列已知问题",
   "download_url": "https://kosto179cn.github.io/Kosto.github.io/cloudversion.js"
 }
-=======
-{"version": "2025.7.29","version_code": 50,"update_info": "更新了一系列已知问题","download_url": "https://kosto179cn.github.io/Kosto.github.io/cloudversion.js"}
->>>>>>> 05ada0b07a52b8e8d747bfc2385949f8f49af526
