@@ -1,17 +1,14 @@
-// ==UserScript==
 // @name         Kosto云端用户版本
+// @namespace    http://tampermonkey.net/
 // @description  BattleClicker&SupplyClicker 默认M键呼出菜单
-// @version      2025.7.29
+// @version      2025.7.29.1
 // @author       CN@Kosto1797867628
-// @icon         https://gitee.com/Kosto179/kosto-battle-clicker-new/raw/master/KostoIcon.jpg
+// @icon         https://kosto179cn.github.io/Kosto.github.io/KostoIcon.jpg
 // @match        *://*.3dtank.com/play*
 // @match        *://*.tankionline.com/play*
 // @match        *://*.test-eu.tankionline.com/browser-public/index.html*
 // @run-at       document-start
 // @grant        none
-// @connect      raw.githubusercontent.com
-// @connect      raw.gitcode.com
-// @connect      gitee.com
 // ==/UserScript==
 // 当前脚本版本信息
 (function() {
