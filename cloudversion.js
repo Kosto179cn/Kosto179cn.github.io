@@ -9,7 +9,9 @@
 // @match        *://*.test-eu.tankionline.com/browser-public/index.html*
 // @run-at       document-start
 // @grant        none
-// ==/UserScript==
+// ==UserScript==
+
+
 // 当前脚本版本信息
 (function() {
     'use strict';
