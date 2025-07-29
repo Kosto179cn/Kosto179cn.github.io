@@ -15,8 +15,8 @@
     'use strict';
 
     // --- START: Version Check ---
-    const currentVersion = "2025.7.29";
-    const currentVersionCode = 35;
+    const currentVersion = "2025.7.29.1";
+    const currentVersionCode = 36;
     const versionUrl = 'https://gitee.com/Kosto179/kosto-battle-clicker-new/raw/master/versioncheck.json';
 
     let iconsInjected = false;
