@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -53,6 +54,31 @@
 
     <div class="container">
         <h1 class="mb-4">白名单管理</h1>
+
+        <!-- 搜索功能 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" id="searchInput" class="form-control" placeholder="搜索组或用户...">
+                            <button class="btn btn-primary" id="searchBtn">搜索</button>
+                            <button class="btn btn-outline-secondary" id="clearSearchBtn">清除</button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="searchType" id="searchGroups" value="groups" checked>
+                            <label class="form-check-label" for="searchGroups">搜索组</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="searchType" id="searchUsers" value="users">
+                            <label class="form-check-label" for="searchUsers">搜索用户</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- 白名单组管理 -->
         <div class="card">
@@ -220,6 +246,15 @@
         const groupsTableBody = document.getElementById('groupsTableBody');
         const usersTableBody = document.getElementById('usersTableBody');
         const saveChangesBtn = document.getElementById('saveChangesBtn');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+        const searchGroupsRadio = document.getElementById('searchGroups');
+        const searchUsersRadio = document.getElementById('searchUsers');
+
+        // 存储原始数据，用于搜索恢复
+        let originalGroups = [];
+        let originalUsers = [];
 
         // 初始化
         async function init() {
@@ -227,6 +262,11 @@
                 // 从GitHub获取白名单数据
                 const response = await fetch('https://raw.githubusercontent.com/Kosto179cn/Kosto.github.io/main/js/1/1.json');
                 whitelistData = await response.json();
+                
+                // 保存原始数据副本
+                originalGroups = [...(whitelistData[GROUPS_INDEX] || [])];
+                originalUsers = [...(whitelistData[USERS_INDEX] || [])];
+                
                 renderGroupsTable();
                 renderUsersTable();
             } catch (error) {
@@ -234,6 +274,53 @@
                 alert('加载白名单数据失败，请刷新页面重试。');
             }
         }
+
+        /**
+         * 处理搜索
+         */
+        function handleSearch() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const searchType = searchGroupsRadio.checked ? 'groups' : 'users';
+
+            if (searchType === 'groups') {
+                // 搜索组
+                const filteredGroups = originalGroups.filter(group => 
+                    group.toLowerCase().includes(searchTerm)
+                );
+                whitelistData[GROUPS_INDEX] = filteredGroups;
+                renderGroupsTable();
+            } else {
+                // 搜索用户
+                const filteredUsers = originalUsers.filter(user => 
+                    (user['id:'] || '').toLowerCase().includes(searchTerm) || 
+                    (user['name:'] || '').toLowerCase().includes(searchTerm)
+                );
+                whitelistData[USERS_INDEX] = filteredUsers;
+                renderUsersTable();
+            }
+        }
+
+        /**
+         * 清除搜索
+         */
+        function clearSearch() {
+            searchInput.value = '';
+            whitelistData[GROUPS_INDEX] = [...originalGroups];
+            whitelistData[USERS_INDEX] = [...originalUsers];
+            renderGroupsTable();
+            renderUsersTable();
+        }
+
+        // 添加搜索和清除事件监听
+        searchBtn.addEventListener('click', handleSearch);
+        clearSearchBtn.addEventListener('click', clearSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleSearch();
+            }
+        });
+        searchGroupsRadio.addEventListener('change', clearSearch);
+        searchUsersRadio.addEventListener('change', clearSearch);
 
         /**
          * 渲染白名单组表格
