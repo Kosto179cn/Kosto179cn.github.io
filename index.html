@@ -461,7 +461,8 @@
                 // 先获取文件信息以获取SHA
                 const infoResponse = await fetch(apiUrl, {
                     headers: {
-                        'Authorization': `token ${token}`,
+                        'Authorization': `token ${encodeURIComponent(token)}`,
+                        'Content-Type': 'application/json',
                         'Accept': 'application/vnd.github.v3+json'
                     }
                 });
@@ -473,7 +474,7 @@
                 const updateResponse = await fetch(apiUrl, {
                     method: 'PUT',
                     headers: {
-                        'Authorization': `token ${token}`,
+                        'Authorization': `token ${encodeURIComponent(token)}`,
                         'Content-Type': 'application/json',
                         'Accept': 'application/vnd.github.v3+json'
                     },
