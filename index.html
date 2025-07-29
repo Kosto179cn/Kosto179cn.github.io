@@ -1353,7 +1353,7 @@
                     var data = JSON.stringify(whitelistData, null, 2);
                     const success = await updateGitHubFile(data);
                     if (success) {
-                        alert('保存到GitHub成功');
+                        alert('保存到GitHub成功，稍等半分钟/一分钟/两分钟刷新坦克页面即可');
                     }
                 } catch (e) {
                     alert('保存失败: ' + e.message);
