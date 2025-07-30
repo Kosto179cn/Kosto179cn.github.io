@@ -179,5 +179,16 @@
     "username": "Kosto",
     "details": {},
     "getid": "unknown"
+  },
+  {
+    "timestamp": "2025-07-30T04:54:50.986Z",
+    "fingerprint": "fp_4b7a6d51",
+    "username": "unknown",
+    "action": "page_load",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "referrer": ""
+    },
+    "getid": "unknown"
   }
 ]
