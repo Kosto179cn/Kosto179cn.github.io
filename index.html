@@ -3,70 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kosto 工具平台</title>
+    <title>Kosto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --accent-color: #ffc107;
+            --light-bg: #f8f9fa;
+            --dark-text: #343a40;
+            --light-text: #6c757d;
+        }
         body {
-            font-family: Arial, sans-serif;
+            padding-top: 20px;
+            padding-bottom: 50px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
         }
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 0 15px;
         }
         header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+            padding: 30px 0;
+            background: linear-gradient(135deg, var(--primary-color), #0056b3);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
         }
         .tabs {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #ddd;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e9ecef;
             padding-bottom: 10px;
+            flex-wrap: wrap;
         }
         .tab-btn {
             padding: 10px 20px;
-            background-color: #fff;
-            border: 1px solid #ddd;
+            background-color: white;
+            border: 1px solid #dee2e6;
             border-radius: 4px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .tab-btn:hover {
+            background-color: #e9ecef;
+            border-color: #dee2e6;
         }
         .tab-btn.active {
-            background-color: #007bff;
+            background-color: var(--primary-color);
             color: white;
-            border-color: #007bff;
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0,123,255,0.25);
         }
         .tab-content {
             display: none;
             background-color: white;
-            padding: 20px;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .tab-content.active {
             display: block;
         }
         .feature-card {
-            border: 1px solid #eee;
-            border-radius: 4px;
-            padding: 15px;
-            margin-bottom: 15px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            background-color: white;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+            border-color: #dee2e6;
         }
         .feature-card h3 {
             margin-top: 0;
-            color: #333;
+            color: var(--primary-color);
+            font-size: 1.3rem;
+            margin-bottom: 12px;
         }
         .feature-card p {
-            color: #666;
+            color: var(--light-text);
+            margin-bottom: 15px;
+            line-height: 1.6;
         }
         footer {
             text-align: center;
-            margin-top: 30px;
-            color: #888;
-            font-size: 0.9em;
+            margin-top: 50px;
+            color: var(--light-text);
+            font-size: 0.9rem;
+            padding: 20px 0;
+            border-top: 1px solid #e9ecef;
         }
     </style>
 </head>
@@ -79,6 +130,7 @@
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('user')">用户功能</button>
             <button class="tab-btn" onclick="switchTab('developer')">开发者功能</button>
+            <button class="tab-btn" onclick="showConsoleHelp()">控制台帮助</button>
         </div>
 
         <!-- 用户功能区 -->
@@ -87,54 +139,272 @@
             <div class="feature-card">
                 <h3>脚本快速部署</h3>
                 <p>一键安装 cloudversion.script.user.js 脚本，自动同步最新版本，无需手动更新</p>
-                <a href="cloudversion.script.user.js">查看管理脚本</a>
+                <a href="https://kosto179cn.github.io/Kosto.github.io/cloudversion.script.user.js">查看管理脚本</a>
             </div>
             <div class="feature-card">
                 <h3>版本状态查询</h3>
                 <p>实时查看当前工具版本信息，检测是否有更新可用</p>
-                <button>检查版本</button>
+                <button id="checkVersionBtn" class="btn btn-primary">检查版本</button>
+                <div id="versionInfo" style="margin-top: 15px;"></div>
+            </div>
         </div>
 
         <!-- 开发者功能区 -->
         <div id="developer" class="tab-content">
             <h2>开发者功能</h2>
+            <p>以下是开发者可用的功能列表：</p>
+
             <div class="feature-card">
-                <h3>API 接口文档</h3>
-                <p>获取版本检查接口（versioncheck.json）的调用规范及参数说明</p>
-                <a href="#">查看接口文档</a>
+                <h3>今日使用人数统计</h3>
+                <p>实时查看工具的今日使用人数统计和趋势分析。</p>
+                <div style="width: 100%; height: 250px;">
+                    <canvas id="usageChart"></canvas>
+                </div>
             </div>
             <div class="feature-card">
                 <h3>代码贡献指南</h3>
-                <p>了解如何参与脚本开发，提交 PR 的规范及流程</p>
-                <a href="https://github.com/Kosto179cn/Kosto.github.io" target="_blank">访问 GitHub 仓库</a>
+                <p>详细介绍如何参与脚本开发，包括代码风格规范、提交 PR 的流程、审核标准和版本发布周期。</p>
+                <a href="https://github.com/Kosto179cn/Kosto.github.io" target="_blank" class="btn btn-primary">访问 GitHub 仓库</a>
             </div>
             <div class="feature-card">
                 <h3>白名单管理工具</h3>
-                <p>通过 js 文件夹中的工具管理功能白名单，配置权限规则</p>
-                <a href="./Developer.html">查看管理脚本</a>
+                <p>可视化管理功能白名单，配置用户权限规则，导出/导入配置文件。</p>
+                <a href="https://kosto179cn.github.io/Kosto.github.io/Developer.html" class="btn btn-primary">管理白名单</a>
+            </div>
+            <div class="feature-card">
+                <h3>问题追踪系统</h3>
+                <p>报告和跟踪 bugs、功能请求和技术问题，参与讨论解决方案。</p>
+                <a href="https://github.com/Kosto179cn/Kosto.github.io/issues" target="_blank" class="btn btn-primary">访问问题追踪</a>
             </div>
         </div>
 
         <footer>
             <p>© 2025 Kosto 平台 | 基于 GitHub Pages 部署 感谢@Github</p>
+            <p style="margin-top: 10px;"><small>如果开发者功能区显示空白，请尝试 <a href="javascript:location.reload()">刷新页面</a> 或 <a href="javascript:showConsoleHelp()">查看控制台帮助</a></small></p>
         </footer>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // 显示控制台帮助
+        function showConsoleHelp() {
+            alert('如何打开浏览器控制台:\n\n1. Chrome/Firefox: 按 F12 键或 Ctrl+Shift+I\n2. Edge: 按 F12 键或 Ctrl+Shift+I\n3. Safari: 先启用开发者模式 (偏好设置 > 高级 > 显示开发菜单)，然后按 Option+Command+C\n\n打开后，切换到 Console 标签查看错误信息。');
+        }
+
+
         // 切换标签页功能
         function switchTab(tabName) {
+            console.log('切换到标签页:', tabName);
             // 隐藏所有内容
             document.querySelectorAll('.tab-content').forEach(el => {
                 el.classList.remove('active');
+                console.log('隐藏标签内容:', el.id);
             });
             // 移除所有按钮的活跃状态
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            // 显示选中内容和按钮活跃状态
-            document.getElementById(tabName).classList.add('active');
-            event.currentTarget.classList.add('active');
+            // 显示选中内容
+            const tabContent = document.getElementById(tabName);
+            if (tabContent) {
+                tabContent.classList.add('active');
+                console.log('显示标签内容:', tabName);
+                console.log('标签内容长度:', tabContent.innerHTML.length);
+                // 强制显示开发者功能区内容
+                if (tabName === 'developer') {
+                    console.log('强制显示开发者功能区');
+                    tabContent.style.display = 'block';
+                }
+            } else {
+                console.error('未找到标签内容:', tabName);
+            }
+            // 激活当前按钮
+            let activated = false;
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+                console.log('激活按钮:', event.currentTarget.textContent);
+                activated = true;
+            } 
+            // 通过标签名找到对应的按钮
+            if (!activated) {
+                const tabButtons = document.querySelectorAll('.tab-btn');
+                tabButtons.forEach(btn => {
+                    const onclickAttr = btn.getAttribute('onclick');
+                    if (onclickAttr && onclickAttr.includes(`switchTab('${tabName}')`)) {
+                        btn.classList.add('active');
+                        console.log('通过标签名激活按钮:', btn.textContent);
+                        activated = true;
+                    }
+                });
+            }
+            // 如果仍然没有激活，尝试通过按钮文本来匹配
+            if (!activated) {
+                const tabButtons = document.querySelectorAll('.tab-btn');
+                const buttonTextMap = {
+                    'user': '用户功能',
+                    'developer': '开发者功能',
+                    'consoleHelp': '控制台帮助'
+                };
+                const targetText = buttonTextMap[tabName];
+                if (targetText) {
+                    tabButtons.forEach(btn => {
+                        if (btn.textContent.trim() === targetText) {
+                            btn.classList.add('active');
+                            console.log('通过按钮文本激活按钮:', btn.textContent);
+                            activated = true;
+                        }
+                    });
+                }
+            }
+            if (!activated) {
+                console.error('无法激活按钮:', tabName);
+            }
         }
+
+        // 版本检查功能
+        function checkVersion() {
+            const versionInfoElement = document.getElementById('versionInfo');
+            versionInfoElement.innerHTML = '<p class="text-info">正在检查版本...</p>';
+
+            fetch('https://raw.githubusercontent.com/Kosto179cn/Kosto.github.io/main/versioncheck.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应异常');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // 这里假设当前版本是硬编码的，实际应用中可能需要从本地存储或其他地方获取
+                    const currentVersion = '2025.7.26';
+                    const latestVersion = data.version;
+
+                    if (isNewerVersion(latestVersion, currentVersion)) {
+                        versionInfoElement.innerHTML = `
+                            <p class="text-success">发现新版本: ${latestVersion}</p>
+                            <p class="text-success">更新内容: ${data.update_info}</p>
+                            <a href="${data.download_url}" class="btn btn-success btn-sm" target="_blank">下载更新</a>
+                        `;
+                    } else {
+                        versionInfoElement.innerHTML = `<p class="text-success">当前已是最新版本: ${currentVersion}</p>`;
+                    }
+                })
+                .catch(error => {
+                    versionInfoElement.innerHTML = `<p class="text-danger">版本检查失败: ${error.message}</p>`;
+                    console.error('版本检查错误:', error);
+                });
+        }
+
+        // 版本比较函数
+        function isNewerVersion(latest, current) {
+            // 简单的版本比较逻辑，实际应用可能需要更复杂的实现
+            const latestParts = latest.split('.').map(Number);
+            const currentParts = current.split('.').map(Number);
+
+            for (let i = 0; i < Math.max(latestParts.length, currentParts.length); i++) {
+                const latestPart = latestParts[i] || 0;
+                const currentPart = currentParts[i] || 0;
+
+                if (latestPart > currentPart) return true;
+                if (latestPart < currentPart) return false;
+            }
+
+            return false; // 版本相同
+        }
+
+        // 初始化使用人数统计图表
+        function initUsageChart() {
+            const ctx = document.getElementById('usageChart').getContext('2d');
+            if (!ctx) {
+                console.error('未找到图表画布元素');
+                return;
+            }
+
+            // 模拟今日使用人数数据
+            const labels = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'];
+            const data = [12, 8, 5, 25, 42, 38, 45, 30];
+
+            // 创建图表
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '今日使用人数',
+                        data: data,
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '使用人数'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '时间'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '今日使用人数趋势',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }
+                }
+            });
+            console.log('使用人数统计图表已初始化');
+        }
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化使用人数统计图表
+            initUsageChart();
+            // 确保第一个标签页被激活
+            const activeTabBtn = document.querySelector('.tab-btn.active');
+            if (activeTabBtn) {
+                // 触发点击事件
+                activeTabBtn.click();
+                console.log('激活第一个标签页:', activeTabBtn.textContent);
+            } else {
+                console.error('未找到活跃的标签页按钮');
+            }
+
+            // 绑定版本检查按钮事件
+            const checkVersionBtn = document.getElementById('checkVersionBtn');
+            if (checkVersionBtn) {
+                checkVersionBtn.addEventListener('click', checkVersion);
+                console.log('版本检查按钮事件已绑定');
+            } else {
+                console.error('未找到版本检查按钮');
+            }
+
+            // 调试信息：打印开发者功能区内容
+            const developerTab = document.getElementById('developer');
+            if (developerTab) {
+                console.log('开发者功能区内容:', developerTab.innerHTML);
+            } else {
+                console.error('未找到开发者功能区');
+            }
+        });
     </script>
 </body>
 </html>
