@@ -59,6 +59,38 @@
             </div>
         </nav>
 
+        <!-- 权限提示 -->
+        <div id="permissionError" class="container mt-4" style="display: none;">
+            <div class="alert alert-danger">
+                <h2>权限不足</h2>
+                <p>您的GitHub Token没有编辑1.json的权限，请输入有效的Token。</p>
+            </div>
+        </div>
+
+        <!-- 登录模态窗口 -->
+        <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="loginModalLabel">请登录</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="关闭"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>请输入您的GitHub Token以访问白名单管理系统。</p>
+                        <div class="input-group mb-3">
+                            <input type="password" id="githubTokenModal" class="form-control" placeholder="GitHub Token">
+                        </div>
+                        <div class="alert alert-danger" id="invalidTokenAlert" style="display: none;">
+                            <p>Token无效或无权限访问文件，请重新输入。</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="confirmLoginBtn">确认登录</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="container">
             <h1 class="mb-4">白名单管理系统</h1>
 
@@ -1276,22 +1308,124 @@
             /**
              * 保存GitHub Token到本地存储
              */
-            document.getElementById('saveTokenBtn').addEventListener('click', () => {
+            document.getElementById('saveTokenBtn').addEventListener('click', async () => {
                 const token = document.getElementById('githubToken').value.trim();
                 if (token) {
                     localStorage.setItem('githubToken', token);
-                    alert('Token已保存');
+                    // 保存后检查权限
+                    const hasPermission = await checkTokenPermission();
+                    if (hasPermission) {
+                        alert('Token已保存且验证通过');
+                        // 显示主内容并初始化
+                        document.querySelector('.container').style.display = 'block';
+                        document.getElementById('permissionError').style.display = 'none';
+                        document.getElementById('loginPrompt').style.display = 'none';
+                        init();
+                    } else {
+                        alert('Token无效或无权限访问文件');
+                        localStorage.removeItem('githubToken');
+                        document.getElementById('githubToken').value = '';
+                        showPermissionError();
+                    }
                 } else {
                     localStorage.removeItem('githubToken');
                     alert('Token已清除');
+                    showLoginPrompt();
                 }
             });
 
             // 页面加载时恢复保存的Token
-            window.addEventListener('load', () => {
+            window.addEventListener('load', async () => {
                 const savedToken = localStorage.getItem('githubToken');
                 if (savedToken) {
                     document.getElementById('githubToken').value = savedToken;
+                    // 检查权限
+                    const hasPermission = await checkTokenPermission();
+                    if (!hasPermission) {
+                        showPermissionError();
+                        return;
+                    }
+                    // 有权限，继续初始化
+                    init();
+                } else {
+                    // 没有Token，显示登录模态窗口
+                    showLoginPrompt();
+                }
+            });
+
+            /**
+             * 检查Token是否有权限编辑1.json
+             */
+            async function checkTokenPermission() {
+                const token = localStorage.getItem('githubToken');
+                if (!token) return false;
+
+                const apiUrl = 'https://api.github.com/repos/Kosto179cn/Kosto.github.io/contents/js/1/1.json';
+                
+                try {
+                    const response = await fetch(apiUrl, {
+                        headers: {
+                            'Authorization': `token ${encodeURIComponent(token)}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+                    
+                    return response.ok;
+                } catch (error) {
+                    console.error('权限检查失败:', error);
+                    return false;
+                }
+            }
+
+            /**
+             * 显示权限不足错误
+             */
+            function showPermissionError() {
+                document.querySelector('.container').style.display = 'none';
+                document.getElementById('permissionError').style.display = 'block';
+                document.getElementById('loginPrompt').style.display = 'none';
+            }
+
+            /**
+             * 显示登录提示模态窗口
+             */
+            function showLoginPrompt() {
+                // 清空Token输入框
+                document.getElementById('githubTokenModal').value = '';
+                document.getElementById('invalidTokenAlert').style.display = 'none';
+                // 显示模态窗口
+                const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+                loginModal.show();
+            }
+
+            /**
+             * 确认登录按钮点击事件
+             */
+            document.getElementById('confirmLoginBtn').addEventListener('click', async () => {
+                const token = document.getElementById('githubTokenModal').value.trim();
+                if (!token) {
+                    document.getElementById('invalidTokenAlert').textContent = '请输入GitHub Token';
+                    document.getElementById('invalidTokenAlert').style.display = 'block';
+                    return;
+                }
+
+                // 保存Token并检查权限
+                localStorage.setItem('githubToken', token);
+                document.getElementById('githubToken').value = token;
+
+                const hasPermission = await checkTokenPermission();
+                if (hasPermission) {
+                    // 权限验证通过，关闭模态窗口并初始化
+                    const loginModal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+                    loginModal.hide();
+                    document.querySelector('.container').style.display = 'block';
+                    document.getElementById('permissionError').style.display = 'none';
+                    init();
+                } else {
+                    // 权限验证失败
+                    document.getElementById('invalidTokenAlert').textContent = 'Token无效或无权限访问文件，请重新输入。';
+                    document.getElementById('invalidTokenAlert').style.display = 'block';
+                    localStorage.removeItem('githubToken');
                 }
             });
 
@@ -1353,15 +1487,15 @@
                     var data = JSON.stringify(whitelistData, null, 2);
                     const success = await updateGitHubFile(data);
                     if (success) {
-                        alert('保存到GitHub成功，稍等半分钟/一分钟/两分钟刷新坦克页面即可');
+                        alert('保存到GitHub成功，稍等半分钟/一分钟/两分钟即可');
                     }
                 } catch (e) {
                     alert('保存失败: ' + e.message);
                 }
             });
 
-            // 初始化页面
-            document.addEventListener('DOMContentLoaded', init);
+            // 初始化函数将在权限验证后调用
+            // document.addEventListener('DOMContentLoaded', init);
         </script>
     </body>
     </html>
