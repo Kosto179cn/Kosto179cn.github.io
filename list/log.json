@@ -1,31 +1,9 @@
-<<<<<<< HEAD
-
-=======
 [
   {
-    "timestamp": "2025-07-30T08:31:23.745Z",
-    "fingerprint": "fp_6a9dd90",
-    "username": "Ã¥Â°ÂÃ¨Â´Â¾",
-    "action": "heartbeat",
-    "details": {
-      "url": "https://3dtank.com/play/",
-      "onlineTime": 542
-    },
-    "getid": "[ShenJ] Nov1ce"
-  },
-  {
-    "timestamp": "2025-07-30T08:32:12.778Z",
-    "fingerprint": "fp_6a9dd90",
-    "username": "å°è´¾",
+    "timestamp": "2025-07-30T09:14:09.243Z",
+    "fingerprint": "fp_4b7a6d51",
+    "username": "Kosto",
     "details": {},
     "getid": "unknown"
-  },
-  {
-    "timestamp": "2025-07-30T08:32:29.758Z",
-    "fingerprint": "fp_6a9dd90",
-    "username": "小贾",
-    "details": {},
-    "getid": "[ShenJ] Nov1ce"
   }
 ]
->>>>>>> a70e0a295d976aa8ad3fa7ce81bb212dca0f3dac
