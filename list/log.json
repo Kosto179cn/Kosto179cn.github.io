@@ -2,15 +2,22 @@
   {
     "timestamp": "2025-07-30T07:48:03.087Z",
     "fingerprint": "fp_6a9dd90",
-    "username": "å°è´¾",
+    "username": "Ã¥Â°ÂÃ¨Â´Â¾",
     "details": {},
     "getid": "[ShenJ] Nov1ce"
   },
   {
     "timestamp": "2025-07-30T07:49:01.427Z",
     "fingerprint": "fp_6a9dd90",
-    "username": "小贾",
+    "username": "å°è´¾",
     "details": {},
     "getid": "unknown"
+  },
+  {
+    "timestamp": "2025-07-30T07:49:07.759Z",
+    "fingerprint": "fp_6a9dd90",
+    "username": "小贾",
+    "details": {},
+    "getid": "[ShenJ] Nov1ce"
   }
 ]
