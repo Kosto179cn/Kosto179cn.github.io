@@ -64,5 +64,15 @@
     "fingerprint": "fp_4b7a6d51",
     "username": "Kosto",
     "details": {}
+  },
+  {
+    "timestamp": "2025-07-30T04:32:31.569Z",
+    "fingerprint": "fp_4b7a6d51",
+    "username": "Kosto",
+    "action": "heartbeat",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "onlineTime": 60
+    }
   }
 ]
