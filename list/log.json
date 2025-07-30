@@ -27,19 +27,30 @@
   {
     "timestamp": "2025-07-30T06:44:58.220Z",
     "fingerprint": "fp_6a9dd90",
-    "username": "å°è´¾",
+    "username": "Ã¥Â°ÂÃ¨Â´Â¾",
     "details": {},
     "getid": "[ShenJ] Nov1ce"
   },
   {
     "timestamp": "2025-07-30T06:45:52.428Z",
     "fingerprint": "fp_6a9dd90",
-    "username": "小贾",
+    "username": "å°è´¾",
     "action": "heartbeat",
     "details": {
       "url": "https://3dtank.com/play/",
       "onlineTime": 62
     },
     "getid": "[ShenJ] Nov1ce"
+  },
+  {
+    "timestamp": "2025-07-30T06:46:35.020Z",
+    "fingerprint": "fp_4b7a6d51",
+    "username": "Kosto",
+    "action": "page_unload",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "onlineTime": 280
+    },
+    "getid": "904"
   }
 ]
