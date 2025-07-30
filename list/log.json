@@ -190,5 +190,16 @@
       "referrer": ""
     },
     "getid": "unknown"
+  },
+  {
+    "timestamp": "2025-07-30T04:55:00.399Z",
+    "fingerprint": "fp_4b7a6d51",
+    "username": "unknown",
+    "action": "page_load",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "referrer": ""
+    },
+    "getid": "unknown"
   }
 ]
