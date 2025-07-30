@@ -2,7 +2,7 @@
   {
     "timestamp": "2025-07-30T08:31:23.745Z",
     "fingerprint": "fp_6a9dd90",
-    "username": "å°è´¾",
+    "username": "Ã¥Â°ÂÃ¨Â´Â¾",
     "action": "heartbeat",
     "details": {
       "url": "https://3dtank.com/play/",
@@ -13,8 +13,15 @@
   {
     "timestamp": "2025-07-30T08:32:12.778Z",
     "fingerprint": "fp_6a9dd90",
-    "username": "小贾",
+    "username": "å°è´¾",
     "details": {},
     "getid": "unknown"
+  },
+  {
+    "timestamp": "2025-07-30T08:32:29.758Z",
+    "fingerprint": "fp_6a9dd90",
+    "username": "小贾",
+    "details": {},
+    "getid": "[ShenJ] Nov1ce"
   }
 ]
