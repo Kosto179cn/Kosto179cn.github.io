@@ -196,14 +196,14 @@
   {
     "timestamp": "2025-07-30T06:25:06.255Z",
     "fingerprint": "fp_6a9dd90",
-    "username": "Ã¥Â°ÂÃ¨Â´Â¾",
+    "username": "ÃÂ¥ÃÂ°ÃÂÃÂ¨ÃÂ´ÃÂ¾",
     "details": {},
     "getid": "unknown"
   },
   {
     "timestamp": "2025-07-30T06:25:16.904Z",
     "fingerprint": "fp_6a9dd90",
-    "username": "å°è´¾",
+    "username": "Ã¥Â°ÂÃ¨Â´Â¾",
     "details": {},
     "getid": "[ShenJ] Nov1ce"
   },
@@ -212,6 +212,17 @@
     "fingerprint": "fp_4b7a6d51",
     "username": "Kosto",
     "details": {},
+    "getid": "unknown"
+  },
+  {
+    "timestamp": "2025-07-30T06:25:38.523Z",
+    "fingerprint": "fp_4b7a6d51",
+    "username": "unknown",
+    "action": "page_load",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "referrer": "https://3dtank.com/play/"
+    },
     "getid": "unknown"
   }
 ]
