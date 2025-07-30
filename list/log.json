@@ -196,15 +196,22 @@
   {
     "timestamp": "2025-07-30T06:25:06.255Z",
     "fingerprint": "fp_6a9dd90",
-    "username": "å°è´¾",
+    "username": "Ã¥Â°ÂÃ¨Â´Â¾",
     "details": {},
     "getid": "unknown"
   },
   {
     "timestamp": "2025-07-30T06:25:16.904Z",
     "fingerprint": "fp_6a9dd90",
-    "username": "小贾",
+    "username": "å°è´¾",
     "details": {},
     "getid": "[ShenJ] Nov1ce"
+  },
+  {
+    "timestamp": "2025-07-30T06:25:31.834Z",
+    "fingerprint": "fp_4b7a6d51",
+    "username": "Kosto",
+    "details": {},
+    "getid": "unknown"
   }
 ]
