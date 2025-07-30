@@ -230,5 +230,16 @@
       "onlineTime": 121
     },
     "getid": "unknown"
+  },
+  {
+    "timestamp": "2025-07-30T04:58:01.867Z",
+    "fingerprint": "fp_4b7a6d51",
+    "username": "Kosto",
+    "action": "heartbeat",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "onlineTime": 181
+    },
+    "getid": "unknown"
   }
 ]
