@@ -2,12 +2,19 @@
   {
     "timestamp": "2025-07-30T08:31:23.745Z",
     "fingerprint": "fp_6a9dd90",
-    "username": "小贾",
+    "username": "å°è´¾",
     "action": "heartbeat",
     "details": {
       "url": "https://3dtank.com/play/",
       "onlineTime": 542
     },
     "getid": "[ShenJ] Nov1ce"
+  },
+  {
+    "timestamp": "2025-07-30T08:32:12.778Z",
+    "fingerprint": "fp_6a9dd90",
+    "username": "小贾",
+    "details": {},
+    "getid": "unknown"
   }
 ]
