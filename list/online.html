@@ -3,322 +3,395 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>脚本在线状态管理</title>    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f5f5f5;
+    <title>在线人员管理系统</title>
+    <style>
+        :root {
+            --primary-color: #4a6cf7;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --border-color: #dee2e6;
+        }
+
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 20px;
         }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 0;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            flex: 1;
             background-color: white;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        .stats-container {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around;
-            margin: 30px 0;
+            flex-direction: column;
+            align-items: center;
         }
-        .stat-card {
-            background-color: #4CAF50;
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            width: 45%;
-            margin-bottom: 20px;
-        }
-        .stat-card.getid-card {
-            background-color: #FF9800;
-        }
+
         .stat-value {
             font-size: 36px;
-            font-weight: bold;
+            font-weight: 700;
+            color: var(--primary-color);
             margin: 10px 0;
         }
+
         .stat-label {
-            font-size: 18px;
+            font-size: 16px;
+            color: var(--secondary-color);
+            text-align: center;
         }
-        .refresh-btn {
-            display: block;
-            margin: 0 auto;
-            padding: 10px 20px;
-            background-color: #2196F3;
+
+        .online-list {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .list-header {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 120px;
+        }
+
+        .list-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 120px;
+            align-items: center;
+        }
+
+        .list-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .action-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .block-btn {
+            background-color: var(--danger-color);
             color: white;
+        }
+
+        .block-btn:hover {
+            background-color: #c82333;
+        }
+
+        .refresh-btn {
+            background-color: var(--success-color);
+            color: white;
+            padding: 10px 20px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
+            transition: background-color 0.2s;
         }
+
         .refresh-btn:hover {
-            background-color: #0b7dda;
+            background-color: #218838;
         }
-        .online-users {
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-online {
+            background-color: var(--success-color);
+        }
+
+        .footer {
             margin-top: 30px;
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            padding: 10px;
-            border-radius: 4px;
-        }
-        .user-item {
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-        }
-        .user-name {
-            font-weight: bold;
-        }
-        .user-info {
-            color: #666;
+            text-align: center;
+            color: var(--secondary-color);
             font-size: 14px;
         }
-        .activity-log {
-            margin-top: 30px;
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            padding: 10px;
-            border-radius: 4px;
-        }
-        .log-entry {
-            padding: 5px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .timestamp {
-            color: #666;
-            font-size: 12px;
-        }
-        .getid-info {
-            color: #FF9800;
-            font-weight: bold;
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .stats-container {
+                flex-direction: column;
+            }
+
+            .list-header, .list-item {
+                grid-template-columns: 1fr 1fr 120px;
+            }
+
+            .hidden-sm {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>脚本在线状态管理</h1>
+        <header>
+            <div class="header-content">
+                <div class="title">在线人员管理系统</div>
+                <button id="refreshBtn" class="refresh-btn">刷新数据</button>
+            </div>
+        </header>
+
         <div class="stats-container">
             <div class="stat-card">
-                <div class="stat-label">今日在线人数</div>
-                <div class="stat-value" id="todayOnlineCount">0</div>
+                <div class="stat-label">当前在线人数</div>
+                <div id="currentOnline" class="stat-value">0</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">当前疑似在线</div>
-                <div class="stat-value" id="currentOnlineCount">0</div>
-            </div>
-            <div class="stat-card getid-card">
-                <div class="stat-label">今日有效GetID数</div>
-                <div class="stat-value" id="todayValidGetidCount">0</div>
-            </div>
-            <div class="stat-card getid-card">
-                <div class="stat-label">当前活跃GetID数</div>
-                <div class="stat-value" id="currentActiveGetidCount">0</div>
+                <div class="stat-label">今日总人数</div>
+                <div id="todayTotal" class="stat-value">0</div>
             </div>
         </div>
-        <button class="refresh-btn" onclick="fetchData()">刷新数据</button>
-        <div class="online-users">
-            <h3>当前疑似在线用户</h3>
-            <div id="onlineUsersList"></div>
+
+        <div class="online-list">
+            <div class="list-header">
+                <div>用户名</div>
+                <div>ID</div>
+                <div class="hidden-sm">最后活动时间</div>
+                <div class="hidden-sm">在线时长(分钟)</div>
+                <div>操作</div>
+            </div>
+            <div id="userList"></div>
         </div>
-        <div class="activity-log">
-            <h3>最近活动</h3>
-            <div id="logEntries"></div>
+
+        <div class="footer">
+            <p>数据来源: <a href="https://kosto179cn.github.io/Kosto.github.io/list/log.json" target="_blank">https://kosto179cn.github.io/Kosto.github.io/list/log.json</a></p>
+            <p>上次更新时间: <span id="lastUpdateTime">未更新</span></p>
         </div>
     </div>
 
     <script>
-        // 配置参数
+        // 配置
         const CONFIG = {
             LOG_URL: 'https://kosto179cn.github.io/Kosto.github.io/list/log.json',
-            ONLINE_THRESHOLD_MINUTES: 5, // 疑似在线时间阈值(分钟)
+            ONLINE_THRESHOLD_MINUTES: 5, // 5分钟内有活动视为在线
+            REFRESH_INTERVAL_MS: 60000, // 自动刷新间隔(毫秒)
         };
 
-        /**
-         * 初始化页面
-         */
-        function init() {
-            fetchData();
-            // 设置定时刷新(5分钟)
-            setInterval(fetchData, CONFIG.ONLINE_THRESHOLD_MINUTES * 60 * 1000);
+        // 存储拉黑名单
+        let blockedUsers = new Set();
+
+        // 从本地存储加载拉黑名单
+        function loadBlockedUsers() {
+            const saved = localStorage.getItem('blockedUsers');
+            if (saved) {
+                blockedUsers = new Set(JSON.parse(saved));
+            }
         }
 
-        /**
-         * 从服务器获取日志数据并处理
-         */
-        function fetchData() {
-            fetch(CONFIG.LOG_URL)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    processData(data);
-                })
-                .catch(error => {
-                    console.error('获取数据失败:', error);
-                    alert('获取在线状态数据失败，请稍后重试');
-                });
+        // 保存拉黑名单到本地存储
+        function saveBlockedUsers() {
+            localStorage.setItem('blockedUsers', JSON.stringify([...blockedUsers]));
         }
 
-        /**
-         * 处理日志数据，计算统计信息
-         * @param {Array} data - 日志数据数组
-         */
+        // 拉黑用户
+        function blockUser(username) {
+            blockedUsers.add(username);
+            saveBlockedUsers();
+            fetchData(); // 重新加载数据以更新列表
+            alert(`已拉黑用户: ${username}`);
+        }
+
+        // 检查用户是否被拉黑
+        function isUserBlocked(username) {
+            return blockedUsers.has(username);
+        }
+
+        // 格式化时间
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        // 计算在线时长(分钟)
+        function calculateOnlineTime(onlineTimeSeconds) {
+            return Math.round(onlineTimeSeconds / 60);
+        }
+
+        // 处理数据
         function processData(data) {
+            if (!data || !Array.isArray(data)) {
+                console.error('数据格式无效');
+                return { currentOnlineUsers: [], todayTotalUsers: 0 };
+            }
+
             const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const fiveMinutesAgo = new Date(now.getTime() - CONFIG.ONLINE_THRESHOLD_MINUTES * 60000);
+            const offlineThresholdAgo = new Date(now.getTime() - CONFIG.ONLINE_THRESHOLD_MINUTES * 60000);
+            const todayStart = new Date(now);
+            todayStart.setHours(0, 0, 0, 0);
 
-            // 统计今日在线人数(去重)
-            const todayOnlineUsers = new Set();
-            // 统计当前疑似在线用户(去重)
-            const currentOnlineUsers = new Set();
-            // 统计今日有效GetID数(去重)
-            const todayValidGetids = new Set();
-            // 统计当前活跃GetID数(去重)
-            const currentActiveGetids = new Set();
-            // 最近活动日志
-            const recentLogs = [];
-            // 当前疑似在线用户详细信息
-            const currentOnlineUsersDetail = new Map();
+            // 筛选今日数据
+            const todayData = data.filter(item => new Date(item.timestamp) >= todayStart);
 
-            data.forEach(entry => {
-                const entryTime = new Date(entry.timestamp);
-                const username = entry.username || 'unknown';
-                const getid = entry.getid || 'unknown';
+            // 获取今日所有唯一用户
+            const todayUsers = new Set(todayData.map(item => item.username));
 
-                // 检查是否为今日
-                if (entryTime >= today) {
-                    if (username !== 'unknown') {
-                        todayOnlineUsers.add(username);
-                    }
-                    // 统计今日有效GetID
-                    if (getid !== 'unknown' && getid !== null && getid !== '') {
-                        todayValidGetids.add(getid);
-                    }
-                }
+            // 筛选当前在线用户(未被拉黑且在阈值时间内有活动)
+            const onlineUsers = data.filter(item => {
+                const entryTime = new Date(item.timestamp);
+                return entryTime >= offlineThresholdAgo && !isUserBlocked(item.username);
+            });
 
-                // 检查是否在疑似在线时间内
-                if (entryTime >= fiveMinutesAgo) {
-                    if (username !== 'unknown') {
-                        currentOnlineUsers.add(username);
-                    }
-                    // 统计当前活跃GetID
-                    if (getid !== 'unknown' && getid !== null && getid !== '') {
-                        currentActiveGetids.add(getid);
-                    }
-                    // 记录当前疑似在线用户详细信息
-                    if (username !== 'unknown') {
-                        currentOnlineUsersDetail.set(username, {
-                            lastActive: entryTime,
-                            getid: getid,
-                            lastAction: action
-                        });
-                    }
-                    // 记录最近活动
-                    recentLogs.push(entry);
+            // 按用户名分组并获取每个用户的最后活动记录
+            const userGroups = new Map();
+            onlineUsers.forEach(item => {
+                if (!userGroups.has(item.username) || new Date(item.timestamp) > new Date(userGroups.get(item.username).timestamp)) {
+                    userGroups.set(item.username, item);
                 }
             });
 
-            // 更新UI
-            document.getElementById('todayOnlineCount').textContent = todayOnlineUsers.size;
-            document.getElementById('currentOnlineCount').textContent = currentOnlineUsers.size;
-            document.getElementById('todayValidGetidCount').textContent = todayValidGetids.size;
-            document.getElementById('currentActiveGetidCount').textContent = currentActiveGetids.size;
+            // 转换为数组并排序(按最后活动时间降序)
+            const currentOnlineUsers = Array.from(userGroups.values()).sort((a, b) => {
+                return new Date(b.timestamp) - new Date(a.timestamp);
+            });
 
-            // 显示最近活动日志
-            displayRecentLogs(recentLogs);
-            // 显示当前疑似在线用户
-            displayOnlineUsers(currentOnlineUsersDetail);
+            return {
+                currentOnlineUsers,
+                todayTotalUsers: todayUsers.size
+            };
         }
 
-        /**
-         * 显示当前疑似在线用户
-         * @param {Map} usersDetail - 疑似在线用户详细信息Map
-         */
-        function displayOnlineUsers(usersDetail) {
-            const userContainer = document.getElementById('onlineUsersList');
-            userContainer.innerHTML = '';
+        // 渲染用户列表
+        function renderUserList(users) {
+            const userListElement = document.getElementById('userList');
+            userListElement.innerHTML = '';
 
-            if (usersDetail.size === 0) {
-                userContainer.innerHTML = '<p>当前没有疑似在线用户</p>';
+            if (users.length === 0) {
+                userListElement.innerHTML = '<div class="list-item"><div colspan="5">当前没有在线用户</div></div>';
                 return;
             }
 
-            // 按最后活动时间降序排序
-            const sortedUsers = Array.from(usersDetail.entries()).sort((a, b) => {
-                return b[1].lastActive - a[1].lastActive;
-            });
+            users.forEach(user => {
+                const listItem = document.createElement('div');
+                listItem.className = 'list-item';
 
-            sortedUsers.forEach(([username, info]) => {
-                const userItem = document.createElement('div');
-                userItem.className = 'user-item';
+                const lastActiveTime = formatTime(user.timestamp);
+                const onlineTime = calculateOnlineTime(user.details?.onlineTime || 0);
 
-                const formattedTime = info.lastActive.toLocaleString();
-                const getidDisplay = info.getid !== 'unknown' && info.getid !== null && info.getid !== '' ? 
-                    `<span class="getid-info">GetID: ${info.getid}</span>` : 'GetID: unknown';
-
-                userItem.innerHTML = `
-                    <div class="user-name">${username}</div>
-                    <div class="user-info">
-                        ${formattedTime} | ${info.lastAction} | ${getidDisplay}
-                    </div>
+                listItem.innerHTML = `
+                    <div><span class="status-indicator status-online"></span>${user.username}</div>
+                    <div>${user.getid || '未知'}</div>
+                    <div class="hidden-sm">${lastActiveTime}</div>
+                    <div class="hidden-sm">${onlineTime}</div>
+                    <div><button class="action-btn block-btn" onclick="blockUser('${user.username}')">拉黑</button></div>
                 `;
 
-                userContainer.appendChild(userItem);
+                userListElement.appendChild(listItem);
             });
         }
 
-        /**
-         * 显示最近活动日志
-         * @param {Array} logs - 最近活动日志数组
-         */
-        function displayRecentLogs(logs) {
-            const logContainer = document.getElementById('logEntries');
-            logContainer.innerHTML = '';
+        // 更新统计信息
+        function updateStats(currentOnline, todayTotal) {
+            document.getElementById('currentOnline').textContent = currentOnline;
+            document.getElementById('todayTotal').textContent = todayTotal;
+            document.getElementById('lastUpdateTime').textContent = new Date().toLocaleString('zh-CN');
+        }
 
-            // 按时间降序排序
-            logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        // 获取数据
+        async function fetchData() {
+            try {
+                const response = await fetch(CONFIG.LOG_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP错误! 状态码: ${response.status}`);
+                }
+                const data = await response.json();
 
-            // 显示最近20条记录
-            const displayLogs = logs.slice(0, 20);
+                const { currentOnlineUsers, todayTotalUsers } = processData(data);
+                renderUserList(currentOnlineUsers);
+                updateStats(currentOnlineUsers.length, todayTotalUsers);
 
-            displayLogs.forEach(entry => {
-                const logEntry = document.createElement('div');
-                logEntry.className = 'log-entry';
+                console.log('数据获取成功');
+            } catch (error) {
+                console.error('获取数据失败:', error);
+                alert(`获取数据失败: ${error.message}`);
+            }
+        }
 
-                const timestamp = new Date(entry.timestamp);
-                const formattedTime = timestamp.toLocaleString();
-                const username = entry.username || 'unknown';
-                const action = entry.action || 'unknown';
-                const getid = entry.getid || 'unknown';
-                const getidDisplay = getid !== 'unknown' && getid !== null && getid !== '' ? 
-                    `<span class="getid-info"> | GetID: ${getid}</span>` : '';
+        // 初始化
+        function init() {
+            loadBlockedUsers();
+            fetchData();
 
-                logEntry.innerHTML = `
-                    <div class="timestamp">${formattedTime}</div>
-                    <div>用户: ${username} | 操作: ${action}${getidDisplay}</div>
-                `;
+            // 设置自动刷新
+            setInterval(fetchData, CONFIG.REFRESH_INTERVAL_MS);
 
-                logContainer.appendChild(logEntry);
-            });
+            // 绑定刷新按钮事件
+            document.getElementById('refreshBtn').addEventListener('click', fetchData);
         }
 
         // 页面加载完成后初始化
         window.onload = init;
+
+        // 暴露blockUser函数到全局作用域
+        window.blockUser = blockUser;
     </script>
 </body>
 </html>
