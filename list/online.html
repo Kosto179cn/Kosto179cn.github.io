@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>脚本在线状态管理</title>    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .stats-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin: 30px 0;
+        }
+        .stat-card {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            width: 45%;
+            margin-bottom: 20px;
+        }
+        .stat-card.getid-card {
+            background-color: #FF9800;
+        }
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .stat-label {
+            font-size: 18px;
+        }
+        .refresh-btn {
+            display: block;
+            margin: 0 auto;
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .refresh-btn:hover {
+            background-color: #0b7dda;
+        }
+        .online-users {
+            margin-top: 30px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .user-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+        .user-name {
+            font-weight: bold;
+        }
+        .user-info {
+            color: #666;
+            font-size: 14px;
+        }
+        .activity-log {
+            margin-top: 30px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .timestamp {
+            color: #666;
+            font-size: 12px;
+        }
+        .getid-info {
+            color: #FF9800;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>脚本在线状态管理</h1>
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-label">今日在线人数</div>
+                <div class="stat-value" id="todayOnlineCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">当前疑似在线</div>
+                <div class="stat-value" id="currentOnlineCount">0</div>
+            </div>
+            <div class="stat-card getid-card">
+                <div class="stat-label">今日有效GetID数</div>
+                <div class="stat-value" id="todayValidGetidCount">0</div>
+            </div>
+            <div class="stat-card getid-card">
+                <div class="stat-label">当前活跃GetID数</div>
+                <div class="stat-value" id="currentActiveGetidCount">0</div>
+            </div>
+        </div>
+        <button class="refresh-btn" onclick="fetchData()">刷新数据</button>
+        <div class="online-users">
+            <h3>当前疑似在线用户</h3>
+            <div id="onlineUsersList"></div>
+        </div>
+        <div class="activity-log">
+            <h3>最近活动</h3>
+            <div id="logEntries"></div>
+        </div>
+    </div>
+
+    <script>
+        // 配置参数
+        const CONFIG = {
+            LOG_URL: 'https://kosto179cn.github.io/Kosto.github.io/list/log.json',
+            ONLINE_THRESHOLD_MINUTES: 5, // 疑似在线时间阈值(分钟)
+        };
+
+        /**
+         * 初始化页面
+         */
+        function init() {
+            fetchData();
+            // 设置定时刷新(5分钟)
+            setInterval(fetchData, CONFIG.ONLINE_THRESHOLD_MINUTES * 60 * 1000);
+        }
+
+        /**
+         * 从服务器获取日志数据并处理
+         */
+        function fetchData() {
+            fetch(CONFIG.LOG_URL)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    processData(data);
+                })
+                .catch(error => {
+                    console.error('获取数据失败:', error);
+                    alert('获取在线状态数据失败，请稍后重试');
+                });
+        }
+
+        /**
+         * 处理日志数据，计算统计信息
+         * @param {Array} data - 日志数据数组
+         */
+        function processData(data) {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const fiveMinutesAgo = new Date(now.getTime() - CONFIG.ONLINE_THRESHOLD_MINUTES * 60000);
+
+            // 统计今日在线人数(去重)
+            const todayOnlineUsers = new Set();
+            // 统计当前疑似在线用户(去重)
+            const currentOnlineUsers = new Set();
+            // 统计今日有效GetID数(去重)
+            const todayValidGetids = new Set();
+            // 统计当前活跃GetID数(去重)
+            const currentActiveGetids = new Set();
+            // 最近活动日志
+            const recentLogs = [];
+            // 当前疑似在线用户详细信息
+            const currentOnlineUsersDetail = new Map();
+
+            data.forEach(entry => {
+                const entryTime = new Date(entry.timestamp);
+                const username = entry.username || 'unknown';
+                const getid = entry.getid || 'unknown';
+
+                // 检查是否为今日
+                if (entryTime >= today) {
+                    if (username !== 'unknown') {
+                        todayOnlineUsers.add(username);
+                    }
+                    // 统计今日有效GetID
+                    if (getid !== 'unknown' && getid !== null && getid !== '') {
+                        todayValidGetids.add(getid);
+                    }
+                }
+
+                // 检查是否在疑似在线时间内
+                if (entryTime >= fiveMinutesAgo) {
+                    if (username !== 'unknown') {
+                        currentOnlineUsers.add(username);
+                    }
+                    // 统计当前活跃GetID
+                    if (getid !== 'unknown' && getid !== null && getid !== '') {
+                        currentActiveGetids.add(getid);
+                    }
+                    // 记录当前疑似在线用户详细信息
+                    if (username !== 'unknown') {
+                        currentOnlineUsersDetail.set(username, {
+                            lastActive: entryTime,
+                            getid: getid,
+                            lastAction: action
+                        });
+                    }
+                    // 记录最近活动
+                    recentLogs.push(entry);
+                }
+            });
+
+            // 更新UI
+            document.getElementById('todayOnlineCount').textContent = todayOnlineUsers.size;
+            document.getElementById('currentOnlineCount').textContent = currentOnlineUsers.size;
+            document.getElementById('todayValidGetidCount').textContent = todayValidGetids.size;
+            document.getElementById('currentActiveGetidCount').textContent = currentActiveGetids.size;
+
+            // 显示最近活动日志
+            displayRecentLogs(recentLogs);
+            // 显示当前疑似在线用户
+            displayOnlineUsers(currentOnlineUsersDetail);
+        }
+
+        /**
+         * 显示当前疑似在线用户
+         * @param {Map} usersDetail - 疑似在线用户详细信息Map
+         */
+        function displayOnlineUsers(usersDetail) {
+            const userContainer = document.getElementById('onlineUsersList');
+            userContainer.innerHTML = '';
+
+            if (usersDetail.size === 0) {
+                userContainer.innerHTML = '<p>当前没有疑似在线用户</p>';
+                return;
+            }
+
+            // 按最后活动时间降序排序
+            const sortedUsers = Array.from(usersDetail.entries()).sort((a, b) => {
+                return b[1].lastActive - a[1].lastActive;
+            });
+
+            sortedUsers.forEach(([username, info]) => {
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+
+                const formattedTime = info.lastActive.toLocaleString();
+                const getidDisplay = info.getid !== 'unknown' && info.getid !== null && info.getid !== '' ? 
+                    `<span class="getid-info">GetID: ${info.getid}</span>` : 'GetID: unknown';
+
+                userItem.innerHTML = `
+                    <div class="user-name">${username}</div>
+                    <div class="user-info">
+                        ${formattedTime} | ${info.lastAction} | ${getidDisplay}
+                    </div>
+                `;
+
+                userContainer.appendChild(userItem);
+            });
+        }
+
+        /**
+         * 显示最近活动日志
+         * @param {Array} logs - 最近活动日志数组
+         */
+        function displayRecentLogs(logs) {
+            const logContainer = document.getElementById('logEntries');
+            logContainer.innerHTML = '';
+
+            // 按时间降序排序
+            logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            // 显示最近20条记录
+            const displayLogs = logs.slice(0, 20);
+
+            displayLogs.forEach(entry => {
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+
+                const timestamp = new Date(entry.timestamp);
+                const formattedTime = timestamp.toLocaleString();
+                const username = entry.username || 'unknown';
+                const action = entry.action || 'unknown';
+                const getid = entry.getid || 'unknown';
+                const getidDisplay = getid !== 'unknown' && getid !== null && getid !== '' ? 
+                    `<span class="getid-info"> | GetID: ${getid}</span>` : '';
+
+                logEntry.innerHTML = `
+                    <div class="timestamp">${formattedTime}</div>
+                    <div>用户: ${username} | 操作: ${action}${getidDisplay}</div>
+                `;
+
+                logContainer.appendChild(logEntry);
+            });
+        }
+
+        // 页面加载完成后初始化
+        window.onload = init;
+    </script>
+</body>
+</html>
