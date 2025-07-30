@@ -263,5 +263,16 @@
       "referrer": ""
     },
     "getid": "unknown"
+  },
+  {
+    "timestamp": "2025-07-30T05:00:08.411Z",
+    "fingerprint": "fp_4b7a6d51",
+    "username": "Kosto",
+    "action": "heartbeat",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "onlineTime": 62
+    },
+    "getid": "904"
   }
 ]
