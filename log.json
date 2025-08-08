@@ -185,5 +185,16 @@
       "referrer": "https://3dtank.com/play/"
     },
     "getid": "unknown"
+  },
+  {
+    "timestamp": "2025-08-08T15:24:30.856Z",
+    "fingerprint": "fp_4b7a6d51",
+    "username": "unknown",
+    "action": "heartbeat",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "onlineTime": 66
+    },
+    "getid": "unknown"
   }
 ]
