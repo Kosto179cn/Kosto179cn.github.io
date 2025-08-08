@@ -174,5 +174,16 @@
       "onlineTime": 425
     },
     "getid": "unknown"
+  },
+  {
+    "timestamp": "2025-08-08T15:23:24.671Z",
+    "fingerprint": "fp_4b7a6d51",
+    "username": "unknown",
+    "action": "page_load",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "referrer": "https://3dtank.com/play/"
+    },
+    "getid": "unknown"
   }
 ]
