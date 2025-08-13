@@ -423,5 +423,16 @@
       "referrer": "https://3dtank.com/play/"
     },
     "getid": "unknown"
+  },
+  {
+    "timestamp": "2025-08-13T11:16:21.166Z",
+    "fingerprint": "fp_435f931d",
+    "username": "unknown",
+    "action": "page_load",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "referrer": ""
+    },
+    "getid": "unknown"
   }
 ]
