@@ -1,6 +1,5 @@
 [
   [
-    "测试id用于观测数据正常显示",
     "SHANGMAO"
   ],
   [
@@ -87,6 +86,10 @@
     {
       "id": "testblackid2",
       "name": "testblackname2"
+    },
+    {
+      "id": "测试id用于观测数据正常显示",
+      "name": "测试id用于观测数据正常显示"
     }
   ]
 ]
