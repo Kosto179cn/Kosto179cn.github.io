@@ -152,6 +152,15 @@
             background-color: #c82333;
         }
 
+        .btn-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background-color: #138496;
+        }
+
         .refresh-btn {
             background-color: var(--success-color);
             color: white;
@@ -188,12 +197,178 @@
 
         /* 响应式设计 */
         @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .title {
+                font-size: 20px;
+            }
+
             .stats-container {
                 flex-direction: column;
+                gap: 15px;
+            }
+
+            .stat-card {
+                padding: 15px;
+            }
+
+            .stat-value {
+                font-size: 28px;
             }
 
             .hidden-sm {
                 display: none;
+            }
+
+            .nav-tabs {
+                flex-wrap: wrap;
+                gap: 5px;
+                margin-bottom: 15px;
+            }
+
+            .nav-tabs button {
+                padding: 8px 12px;
+                font-size: 14px;
+                flex: 1;
+                min-width: 120px;
+            }
+
+            .card-header {
+                padding: 12px 15px;
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+
+            .card-body {
+                padding: 15px;
+            }
+
+            .list-header {
+                padding: 12px 15px;
+                grid-template-columns: 1fr 1fr 80px;
+                font-size: 14px;
+            }
+
+            .list-item {
+                padding: 12px 15px;
+                grid-template-columns: 1fr 1fr 80px;
+                font-size: 14px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .action-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .table-responsive {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 8px 10px;
+            }
+
+            .btn {
+                padding: 6px 12px;
+                font-size: 14px;
+            }
+
+            .btn-lg {
+                padding: 10px 16px;
+                font-size: 16px;
+            }
+
+            .d-flex.gap-3 {
+                flex-direction: column;
+                gap: 10px !important;
+            }
+
+            .input-group {
+                width: 100% !important;
+            }
+
+            .refresh-btn {
+                width: 100%;
+                margin-top: 10px;
+            }
+
+            /* 最新有效用户区域优化 */
+            #latestValidUser {
+                font-size: 16px !important;
+            }
+
+            #latestUserFingerprint {
+                font-size: 11px !important;
+                line-height: 1.3;
+            }
+
+            /* 模态框优化 */
+            .modal-dialog {
+                margin: 10px;
+                max-width: calc(100% - 20px);
+            }
+
+            .modal-body {
+                padding: 15px;
+            }
+
+            .form-control {
+                font-size: 16px; /* 防止iOS缩放 */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 18px;
+            }
+
+            .nav-tabs button {
+                min-width: 100px;
+                padding: 6px 8px;
+                font-size: 12px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            .list-header,
+            .list-item {
+                grid-template-columns: 1fr 60px;
+                font-size: 13px;
+            }
+
+            .list-header div:nth-child(2),
+            .list-item div:nth-child(2) {
+                display: none;
+            }
+
+            .action-btn {
+                font-size: 11px;
+                padding: 4px 8px;
+            }
+
+            th, td {
+                padding: 6px 8px;
+                font-size: 13px;
+            }
+
+            .btn {
+                font-size: 13px;
             }
         }
 
@@ -305,6 +480,25 @@
             display: flex;
             gap: 8px;
         }
+
+        /* 移动端触摸优化 */
+        .action-btn, .btn {
+            min-height: 44px; /* iOS推荐的最小触摸目标 */
+            touch-action: manipulation; /* 防止双击缩放 */
+        }
+
+        /* 表格滚动优化 */
+        .table-responsive {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* 防止文本选择影响触摸 */
+        .nav-tabs button, .action-btn {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
     </style>
 </head>
 <body>
@@ -312,10 +506,10 @@
         <header>
             <div class="header-content">
                 <div class="title">Kosto管理系统</div>
-                <div class="d-flex align-items-center gap-2">
-                    <div class="input-group" style="width: 250px;">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div class="input-group" style="width: 250px; min-width: 200px;">
                         <input type="password" id="giteeToken" class="form-control" placeholder="GitHub Token">
-                        <button class="btn btn-secondary" type="button" id="saveTokenBtn">保存Token</button>
+                        <button class="btn btn-secondary" type="button" id="saveTokenBtn">保存</button>
                     </div>
                     <button id="refreshBtn" class="refresh-btn">刷新数据</button>
                 </div>
@@ -388,8 +582,8 @@
                 <div class="stat-card">
                     <div class="stat-label">最新有效用户</div>
                     <div id="latestValidUser" class="stat-value" style="font-size: 18px; line-height: 1.2;">
-                        <div id="latestUserName" style="color: var(--primary-color);">-</div>
-                        <div id="latestUserFingerprint" style="font-size: 12px; color: var(--secondary-color); margin-top: 5px; white-space: pre-line;">-</div>
+                        <div id="latestUserName" style="color: var(--primary-color); word-break: break-all;">-</div>
+                        <div id="latestUserFingerprint" style="font-size: 12px; color: var(--secondary-color); margin-top: 5px; white-space: pre-line; word-break: break-all;">-</div>
                     </div>
                 </div>
             </div>
@@ -593,9 +787,18 @@
                                 </tr>
                             </thead>
                             <tbody id="blacklistTableBody">
-                                <!-- 黑名单数据将通过JS动态加载 -->
-                            </tbody>
-                        </table>
+                <!-- 黑名单数据将通过JS动态加载 -->
+                <tr id="default-blacklist-user">
+                    <td>BLOCKED_USER_123</td>
+                    <td>已拉黑用户</td>
+                    <td>[黑名单军团]</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-primary edit-blacklist" data-index="default">编辑</button>
+                        <button class="btn btn-sm btn-danger delete-blacklist" data-index="default">删除</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
                     </div>
                 </div>
             </div>
@@ -622,7 +825,7 @@
         const CONFIG = {
             LOG_URL: API_CONFIG.updateLog,
             WHITELIST_URL: API_CONFIG.whitelist,
-            ONLINE_THRESHOLD_MINUTES: 1.5, // 1分30秒内有活动视为在线
+            ONLINE_THRESHOLD_MINUTES: 5, // 5分钟内有活动视为在线
             REFRESH_INTERVAL_MS: 30000, // 自动刷新间隔(毫秒) - 改为30秒
         };
 
@@ -707,11 +910,60 @@
         }
 
         // 拉黑用户
-        function blockUser(fingerprint, username) {
+        async function blockUser(fingerprint, username) {
             if (confirm(`确定要拉黑用户 ${username} 吗？`)) {
-                blockedFingerprints.add(fingerprint);
-                saveBlockedUsers();
-                fetchOnlineData(); // 立即刷新数据以反映拉黑状态
+                try {
+                    // 添加到本地拉黑集合
+                    blockedFingerprints.add(fingerprint);
+                    saveBlockedUsers();
+                    
+                    // 获取用户详细信息
+                    const userDetail = window.userDetails && window.userDetails[fingerprint];
+                    
+                    // 确保黑名单数组存在
+                    if (!whitelistData[BLACKLIST_INDEX]) {
+                        whitelistData[BLACKLIST_INDEX] = [];
+                    }
+                    
+                    // 检查是否已存在于黑名单中
+                    const exists = whitelistData[BLACKLIST_INDEX].some(blackUser => 
+                        blackUser.id === (userDetail?.getid || fingerprint) || 
+                        blackUser.fingerprint === fingerprint
+                    );
+                    
+                    if (!exists) {
+                        // 添加到黑名单数组
+                        const blacklistEntry = {
+                            id: userDetail?.getid || fingerprint,
+                            name: username === '未知用户' ? (userDetail?.username || 'unknown') : username,
+                            corp: '',
+                            fingerprint: fingerprint,
+                            blockedAt: new Date().toISOString()
+                        };
+                        
+                        whitelistData[BLACKLIST_INDEX].push(blacklistEntry);
+                        
+                        // 立即保存到服务器
+                        const jsonContent = JSON.stringify(whitelistData, null, 2);
+                        const success = await updateGitHubFile(jsonContent);
+                        
+                        if (success) {
+                            alert(`用户 ${username} 已成功拉黑并上传到服务器！`);
+                            // 刷新黑名单表格显示
+                            renderBlacklistTable();
+                        } else {
+                            alert(`用户 ${username} 已本地拉黑，但上传到服务器失败，请稍后手动保存。`);
+                        }
+                    } else {
+                        alert(`用户 ${username} 已在黑名单中！`);
+                    }
+                    
+                    // 刷新在线数据显示
+                    fetchOnlineData();
+                } catch (error) {
+                    console.error('拉黑用户失败:', error);
+                    alert(`拉黑用户失败: ${error.message}`);
+                }
             }
         }
 
@@ -737,7 +989,7 @@
         function processData(data) {
             if (!data || !Array.isArray(data)) {
                 console.error('数据格式无效');
-                return { currentOnlineUsers: [], todayTotalUsers: 0, latestValidUser: null };
+                return { currentOnlineUsers: [], todayTotalUsers: 0, latestValidUser: null, blockedUsers: [] };
             }
 
             const now = new Date();
@@ -757,6 +1009,13 @@
                 const fingerprint = item.fingerprint || item.username;
                 return entryTime >= offlineThresholdAgo && !blockedFingerprints.has(fingerprint);
             });
+            
+            // 筛选被拉黑的用户(在阈值时间内有活动)
+            const blockedUsers = data.filter(item => {
+                const entryTime = new Date(item.timestamp);
+                const fingerprint = item.fingerprint || item.username;
+                return entryTime >= offlineThresholdAgo && blockedFingerprints.has(fingerprint);
+            });
 
             // 按fingerprint分组并获取每个用户的最后活动记录
             const userGroups = new Map();
@@ -769,6 +1028,20 @@
 
             // 转换为数组并排序(按最后活动时间降序)
             const currentOnlineUsers = Array.from(userGroups.values()).sort((a, b) => {
+                return new Date(b.timestamp) - new Date(a.timestamp);
+            });
+            
+            // 处理被拉黑的用户
+            const blockedUserGroups = new Map();
+            blockedUsers.forEach(item => {
+                const fingerprint = item.fingerprint || item.username;
+                if (!blockedUserGroups.has(fingerprint) || new Date(item.timestamp) > new Date(blockedUserGroups.get(fingerprint).timestamp)) {
+                    blockedUserGroups.set(fingerprint, item);
+                }
+            });
+            
+            // 转换为数组并排序
+            const blockedOnlineUsers = Array.from(blockedUserGroups.values()).sort((a, b) => {
                 return new Date(b.timestamp) - new Date(a.timestamp);
             });
 
@@ -788,51 +1061,108 @@
             return {
                 currentOnlineUsers,
                 todayTotalUsers: todayUsers.size,
-                latestValidUser
+                latestValidUser,
+                blockedOnlineUsers
             };
         }
 
         // 渲染用户列表
-        function renderUserList(users) {
+        function renderUserList(users, blockedUsers = []) {
             const userListElement = document.getElementById('userList');
             userListElement.innerHTML = '';
 
-            if (users.length === 0) {
+            // 添加在线用户
+            if (users.length === 0 && blockedUsers.length === 0) {
                 userListElement.innerHTML = '<div class="list-item"><div colspan="5">当前没有在线用户</div></div>';
                 return;
             }
 
-            users.forEach(user => {
-                const listItem = document.createElement('div');
-                listItem.className = 'list-item';
-
-                const lastActiveTime = formatTime(user.timestamp);
-                const onlineTime = calculateOnlineTime(user.details?.onlineTime || 0);
-
-                // 处理用户名显示问题
-                let displayUsername = user.username;
-                if (displayUsername.toLowerCase() === 'unknown') {
-                    displayUsername = '未知用户';
-                }
-
-                const fingerprint = user.fingerprint || user.username;
-                const userId = fingerprint;
+            // 添加在线用户标题
+            if (users.length > 0) {
+                const onlineHeader = document.createElement('div');
+                onlineHeader.className = 'list-item';
+                onlineHeader.style.backgroundColor = '#e9ecef';
+                onlineHeader.style.fontWeight = 'bold';
+                onlineHeader.innerHTML = '<div colspan="5">在线用户</div>';
+                userListElement.appendChild(onlineHeader);
                 
-                // 存储用户数据到全局对象
-                window.userDetails = window.userDetails || {};
-                window.userDetails[userId] = user;
+                users.forEach(user => {
+                    const listItem = document.createElement('div');
+                    listItem.className = 'list-item';
+
+                    const lastActiveTime = formatTime(user.timestamp);
+                    const onlineTime = calculateOnlineTime(user.details?.onlineTime || 0);
+
+                    // 处理用户名显示问题
+                    let displayUsername = user.username;
+                    if (displayUsername.toLowerCase() === 'unknown') {
+                        displayUsername = '未知用户';
+                    }
+
+                    const fingerprint = user.fingerprint || user.username;
+                    const userId = fingerprint;
+                    
+                    // 存储用户数据到全局对象
+                    window.userDetails = window.userDetails || {};
+                    window.userDetails[userId] = user;
+                    
+                    listItem.innerHTML = `
+                        <div><span class="status-indicator status-online"></span>${displayUsername}</div>
+                        <div>${user.getid || '未知'}</div>
+                        <div class="hidden-sm">${lastActiveTime}</div>
+                        <div class="hidden-sm">${onlineTime}分钟</div>
+                        <div class="action-buttons">
+                            <button class="action-btn btn-info" onclick="showUserDetails('${userId}')">详情</button>
+                            <button class="action-btn block-btn" onclick="blockUser('${fingerprint}', '${displayUsername}')">拉黑</button>
+                        </div>
+                    `;
+                    userListElement.appendChild(listItem);
+                });
+            }
+            
+            // 添加已拉黑用户
+            if (blockedUsers.length > 0) {
+                const blockedHeader = document.createElement('div');
+                blockedHeader.className = 'list-item';
+                blockedHeader.style.backgroundColor = '#f8d7da';
+                blockedHeader.style.fontWeight = 'bold';
+                blockedHeader.innerHTML = '<div colspan="5">已拉黑用户</div>';
+                userListElement.appendChild(blockedHeader);
                 
-                listItem.innerHTML = `
-                    <div><span class="status-indicator status-online"></span>${displayUsername}</div>
-                    <div>${user.getid || '未知'}</div>
-                    <div class="hidden-sm">${lastActiveTime}</div>
-                    <div class="hidden-sm">${onlineTime}分钟</div>
-                    <div class="action-buttons">
-                        <button class="action-btn block-btn" onclick="blockUser('${fingerprint}', '${displayUsername}')">拉黑</button>
-                    </div>
-                `;
-                userListElement.appendChild(listItem);
-            });
+                blockedUsers.forEach(user => {
+                    const listItem = document.createElement('div');
+                    listItem.className = 'list-item';
+                    listItem.style.backgroundColor = '#fff3f5';
+
+                    const lastActiveTime = formatTime(user.timestamp);
+                    const onlineTime = calculateOnlineTime(user.details?.onlineTime || 0);
+
+                    // 处理用户名显示问题
+                    let displayUsername = user.username;
+                    if (displayUsername.toLowerCase() === 'unknown') {
+                        displayUsername = '未知用户';
+                    }
+
+                    const fingerprint = user.fingerprint || user.username;
+                    const userId = fingerprint;
+                    
+                    // 存储用户数据到全局对象
+                    window.userDetails = window.userDetails || {};
+                    window.userDetails[userId] = user;
+                    
+                    listItem.innerHTML = `
+                        <div><span class="status-indicator" style="background-color: #dc3545;"></span>${displayUsername} <span class="badge bg-danger">已拉黑</span></div>
+                        <div>${user.getid || '未知'}</div>
+                        <div class="hidden-sm">${lastActiveTime}</div>
+                        <div class="hidden-sm">${onlineTime}分钟</div>
+                        <div class="action-buttons">
+                            <button class="action-btn btn-info" onclick="showUserDetails('${userId}')">详情</button>
+                            <button class="action-btn btn-success" onclick="unblockUser('${fingerprint}', '${displayUsername}')">解除拉黑</button>
+                        </div>
+                    `;
+                    userListElement.appendChild(listItem);
+                });
+            }
         }
 
         // 更新统计信息
@@ -853,8 +1183,9 @@
                 
                 latestUserNameElement.textContent = `${displayUsername} (${latestValidUser.getid})`;
                 
-                // 构建指纹显示文本
+                // 构建指纹显示文本，包含最后活动时间
                 let fingerprintText = `指纹: ${latestValidUser.fingerprint || '无'}`;
+                fingerprintText += `\n最后活动: ${formatTime(latestValidUser.timestamp)}`;
                 
                 // 与用户指纹数据进行比对
                 if (latestValidUser.fingerprint && whitelistData[USERS_INDEX]) {
@@ -878,8 +1209,8 @@
         async function fetchOnlineData() {
             try {
                 const logData = await fetchData(API_CONFIG.updateLog);
-                const { currentOnlineUsers, todayTotalUsers, latestValidUser } = processData(logData);
-                renderUserList(currentOnlineUsers);
+                const { currentOnlineUsers, todayTotalUsers, latestValidUser, blockedOnlineUsers } = processData(logData);
+                renderUserList(currentOnlineUsers, blockedOnlineUsers);
                 updateStats(currentOnlineUsers.length, todayTotalUsers, latestValidUser);
                 console.log('在线数据获取成功');
             } catch (error) {
@@ -1061,6 +1392,25 @@
         function renderBlacklistTable() {
             const blacklist = whitelistData[BLACKLIST_INDEX] || [];
             blacklistTableBody.innerHTML = '';
+            
+            // 添加默认的已拉黑用户示例
+            const defaultRow = document.createElement('tr');
+            defaultRow.id = 'default-blacklist-user';
+            defaultRow.innerHTML = `
+                <td>BLOCKED_USER_123</td>
+                <td>已拉黑用户</td>
+                <td>[黑名单军团]</td>
+                <td class="action-buttons">
+                    <button class="btn btn-sm btn-primary edit-blacklist" data-index="default">编辑</button>
+                    <button class="btn btn-sm btn-danger delete-blacklist" data-index="default">删除</button>
+                </td>
+            `;
+            blacklistTableBody.appendChild(defaultRow);
+            
+            // 如果有黑名单数据，隐藏默认示例
+            if (blacklist.length > 0) {
+                defaultRow.style.display = 'none';
+            }
 
             blacklist.forEach((user, index) => {
                 const row = document.createElement('tr');
@@ -1303,7 +1653,7 @@
         }
 
         // 拉黑通用项目函数
-        function blacklistItem(arrayIndex, itemIndex, type) {
+        async function blacklistItem(arrayIndex, itemIndex, type) {
             const item = whitelistData[arrayIndex][itemIndex];
             let displayValue = item;
             let blacklistData = {};
@@ -1314,7 +1664,8 @@
                 blacklistData = { 
                     id: item, 
                     name: '', 
-                    corp: '' 
+                    corp: '',
+                    blockedAt: new Date().toISOString()
                 };
             } else if (type === 'corp') {
                 // 白名单军团 -> 黑名单：只填用户军团，其他留空
@@ -1322,74 +1673,103 @@
                 blacklistData = { 
                     id: '', 
                     name: '', 
-                    corp: item 
+                    corp: item,
+                    blockedAt: new Date().toISOString()
                 };
             }
             
             if (confirm(`确定要将 "${displayValue}" 加入黑名单吗？`)) {
-                // 确保黑名单数组存在
-                if (!whitelistData[BLACKLIST_INDEX]) {
-                    whitelistData[BLACKLIST_INDEX] = [];
-                }
-                
-                // 检查是否已存在（根据类型检查不同字段）
-                let exists = false;
-                if (type === 'id') {
-                    exists = whitelistData[BLACKLIST_INDEX].some(blackUser => blackUser.id === item);
-                } else if (type === 'corp') {
-                    exists = whitelistData[BLACKLIST_INDEX].some(blackUser => blackUser.corp === item);
-                }
-                
-                if (!exists) {
-                    // 添加到黑名单
-                    whitelistData[BLACKLIST_INDEX].push(blacklistData);
+                try {
+                    // 确保黑名单数组存在
+                    if (!whitelistData[BLACKLIST_INDEX]) {
+                        whitelistData[BLACKLIST_INDEX] = [];
+                    }
                     
-                    // 从原数组中删除
-                    whitelistData[arrayIndex].splice(itemIndex, 1);
+                    // 检查是否已存在（根据类型检查不同字段）
+                    let exists = false;
+                    if (type === 'id') {
+                        exists = whitelistData[BLACKLIST_INDEX].some(blackUser => blackUser.id === item);
+                    } else if (type === 'corp') {
+                        exists = whitelistData[BLACKLIST_INDEX].some(blackUser => blackUser.corp === item);
+                    }
                     
-                    // 重新渲染相关表格
-                    renderAllTables();
-                    
-                    alert(`"${displayValue}" 已成功加入黑名单并从白名单中移除！`);
-                } else {
-                    alert(`"${displayValue}" 已存在于黑名单中！`);
+                    if (!exists) {
+                        // 添加到黑名单
+                        whitelistData[BLACKLIST_INDEX].push(blacklistData);
+                        
+                        // 从原数组中删除
+                        whitelistData[arrayIndex].splice(itemIndex, 1);
+                        
+                        // 立即保存到服务器
+                        const jsonContent = JSON.stringify(whitelistData, null, 2);
+                        const success = await updateGitHubFile(jsonContent);
+                        
+                        if (success) {
+                            alert(`"${displayValue}" 已成功加入黑名单并上传到服务器！`);
+                        } else {
+                            alert(`"${displayValue}" 已加入黑名单，但上传到服务器失败，请稍后手动保存。`);
+                        }
+                        
+                        // 重新渲染相关表格
+                        renderAllTables();
+                    } else {
+                        alert(`"${displayValue}" 已存在于黑名单中！`);
+                    }
+                } catch (error) {
+                    console.error('拉黑操作失败:', error);
+                    alert(`拉黑操作失败: ${error.message}`);
                 }
             }
         }
 
         // 拉黑用户指纹数据函数
-        function blacklistUserItem(itemIndex) {
+        async function blacklistUserItem(itemIndex) {
             const user = whitelistData[USERS_INDEX][itemIndex];
             const displayValue = `${user.name} (${user.id})`;
             
             if (confirm(`确定要将用户 "${displayValue}" 加入黑名单吗？`)) {
-                // 确保黑名单数组存在
-                if (!whitelistData[BLACKLIST_INDEX]) {
-                    whitelistData[BLACKLIST_INDEX] = [];
-                }
-                
-                // 检查是否已存在
-                const exists = whitelistData[BLACKLIST_INDEX].some(blackUser => 
-                    blackUser.id === user.id && blackUser.name === user.name
-                );
-                
-                if (!exists) {
-                    // 用户指纹数据 -> 黑名单：填入用户ID和用户名称，军团留空
-                    whitelistData[BLACKLIST_INDEX].push({
-                        id: user.id,
-                        name: user.name,
-                        corp: ''
-                    });
+                try {
+                    // 确保黑名单数组存在
+                    if (!whitelistData[BLACKLIST_INDEX]) {
+                        whitelistData[BLACKLIST_INDEX] = [];
+                    }
                     
-                    // 从用户指纹数据中删除
-                    whitelistData[USERS_INDEX].splice(itemIndex, 1);
+                    // 检查是否已存在
+                    const exists = whitelistData[BLACKLIST_INDEX].some(blackUser => 
+                        blackUser.id === user.id && blackUser.name === user.name
+                    );
                     
-                    // 重新渲染相关表格
-                    renderAllTables();
-                    
-                    alert(`用户 "${displayValue}" 已成功加入黑名单并从用户指纹数据中移除！`);
-                } else {
-                    alert(`用户 "${displayValue}" 已存在于黑名单中！`);
+                    if (!exists) {
+                        // 用户指纹数据 -> 黑名单：填入用户ID和用户名称，军团留空
+                        whitelistData[BLACKLIST_INDEX].push({
+                            id: user.id,
+                            name: user.name,
+                            corp: '',
+                            fingerprint: user.id,
+                            blockedAt: new Date().toISOString()
+                        });
+                        
+                        // 从用户指纹数据中删除
+                        whitelistData[USERS_INDEX].splice(itemIndex, 1);
+                        
+                        // 立即保存到服务器
+                        const jsonContent = JSON.stringify(whitelistData, null, 2);
+                        const success = await updateGitHubFile(jsonContent);
+                        
+                        if (success) {
+                            alert(`用户 "${displayValue}" 已成功加入黑名单并上传到服务器！`);
+                        } else {
+                            alert(`用户 "${displayValue}" 已加入黑名单，但上传到服务器失败，请稍后手动保存。`);
+                        }
+                        
+                        // 重新渲染相关表格
+                        renderAllTables();
+                    } else {
+                        alert(`用户 "${displayValue}" 已存在于黑名单中！`);
+                    }
+                } catch (error) {
+                    console.error('拉黑用户失败:', error);
+                    alert(`拉黑用户失败: ${error.message}`);
                 }
             }
         }
@@ -1541,7 +1921,95 @@
         window.onload = init;
 
         // 暴露全局函数
+        // 显示用户详情
+        function showUserDetails(userId) {
+            const user = window.userDetails[userId];
+            if (!user) {
+                alert('用户数据不存在');
+                return;
+            }
+
+            // 处理用户名显示
+            let displayUsername = user.username;
+            if (displayUsername && displayUsername.toLowerCase() === 'unknown') {
+                displayUsername = '未知用户';
+            }
+
+            // 填充模态框数据
+            document.getElementById('detailUsername').textContent = displayUsername;
+            document.getElementById('detailUserId').textContent = user.getid || '未知';
+            document.getElementById('detailFingerprint').textContent = user.fingerprint || '无';
+            document.getElementById('detailLastActive').textContent = formatTime(user.timestamp);
+            document.getElementById('detailOnlineTime').textContent = calculateOnlineTime(user.details?.onlineTime || 0) + '分钟';
+
+            // 显示原始数据
+            document.getElementById('detailRawData').textContent = JSON.stringify(user, null, 2);
+
+            // 设置拉黑按钮事件
+            const blockBtn = document.getElementById('blockFromDetails');
+            blockBtn.onclick = function() {
+                const fingerprint = user.fingerprint || user.username;
+                blockUser(fingerprint, displayUsername);
+                // 关闭模态框
+                const modal = bootstrap.Modal.getInstance(document.getElementById('userDetailsModal'));
+                modal.hide();
+            };
+
+            // 显示模态框
+            const modal = new bootstrap.Modal(document.getElementById('userDetailsModal'));
+            modal.show();
+        }
+
+        // 解除拉黑用户
+        async function unblockUser(fingerprint, username) {
+            if (confirm(`确定要解除拉黑用户 ${username} 吗？`)) {
+                try {
+                    // 从本地拉黑集合中移除
+                    blockedFingerprints.delete(fingerprint);
+                    saveBlockedUsers();
+                    
+                    // 从黑名单数组中移除（根据指纹或ID匹配）
+                    if (whitelistData[BLACKLIST_INDEX]) {
+                        const originalLength = whitelistData[BLACKLIST_INDEX].length;
+                        whitelistData[BLACKLIST_INDEX] = whitelistData[BLACKLIST_INDEX].filter(blackUser => 
+                            blackUser.fingerprint !== fingerprint && 
+                            blackUser.id !== fingerprint &&
+                            !(blackUser.name === username && blackUser.fingerprint === fingerprint)
+                        );
+                        
+                        // 检查是否真的从黑名单中移除了用户
+                        const removedFromBlacklist = whitelistData[BLACKLIST_INDEX].length < originalLength;
+                        
+                        if (removedFromBlacklist) {
+                            // 立即保存到服务器
+                            const jsonContent = JSON.stringify(whitelistData, null, 2);
+                            const success = await updateGitHubFile(jsonContent);
+                            
+                            if (success) {
+                                alert(`用户 ${username} 已解除拉黑并同步到服务器！`);
+                                // 刷新黑名单表格显示
+                                renderBlacklistTable();
+                            } else {
+                                alert(`用户 ${username} 已本地解除拉黑，但同步到服务器失败，请稍后手动保存。`);
+                            }
+                        } else {
+                            alert(`用户 ${username} 已从本地拉黑列表中移除！`);
+                        }
+                    }
+                    
+                    // 刷新在线数据显示
+                    fetchOnlineData();
+                } catch (error) {
+                    console.error('解除拉黑失败:', error);
+                    alert(`解除拉黑失败: ${error.message}`);
+                }
+            }
+        }
+        
+        // 暴露全局函数
         window.blockUser = blockUser;
+        window.unblockUser = unblockUser;
+        window.showUserDetails = showUserDetails;
 
         // 更新GitHub文件
         async function updateGitHubFile(content) {
@@ -1921,6 +2389,64 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
                     <button type="button" class="btn btn-primary" id="confirmEditUser">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户详情模态框 -->
+    <div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userDetailsModalLabel">用户详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label"><strong>用户名:</strong></label>
+                                <p id="detailUsername" class="form-control-plaintext">-</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label"><strong>用户ID:</strong></label>
+                                <p id="detailUserId" class="form-control-plaintext">-</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label"><strong>用户指纹:</strong></label>
+                                <p id="detailFingerprint" class="form-control-plaintext" style="word-break: break-all;">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label"><strong>最后活动时间:</strong></label>
+                                <p id="detailLastActive" class="form-control-plaintext">-</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label"><strong>在线时长:</strong></label>
+                                <p id="detailOnlineTime" class="form-control-plaintext">-</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label"><strong>状态:</strong></label>
+                                <p id="detailStatus" class="form-control-plaintext">
+                                    <span class="status-indicator status-online"></span>在线
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3" id="detailsSection" style="display: none;">
+                        <div class="col-12">
+                            <h6><strong>详细信息:</strong></h6>
+                            <div class="bg-light p-3 rounded">
+                                <pre id="detailRawData" style="margin: 0; white-space: pre-wrap; word-break: break-all; font-size: 12px;"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-danger" id="blockFromDetails">拉黑用户</button>
                 </div>
             </div>
         </div>
