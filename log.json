@@ -141,5 +141,16 @@
       "onlineTime": 126
     },
     "getid": "909"
+  },
+  {
+    "timestamp": "2025-08-13T10:31:50.085Z",
+    "fingerprint": "fp_435f931d",
+    "username": "909",
+    "action": "heartbeat",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "onlineTime": 186
+    },
+    "getid": "909"
   }
 ]
