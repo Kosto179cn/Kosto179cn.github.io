@@ -2,7 +2,7 @@
   {
     "timestamp": "2025-08-13T09:06:31.478Z",
     "fingerprint": "fp_350a222d",
-    "username": "ÃÂ¥ÃÂ¼ÃÂÃÂ¥ÃÂÃÂÃÂ¨ÃÂÃÂKosto",
+    "username": "ÃÂÃÂ¥ÃÂÃÂ¼ÃÂÃÂÃÂÃÂ¥ÃÂÃÂÃÂÃÂÃÂÃÂ¨ÃÂÃÂÃÂÃÂKosto",
     "action": "heartbeat",
     "details": {
       "url": "https://3dtank.com/play/",
@@ -13,7 +13,7 @@
   {
     "timestamp": "2025-08-13T09:07:31.479Z",
     "fingerprint": "fp_350a222d",
-    "username": "Ã¥Â¼ÂÃ¥ÂÂÃ¨ÂÂKosto",
+    "username": "ÃÂ¥ÃÂ¼ÃÂÃÂ¥ÃÂÃÂÃÂ¨ÃÂÃÂKosto",
     "action": "heartbeat",
     "details": {
       "url": "https://3dtank.com/play/",
@@ -24,7 +24,7 @@
   {
     "timestamp": "2025-08-13T09:08:18.843Z",
     "fingerprint": "fp_350a222d",
-    "username": "å¼åèKosto",
+    "username": "Ã¥Â¼ÂÃ¥ÂÂÃ¨ÂÂKosto",
     "action": "page_unload",
     "details": {
       "url": "https://3dtank.com/play/",
@@ -35,11 +35,22 @@
   {
     "timestamp": "2025-08-13T09:09:46.677Z",
     "fingerprint": "fp_350a222d",
-    "username": "开发者Kosto",
+    "username": "å¼åèKosto",
     "action": "heartbeat",
     "details": {
       "url": "https://3dtank.com/play/",
       "onlineTime": 76
+    },
+    "getid": "903"
+  },
+  {
+    "timestamp": "2025-08-13T09:10:46.677Z",
+    "fingerprint": "fp_350a222d",
+    "username": "开发者Kosto",
+    "action": "heartbeat",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "onlineTime": 136
     },
     "getid": "903"
   }
