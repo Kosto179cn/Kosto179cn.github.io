@@ -852,5 +852,16 @@
       "referrer": "https://3dtank.com/play/?token=%2FKyKftyqbMStiFbODAtyCqr5bY8dDOQ99z9bF5hDc27cVFHGf15R1bTSvSyD4YLLu1iZdUC4Dmft%2BavBcud1oA%3D%3D&sub_partner_id=partner4399"
     },
     "getid": "unknown"
+  },
+  {
+    "timestamp": "2025-08-13T12:00:56.959Z",
+    "fingerprint": "fp_435f931d",
+    "username": "Kosto谷歌",
+    "action": "heartbeat",
+    "details": {
+      "url": "https://3dtank.com/play/?token=%2FKyKftyqbMStiFbODAtyCqr5bY8dDOQ99z9bF5hDc27cVFHGf15R1bTSvSyD4YLLu1iZdUC4Dmft%2BavBcud1oA%3D%3D&sub_partner_id=partner4399",
+      "onlineTime": 66
+    },
+    "getid": "Kosto_01"
   }
 ]
