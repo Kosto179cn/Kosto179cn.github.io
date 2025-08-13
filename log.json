@@ -962,5 +962,16 @@
       "onlineTime": 187
     },
     "getid": "909"
+  },
+  {
+    "timestamp": "2025-08-13T12:16:27.474Z",
+    "fingerprint": "fp_435f931d",
+    "username": "Kosto谷歌",
+    "action": "heartbeat",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "onlineTime": 247
+    },
+    "getid": "909"
   }
 ]
