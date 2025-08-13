@@ -394,5 +394,16 @@
       "onlineTime": 486
     },
     "getid": "903"
+  },
+  {
+    "timestamp": "2025-08-13T10:02:47.220Z",
+    "fingerprint": "fp_350a222d",
+    "username": "开发者Kosto",
+    "action": "heartbeat",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "onlineTime": 546
+    },
+    "getid": "903"
   }
 ]
