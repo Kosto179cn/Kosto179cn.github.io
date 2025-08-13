@@ -273,5 +273,16 @@
       "sessionDuration": 91507
     },
     "userId": "unknown"
+  },
+  {
+    "timestamp": "2025-08-13T09:41:35.841Z",
+    "fingerprint": "fp_350a222d",
+    "username": "unknown",
+    "action": "page_load",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "referrer": "https://3dtank.com/play/"
+    },
+    "getid": "unknown"
   }
 ]
