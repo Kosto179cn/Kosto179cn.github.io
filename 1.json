@@ -90,13 +90,6 @@
     {
       "id": "testblackid2",
       "name": "testblackname2"
-    },
-    {
-      "id": "909",
-      "name": "Kosto谷歌",
-      "corp": "",
-      "fingerprint": "fp_435f931d",
-      "blockedAt": "2025-08-13T11:43:21.481Z"
     }
   ]
 ]
