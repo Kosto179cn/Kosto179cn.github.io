@@ -808,5 +808,16 @@
       "referrer": "https://game.4399iw2.com/"
     },
     "getid": "unknown"
+  },
+  {
+    "timestamp": "2025-08-13T11:58:16.486Z",
+    "fingerprint": "fp_435f931d",
+    "username": "unknown",
+    "action": "page_load",
+    "details": {
+      "url": "https://3dtank.com/play/?token=gxD%2FRmjLG5mqZe5tBwW8wxKdhYMeM7ocvdhpuLqbT5fTReh0QHB9AcG4RQYcvdNkiAWnNnS8DTTOWEqPsNeK%2Fg%3D%3D&sub_partner_id=partner4399",
+      "referrer": ""
+    },
+    "getid": "unknown"
   }
 ]
