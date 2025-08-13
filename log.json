@@ -262,5 +262,16 @@
       "sessionDuration": 31584
     },
     "userId": "unknown"
+  },
+  {
+    "timestamp": "2025-08-13T09:40:29.784Z",
+    "fingerprint": "1068992006",
+    "username": "unknown",
+    "action": "heartbeat",
+    "details": {
+      "timestamp": 1755078029784,
+      "sessionDuration": 91507
+    },
+    "userId": "unknown"
   }
 ]
