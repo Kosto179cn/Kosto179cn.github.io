@@ -284,5 +284,16 @@
       "referrer": "https://3dtank.com/play/"
     },
     "getid": "unknown"
+  },
+  {
+    "timestamp": "2025-08-13T08:47:17.396Z",
+    "fingerprint": "fp_350a222d",
+    "username": "开发者Kosto",
+    "action": "heartbeat",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "onlineTime": 67
+    },
+    "getid": "903"
   }
 ]
