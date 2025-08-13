@@ -500,5 +500,16 @@
       "fingerprint": "fp_435f931d"
     },
     "getid": "unknown"
+  },
+  {
+    "timestamp": "2025-08-13T11:23:10.563Z",
+    "fingerprint": "fp_435f931d",
+    "username": "Kosto谷歌",
+    "action": "heartbeat",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "onlineTime": 66
+    },
+    "getid": "909"
   }
 ]
