@@ -434,5 +434,16 @@
       "referrer": ""
     },
     "getid": "unknown"
+  },
+  {
+    "timestamp": "2025-08-13T11:17:34.658Z",
+    "fingerprint": "fp_435f931d",
+    "username": "Kosto谷歌",
+    "action": "heartbeat",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "onlineTime": 65
+    },
+    "getid": "909"
   }
 ]
