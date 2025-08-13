@@ -97,5 +97,16 @@
       "referrer": ""
     },
     "getid": "unknown"
+  },
+  {
+    "timestamp": "2025-08-13T10:24:20.867Z",
+    "fingerprint": "fp_435f931d",
+    "username": "unknown",
+    "action": "heartbeat",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "onlineTime": 65
+    },
+    "getid": "unknown"
   }
 ]
