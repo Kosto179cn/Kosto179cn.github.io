@@ -918,5 +918,16 @@
       "onlineTime": 350
     },
     "getid": "Kosto_01"
+  },
+  {
+    "timestamp": "2025-08-13T12:12:20.876Z",
+    "fingerprint": "fp_435f931d",
+    "username": "unknown",
+    "action": "page_load",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "referrer": ""
+    },
+    "getid": "unknown"
   }
 ]
