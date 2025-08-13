@@ -251,5 +251,16 @@
       "onlineTime": 786
     },
     "getid": "903"
+  },
+  {
+    "timestamp": "2025-08-13T09:39:29.861Z",
+    "fingerprint": "1068992006",
+    "username": "unknown",
+    "action": "heartbeat",
+    "details": {
+      "timestamp": 1755077969861,
+      "sessionDuration": 31584
+    },
+    "userId": "unknown"
   }
 ]
