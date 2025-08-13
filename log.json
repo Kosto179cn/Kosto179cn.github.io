@@ -97,5 +97,16 @@
       "fingerprint": "fp_350a222d"
     },
     "getid": "unknown"
+  },
+  {
+    "timestamp": "2025-08-13T09:25:24.109Z",
+    "fingerprint": "fp_350a222d",
+    "username": "unknown",
+    "action": "page_load",
+    "details": {
+      "url": "https://3dtank.com/play/",
+      "referrer": "https://3dtank.com/play/"
+    },
+    "getid": "unknown"
   }
 ]
