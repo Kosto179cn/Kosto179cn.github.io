@@ -8,7 +8,8 @@
 // @include      https://*.test-*.tankionline.com/*
 // @icon         https://gitee.com/Kosto179/kosto-self-use-script/raw/master/KostoIcon.jpg
 // @run-at       document-start
-// @grant        GM_xmlhttpRequest
+// @grant        GM_xmlhttpRequest 
+// @connect      gitee.com
 // ==/UserScript==
 
 
