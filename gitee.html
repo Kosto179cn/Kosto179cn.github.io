@@ -1535,11 +1535,113 @@
         }
 
         // 获取在线数据
+        function ensureTodaySection() {
+            const onlineContent = document.getElementById('online-content');
+            if (!onlineContent) return null;
+            let section = document.getElementById('todayUsersSection');
+            if (!section) {
+                section = document.createElement('div');
+                section.id = 'todayUsersSection';
+                section.className = 'card';
+                section.innerHTML = `
+                    <div class="card-header">
+                        <div>今日在线名单（含已离线）</div>
+                        <div class="header-actions">
+                            <small id="todayUsersCount" style="color:#6c757d"></small>
+                        </div>
+                    </div>
+                    <div class="list-header hidden-sm">
+                        <div>用户名</div>
+                        <div>指纹/getid</div>
+                        <div class="hidden-sm">最后活动</div>
+                        <div class="hidden-sm">状态</div>
+                        <div>操作</div>
+                    </div>
+                    <div id="todayUserList" class="list-container"></div>
+                `;
+                onlineContent.appendChild(section);
+            }
+            return section;
+        }
+
+        function computeTodayAllUsers(data) {
+            try {
+                const now = new Date();
+                const todayStart = new Date(now);
+                todayStart.setHours(0, 0, 0, 0);
+                const todayData = (data || []).filter(item => {
+                    const t = item.time || item.timestamp;
+                    return t && new Date(t) >= todayStart;
+                });
+                const map = new Map();
+                todayData.forEach(item => {
+                    const fingerprint = item.fingerprint || item.username;
+                    if (!fingerprint) return;
+                    const ts = new Date(item.time || item.timestamp);
+                    const prev = map.get(fingerprint);
+                    if (!prev || ts > new Date(prev.timestamp)) {
+                        map.set(fingerprint, {
+                            fingerprint,
+                            username: item.username || fingerprint,
+                            getid: item.getid,
+                            timestamp: item.time || item.timestamp,
+                            details: item.details || {},
+                            onlineDurationText: item.onlineDurationText,
+                            phase: item.phase
+                        });
+                    }
+                });
+                return Array.from(map.values()).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            } catch (e) {
+                console.error('computeTodayAllUsers error', e);
+                return [];
+            }
+        }
+
+        function renderTodayUserList(users) {
+            ensureTodaySection();
+            const listEl = document.getElementById('todayUserList');
+            const countEl = document.getElementById('todayUsersCount');
+            if (!listEl) return;
+            listEl.innerHTML = '';
+            if (countEl) countEl.textContent = `今日出现人数：${users?.length || 0}`;
+            if (!users || users.length === 0) {
+                listEl.innerHTML = '<div class="list-item"><div colspan="5">今日暂无用户记录</div></div>';
+                return;
+            }
+            const now = Date.now();
+            users.forEach(user => {
+                const displayUsername = user.username || user.fingerprint || '未知用户';
+                const lastActiveTime = typeof formatTime === 'function' ? formatTime(user.timestamp) : (new Date(user.timestamp)).toLocaleString('zh-CN');
+                const isOnline = new Date(user.timestamp) >= new Date(now - (CONFIG?.ONLINE_THRESHOLD_MINUTES || 1.5) * 60000);
+                const statusHtml = isOnline ? '<span class="status-indicator status-online"></span>在线' : '<span class="status-indicator status-offline"></span>离线';
+                const onlineDuration = user.onlineDurationText || (typeof calculateOnlineTime === 'function' ? (calculateOnlineTime(user.details?.onlineTime || 0) + '分钟') : '-');
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                const userId = (user.fingerprint || user.username || 'unknown') + '_' + (user.getid || 'id');
+                window.userDetails = window.userDetails || {};
+                window.userDetails[userId] = user;
+                item.innerHTML = `
+                    <div>${displayUsername}</div>
+                    <div>${user.getid || '未知'}</div>
+                    <div class="hidden-sm">${lastActiveTime}</div>
+                    <div class="hidden-sm">${statusHtml}</div>
+                    <div class="user-actions">
+                        <button class="action-btn btn-info" onclick="showUserDetails('${userId}')">详情</button>
+                        <small style="margin-left:8px;color:#6c757d">${onlineDuration}</small>
+                    </div>
+                `;
+                listEl.appendChild(item);
+            });
+        }
+
         async function fetchOnlineData() {
             try {
                 const logData = await fetchData(API_CONFIG.updateLog);
                 const { currentOnlineUsers, todayTotalUsers, latestValidUser, blockedOnlineUsers } = processData(logData);
                 renderUserList(currentOnlineUsers, blockedOnlineUsers);
+                const todayAllUsers = computeTodayAllUsers(logData);
+                renderTodayUserList(todayAllUsers);
                 updateStats(currentOnlineUsers.length, todayTotalUsers, latestValidUser);
                 console.log('在线数据获取成功');
             } catch (error) {
@@ -2395,6 +2497,7 @@
             const detailPhaseEl = document.getElementById('detailPhase');
             const detailLastActiveEl = document.getElementById('detailLastActive');
             const detailOnlineTimeEl = document.getElementById('detailOnlineTime');
+            const detailStatusEl = document.getElementById('detailStatus');
             const detailRawDataEl = document.getElementById('detailRawData');
             
             if (detailUsernameEl) detailUsernameEl.textContent = displayUsername;
@@ -2408,6 +2511,12 @@
             
             const onlineDuration = user.onlineDurationText || (calculateOnlineTime(user.details?.onlineTime || 0) + '分钟');
             if (detailOnlineTimeEl) detailOnlineTimeEl.textContent = onlineDuration;
+            const isOnline = new Date(userTimestamp) >= new Date(Date.now() - (CONFIG?.ONLINE_THRESHOLD_MINUTES || 1.5) * 60000);
+            if (detailStatusEl) {
+                detailStatusEl.innerHTML = isOnline
+                    ? '<span class="status-indicator status-online"></span>在线'
+                    : '<span class="status-indicator status-offline"></span>离线';
+            }
 
             // 显示原始数据
             if (detailRawDataEl) detailRawDataEl.textContent = JSON.stringify(user, null, 2);
