@@ -1292,11 +1292,37 @@
             // 筛选今日数据 - 兼容新旧数据格式
             const todayData = data.filter(item => {
                 const timestamp = item.time || item.timestamp;
-                return new Date(timestamp) >= todayStart;
+                return timestamp && new Date(timestamp) >= todayStart;
             });
+            
+            // 设置为全局变量供搜索功能使用
+            window.todayData = todayData;
 
             // 获取今日所有唯一用户(基于fingerprint)
             const todayUsers = new Set(todayData.map(item => item.fingerprint || item.username));
+            
+            // 统计每个用户登录的不同ID数量
+            const userIdStats = new Map();
+            todayData.forEach(item => {
+                const fingerprint = item.fingerprint || item.username;
+                const userId = item.getid || item.details?.getid || '未知ID';
+                
+                if (!userIdStats.has(fingerprint)) {
+                    userIdStats.set(fingerprint, {
+                        fingerprint: fingerprint,
+                        userIds: new Set(),
+                        usernames: new Set(),
+                        latestData: item
+                    });
+                }
+                
+                userIdStats.get(fingerprint).userIds.add(userId);
+                userIdStats.get(fingerprint).usernames.add(item.username || '未知用户');
+                // 保持最新的数据
+                if (new Date(item.timestamp) > new Date(userIdStats.get(fingerprint).latestData.timestamp)) {
+                    userIdStats.get(fingerprint).latestData = item;
+                }
+            });
 
             // 筛选在线用户（5分钟内有活动）
             const onlineUsers = data.filter(item => {
@@ -1322,6 +1348,9 @@
                     userGroups.set(fingerprint, item);
                 }
             });
+
+            // 将userIdStats设为全局变量，供多ID统计使用
+            window.userIdStats = userIdStats;
 
             // 转换为数组并排序(按最后活动时间降序)
             const currentOnlineUsers = Array.from(userGroups.values()).sort((a, b) => {
@@ -1547,6 +1576,18 @@
                     <div class="card-header">
                         <div>今日在线名单（含已离线）</div>
                         <div class="header-actions">
+                            <button class="btn btn-sm btn-outline-primary" onclick="showSearchDialog()">
+                                <i class="fas fa-search"></i> 搜索账号
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary" onclick="toggleSearchView(event)">
+                                <i class="fas fa-search"></i> 搜索账号
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary" onclick="toggleSearchView(event)">
+                                <i class="fas fa-search"></i> 搜索账号
+                            </button>
+                            <button class="btn btn-sm btn-outline-info" onclick="toggleMultiIdView(event)">
+                                <i class="fas fa-users"></i> 多ID统计
+                            </button>
                             <small id="todayUsersCount" style="color:#6c757d"></small>
                         </div>
                     </div>
@@ -2549,14 +2590,31 @@
         function showUserDetails(userId) {
             const user = window.userDetails[userId];
             if (!user) {
-                alert('用户数据不存在');
+                alert('用户详情不存在');
                 return;
             }
 
             // 处理用户名显示
             let displayUsername = user.username;
             if (displayUsername && displayUsername.toLowerCase() === 'unknown') {
-                displayUsername = '未知用户';
+                displayUsername = user.details?.username || user.fingerprint || '未知用户';
+            }
+
+            // 获取该用户指纹对应的所有ID信息
+            const fingerprint = user.fingerprint || user.username;
+            let multiIdInfo = '';
+            if (window.userIdStats && window.userIdStats.has(fingerprint)) {
+                const userStats = window.userIdStats.get(fingerprint);
+                const allIds = Array.from(userStats.usernames);
+                if (allIds.length > 1) {
+                    multiIdInfo = `
+                        <div class="alert alert-warning mt-2">
+                            <strong><i class="fas fa-exclamation-triangle"></i> 多ID检测</strong><br>
+                            该用户今日登录了 <strong>${allIds.length}</strong> 个不同ID：<br>
+                            <span class="badge bg-secondary me-1">${allIds.join('</span> <span class="badge bg-secondary me-1">')}</span>
+                        </div>
+                    `;
+                }
             }
 
             // 填充模态框数据
@@ -2602,8 +2660,421 @@
             };
 
             // 显示模态框
+            // 添加多ID信息显示
+            const userFingerprint = user.fingerprint || user.username;
+            const modalBody = document.querySelector('#userDetailsModal .modal-body');
+            
+            // 移除之前的多ID提示
+            const existingAlert = modalBody.querySelector('.multi-id-alert');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+            
+            // 检查是否有多ID登录
+            if (window.userIdStats && window.userIdStats.has(userFingerprint)) {
+                const userStats = window.userIdStats.get(userFingerprint);
+                const allUserIds = Array.from(userStats.userIds);
+                const allUsernames = Array.from(userStats.usernames);
+                
+                if (allUserIds.length > 1) {
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-warning multi-id-alert mt-3';
+                    alertDiv.innerHTML = `
+                        <h6><i class="fas fa-exclamation-triangle"></i> 多ID检测</h6>
+                        <p class="mb-2">该用户今日登录了 <strong>${allUserIds.length}</strong> 个不同ID：</p>
+                        <div class="d-flex flex-wrap gap-1 mb-2">
+                            ${allUserIds.map(id => `<span class="badge bg-secondary">${id}</span>`).join('')}
+                        </div>
+                        <small class="text-muted">对应用户名: ${allUsernames.join(', ')}</small>
+                    `;
+                    modalBody.appendChild(alertDiv);
+                }
+            }
+
             const modal = new bootstrap.Modal(document.getElementById('userDetailsModal'));
             modal.show();
+        }
+
+        // 切换多ID统计显示
+        function toggleMultiIdView(event) {
+            const multiIdStats = document.getElementById('multiIdStats');
+            const onlineList = document.getElementById('onlineList');
+            const button = event ? event.target.closest('button') : document.querySelector('button[onclick="toggleMultiIdView()"]');
+            
+            if (multiIdStats && onlineList && button) {
+                if (multiIdStats.style.display === 'none' || multiIdStats.style.display === '') {
+                    multiIdStats.style.display = 'block';
+                    onlineList.style.display = 'none';
+                    button.innerHTML = '<i class="fas fa-list"></i> 普通列表';
+                    renderMultiIdStats();
+                } else {
+                    multiIdStats.style.display = 'none';
+                    onlineList.style.display = 'block';
+                    button.innerHTML = '<i class="fas fa-users"></i> 多ID统计';
+                }
+            }
+        }
+
+        // 渲染多ID统计
+        function renderMultiIdStats() {
+            const multiIdList = document.getElementById('multiIdList');
+            if (!window.userIdStats) return;
+            
+            // 筛选出登录了多个ID的用户
+            const multiIdUsers = Array.from(window.userIdStats.values())
+                .filter(user => user.usernames.size > 1)
+                .sort((a, b) => b.usernames.size - a.usernames.size);
+            
+            if (multiIdUsers.length === 0) {
+                multiIdList.innerHTML = '<div class="text-center text-muted py-3">暂无用户登录多个ID</div>';
+                return;
+            }
+            
+            multiIdList.innerHTML = '';
+            
+            multiIdUsers.forEach(user => {
+                const usernameList = Array.from(user.usernames).join(', ');
+                const lastActiveTime = typeof formatTime === 'function' ? 
+                    formatTime(user.latestData.timestamp) : 
+                    (new Date(user.latestData.timestamp)).toLocaleString('zh-CN');
+                
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.innerHTML = `
+                    <div class="user-info">
+                        <div class="user-name">
+                            <strong>用户指纹:</strong> ${user.fingerprint}
+                            <span class="badge bg-warning ms-2">${user.userIds.size}个ID</span>
+                        </div>
+                        <div class="user-details">
+                            <small><strong>登录的ID:</strong> ${userIdList}</small><br>
+                            <small><strong>用户名:</strong> ${usernameList}</small><br>
+                            <small><strong>最后活跃:</strong> ${lastActiveTime}</small>
+                        </div>
+                    </div>
+                `;
+                multiIdList.appendChild(item);
+            });
+        }
+
+        // 切换搜索视图
+        function toggleSearchView(event) {
+            const searchArea = document.getElementById('searchArea');
+            const onlineList = document.getElementById('onlineList');
+            const button = event ? event.target.closest('button') : document.querySelector('button[onclick="toggleSearchView()"]');
+            
+            if (searchArea && onlineList && button) {
+                if (searchArea.style.display === 'none' || searchArea.style.display === '') {
+                    searchArea.style.display = 'block';
+                    onlineList.style.display = 'none';
+                    button.innerHTML = '<i class="fas fa-list"></i> 返回列表';
+                    document.getElementById('searchInput').focus();
+                } else {
+                    searchArea.style.display = 'none';
+                    onlineList.style.display = 'block';
+                    button.innerHTML = '<i class="fas fa-search"></i> 搜索账号';
+                }
+            }
+        }
+
+        // 执行搜索
+        function performSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            
+            if (!searchTerm) {
+                searchResults.innerHTML = '<div class="text-center text-muted py-3">请输入要搜索的ID或用户名</div>';
+                return;
+            }
+            
+            if (!window.todayData || window.todayData.length === 0) {
+                searchResults.innerHTML = '<div class="text-center text-muted py-3">暂无数据可搜索</div>';
+                return;
+            }
+            
+            // 搜索匹配的记录
+            const matchedRecords = window.todayData.filter(item => {
+                const userId = (item.getid || item.details?.getid || '').toString().toLowerCase();
+                const username = (item.username || '').toLowerCase();
+                return userId.includes(searchTerm) || username.includes(searchTerm);
+            });
+            
+            if (matchedRecords.length === 0) {
+                searchResults.innerHTML = '<div class="text-center text-muted py-3">未找到匹配的记录</div>';
+                return;
+            }
+            
+            // 按时间排序，最新的在前
+            matchedRecords.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            // 显示搜索结果
+            searchResults.innerHTML = '';
+            
+            // 添加搜索结果标题
+            const resultHeader = document.createElement('div');
+            resultHeader.className = 'alert alert-info mb-3';
+            resultHeader.innerHTML = `<i class="fas fa-info-circle"></i> 找到 <strong>${matchedRecords.length}</strong> 条匹配记录`;
+            searchResults.appendChild(resultHeader);
+            
+            matchedRecords.forEach((item, index) => {
+                const userId = item.getid || item.details?.getid || '未知ID';
+                const username = item.username || '未知用户';
+                const timestamp = item.timestamp ? new Date(item.timestamp).toLocaleString('zh-CN') : '未知时间';
+                const onlineTime = item.details?.onlineTime ? (item.details.onlineTime + ' 分钟') : '未知';
+                const fingerprint = item.fingerprint || '无';
+                
+                const resultItem = document.createElement('div');
+                resultItem.className = 'list-item';
+                resultItem.innerHTML = `
+                    <div class="user-info">
+                        <div class="user-name">
+                            <strong>ID:</strong> ${userId} 
+                            <strong>用户名:</strong> ${username}
+                            ${index === 0 ? '<span class="badge bg-success ms-2">最新记录</span>' : ''}
+                        </div>
+                        <div class="user-details">
+                            <small><strong>时间:</strong> ${timestamp}</small><br>
+                            <small><strong>在线时长:</strong> ${onlineTime}</small><br>
+                            <small><strong>设备指纹:</strong> ${fingerprint}</small>
+                        </div>
+                    </div>
+                `;
+                searchResults.appendChild(resultItem);
+            });
+        }
+
+        // 简化搜索功能
+        function showSearchDialog() {
+            const searchTerm = prompt('请输入要搜索的ID或用户名:');
+            if (!searchTerm || !searchTerm.trim()) return;
+            
+            if (!window.todayData || window.todayData.length === 0) {
+                alert('暂无数据可搜索');
+                return;
+            }
+            
+            const term = searchTerm.trim().toLowerCase();
+            const matchedRecords = window.todayData.filter(item => {
+                const userId = (item.getid || item.details?.getid || '').toString().toLowerCase();
+                const username = (item.username || '').toLowerCase();
+                return userId.includes(term) || username.includes(term);
+            });
+            
+            if (matchedRecords.length === 0) {
+                alert('未找到匹配的记录');
+                return;
+            }
+            
+            // 按时间排序，最新的在前
+            matchedRecords.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            let resultText = `找到 ${matchedRecords.length} 条匹配记录:\n\n`;
+            matchedRecords.forEach((item, index) => {
+                const userId = item.getid || item.details?.getid || '未知ID';
+                const username = item.username || '未知用户';
+                const timestamp = item.timestamp ? new Date(item.timestamp).toLocaleString('zh-CN') : '未知时间';
+                const onlineTime = item.details?.onlineTime ? (item.details.onlineTime + ' 分钟') : '未知';
+                
+                resultText += `${index + 1}. ID: ${userId}\n`;
+                resultText += `   用户名: ${username}\n`;
+                resultText += `   时间: ${timestamp}\n`;
+                resultText += `   在线时长: ${onlineTime}\n`;
+                if (index === 0) resultText += `   [最新记录]\n`;
+                resultText += '\n';
+            });
+            
+            // 调用新的页面显示函数
+            showSearchResults(`搜索结果: "${searchTerm}"`, matchedRecords);
+        }
+
+        // 在页面显示搜索结果并整合数据
+        function showSearchResults(title, records) {
+            // 数据整合分析
+            const analysis = analyzeSearchData(records);
+            
+            // 创建或更新搜索结果容器
+            let searchContainer = document.getElementById('searchResultsContainer');
+            if (!searchContainer) {
+                searchContainer = document.createElement('div');
+                searchContainer.id = 'searchResultsContainer';
+                searchContainer.className = 'mt-4';
+                
+                // 插入到今日在线名单后面
+                const todaySection = document.querySelector('.container .row .col-md-6:first-child');
+                if (todaySection) {
+                    todaySection.appendChild(searchContainer);
+                }
+            }
+
+            let html = `
+                <div class="card border-primary">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-search"></i> ${title}
+                        </h5>
+                        <button class="btn btn-sm btn-outline-light" onclick="closeSearchResults()">
+                            <i class="fas fa-times"></i> 关闭
+                        </button>
+                    </div>
+                    <div class="card-body">
+            `;
+
+            if (analysis.length === 0) {
+                html += '<div class="text-center text-muted py-3">暂无匹配结果</div>';
+            } else {
+                analysis.forEach((item, index) => {
+                    const usernameList = item.usernames.length > 0 ? item.usernames.join(', ') : '未知用户';
+                    
+                    html += `
+                        <div class="border rounded p-3 mb-3 ${index === 0 ? 'border-success bg-light' : ''}">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="text-primary mb-2">
+                                        <i class="fas fa-id-card"></i> ID: <strong>${item.id}</strong>
+                                        ${index === 0 ? '<span class="badge badge-success ml-2">最活跃</span>' : ''}
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <p class="mb-1"><i class="fas fa-user text-info"></i> <strong>使用者:</strong> ${usernameList}</p>
+                                            <p class="mb-1"><i class="fas fa-clock text-success"></i> <strong>总在线:</strong> <span class="text-success font-weight-bold">${item.totalDuration}</span></p>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <p class="mb-1"><i class="fas fa-sign-in-alt text-warning"></i> <strong>登录次数:</strong> ${item.recordCount} 次</p>
+                                            <p class="mb-1"><i class="fas fa-calendar text-secondary"></i> <strong>最后活动:</strong> ${item.lastTime ? item.lastTime.toLocaleString() : '未知'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-right">
+                                    <button class="btn btn-sm btn-outline-info mb-2" onclick="toggleDetailRecords(${index})">
+                                        <i class="fas fa-list"></i> 详细记录
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="detailRecords_${index}" class="mt-3" style="display: none;">
+                                <h6 class="text-secondary"><i class="fas fa-history"></i> 详细登录记录:</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th><i class="fas fa-clock"></i> 时间</th>
+                                                <th><i class="fas fa-user"></i> 用户名</th>
+                                                <th><i class="fas fa-hourglass-half"></i> 时长</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                    `;
+                    
+                    item.records.forEach(record => {
+                        const time = record.time || record.details?.time || '未知';
+                        const username = record.username || record.details?.username || '未知';
+                        const duration = record.duration || record.details?.duration || '未知';
+                        
+                        html += `
+                            <tr>
+                                <td>${time}</td>
+                                <td><span class="badge badge-secondary">${username}</span></td>
+                                <td><span class="text-success">${duration}</span></td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            html += `
+                    </div>
+                </div>
+            `;
+
+            searchContainer.innerHTML = html;
+            
+            // 滚动到搜索结果
+            searchContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 数据分析函数
+        function analyzeSearchData(records) {
+            // 按ID分组
+            const groupedByID = {};
+            records.forEach(item => {
+                const userId = item.getid || item.details?.getid || '未知';
+                if (!groupedByID[userId]) {
+                    groupedByID[userId] = [];
+                }
+                groupedByID[userId].push(item);
+            });
+
+            const analysis = [];
+            
+            Object.keys(groupedByID).forEach(userId => {
+                const userRecords = groupedByID[userId];
+                
+                // 计算总在线时长
+                let totalMinutes = 0;
+                const usernames = new Set();
+                let lastTime = null;
+                
+                userRecords.forEach(record => {
+                    // 提取时长（分钟）
+                    const duration = record.duration || record.details?.duration || '0分钟';
+                    const minutes = parseInt(duration.match(/(\d+)分钟/)?.[1] || '0');
+                    totalMinutes += minutes;
+                    
+                    // 收集用户名
+                    const username = record.username || record.details?.username;
+                    if (username && username !== '未知') {
+                        usernames.add(username);
+                    }
+                    
+                    // 记录最后时间
+                    const time = new Date(record.time || record.details?.time);
+                    if (!lastTime || time > lastTime) lastTime = time;
+                });
+
+                // 格式化总时长
+                const hours = Math.floor(totalMinutes / 60);
+                const mins = totalMinutes % 60;
+                const totalDuration = hours > 0 ? `${hours}小时${mins}分钟` : `${mins}分钟`;
+
+                analysis.push({
+                    id: userId,
+                    usernames: Array.from(usernames),
+                    totalDuration: totalDuration,
+                    totalMinutes: totalMinutes,
+                    recordCount: userRecords.length,
+                    lastTime: lastTime,
+                    records: userRecords.sort((a, b) => new Date(b.time || b.details?.time || 0) - new Date(a.time || a.details?.time || 0))
+                });
+            });
+
+            // 按总时长排序
+            return analysis.sort((a, b) => b.totalMinutes - a.totalMinutes);
+        }
+
+        // 切换详细记录显示
+        function toggleDetailRecords(index) {
+            const detailDiv = document.getElementById(`detailRecords_${index}`);
+            if (detailDiv.style.display === 'none') {
+                detailDiv.style.display = 'block';
+            } else {
+                detailDiv.style.display = 'none';
+            }
+        }
+
+        // 关闭搜索结果
+        function closeSearchResults() {
+            const searchContainer = document.getElementById('searchResultsContainer');
+            if (searchContainer) {
+                searchContainer.remove();
+            }
         }
 
         // 解除拉黑用户
