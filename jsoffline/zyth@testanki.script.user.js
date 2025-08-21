@@ -1,3 +1,21 @@
+// ==UserScript==
+// @name         1
+// @namespace    http://tampermonkey.net/
+// @description  BattleClicker&SupplyClicker M键呼出菜单
+// @version      1
+// @match        https://*.3dtank.com/play/*
+// @match        https://*.tankionline.com/play/*
+// @include      https://*.test-*.tankionline.com/*
+// @run-at       document-start
+// @grant        GM_xmlhttpRequest  
+// @grant        GM_addStyle
+// @grant        unsafeWindow
+// @grant        GM_info
+// @connect      raw.githubusercontent.com
+// @connect      raw.gitcode.com
+// @connect      gitee.com
+// ==/UserScript==
+
 (function() {
     'use strict';
 
