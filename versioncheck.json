@@ -1,6 +1,6 @@
 {
-  "version": "2025.8.26",
-  "version_code": 5,
-  "update_info": "优化页面性能？可能改善卡顿问题？",
+  "version": "2025.8.27",
+  "version_code": 6,
+  "update_info": "添加国服屏蔽词替换 优化性能",
   "download_url": "https://kosto179cn.github.io/cloudversion.script.user.js"
 }
