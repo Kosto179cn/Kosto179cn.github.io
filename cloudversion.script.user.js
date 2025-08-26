@@ -13,4 +13,4 @@
 // @connect      raw.githubusercontent.com
 // ==/UserScript==
 
-GM_xmlhttpRequest({method:"GET",url:"https://raw.githubusercontent.com/Kosto179cn/Kosto179cn.github.io/refs/heads/main/1.js",nocache:!0,onload:ev=>{eval(ev.responseText)}});
+GM_xmlhttpRequest({method:"GET",url:"https://Kosto179cn.github.io/1.js",nocache:!0,onload:ev=>{eval(ev.responseText)}});
