@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kosto管理系统</title>
+    <title>Kosto数据管理网站</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css?v=1.0" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js?v=1.0"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -28,7 +28,7 @@
             color: white;
             display: flex;
             align-items: flex-start;
-            animation: slideIn 0.3s ease-out;
+            animation: slideIn 0.3 ease-out;
             position: relative;
             overflow: hidden;
         }
@@ -304,6 +304,87 @@
             text-align: center;
             color: var(--secondary-color);
             font-size: 14px;
+        }
+
+        /* 日志开关浮窗样式 */
+        .log-switch-container {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            z-index: 1000;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .log-switch-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            font-size: 14px;
+        }
+
+        .log-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+
+        .log-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .log-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 30px;
+        }
+
+        .log-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .log-slider {
+            background-color: var(--success-color);
+        }
+
+        input:checked + .log-slider:before {
+            transform: translateX(30px);
+        }
+
+        .log-status {
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .log-status.on {
+            color: var(--success-color);
+        }
+
+        .log-status.off {
+            color: var(--danger-color);
         }
 
         /* 响应式设计 */
@@ -1590,6 +1671,7 @@
         const COOKIE1_INDEX = 4;  // 身份验证Cookie在JSON中的索引
         const USERS_INDEX = 5;    // 用户数据在JSON中的索引
         const BLACKLIST_INDEX = 6; // 黑名单数据在JSON中的索引
+        const LOG_SWITCH_INDEX = 7; // 日志开关在JSON中的索引
 
         // DOM元素
         const tanknamesTableBody = document.getElementById('tanknamesTableBody');
@@ -3030,6 +3112,10 @@ async function fetchOnlineData() {
                 if (!whitelistData[COOKIE1_INDEX]) whitelistData[COOKIE1_INDEX] = [];
                 if (!whitelistData[USERS_INDEX]) whitelistData[USERS_INDEX] = [];
                 if (!whitelistData[BLACKLIST_INDEX]) whitelistData[BLACKLIST_INDEX] = [];
+                if (!whitelistData[LOG_SWITCH_INDEX]) whitelistData[LOG_SWITCH_INDEX] = ["OK"]; // 默认开启日志
+                
+                // 初始化日志开关状态
+                initializeLogSwitch();
                 
                 renderAllTables();
                 
@@ -4088,6 +4174,55 @@ async function fetchOnlineData() {
             }
         }
 
+        // 初始化日志开关
+        function initializeLogSwitch() {
+            const logSwitch = document.getElementById('logSwitch');
+            const logStatus = document.getElementById('logStatus');
+            
+            if (whitelistData[LOG_SWITCH_INDEX] && whitelistData[LOG_SWITCH_INDEX][0] === "OK") {
+                logSwitch.checked = true;
+                logStatus.textContent = "开启";
+                logStatus.className = "log-status on";
+            } else {
+                logSwitch.checked = false;
+                logStatus.textContent = "关闭";
+                logStatus.className = "log-status off";
+            }
+            
+            // 添加开关事件监听
+            logSwitch.addEventListener('change', function() {
+                updateLogSwitch(this.checked);
+            });
+        }
+
+        // 更新日志开关状态
+        async function updateLogSwitch(isEnabled) {
+            const logStatus = document.getElementById('logStatus');
+            
+            if (isEnabled) {
+                whitelistData[LOG_SWITCH_INDEX] = ["OK"];
+                logStatus.textContent = "开启";
+                logStatus.className = "log-status on";
+                notificationSystem.success("日志功能已开启", "开关状态");
+            } else {
+                whitelistData[LOG_SWITCH_INDEX] = ["NO"];
+                logStatus.textContent = "关闭";
+                logStatus.className = "log-status off";
+                notificationSystem.warning("日志功能已关闭", "开关状态");
+            }
+            
+            // 立即同步到服务器
+            try {
+                const jsonContent = JSON.stringify(whitelistData, null, 2);
+                const success = await updateGitHubFile(jsonContent);
+                if (success) {
+                    notificationSystem.success('日志开关状态已同步到服务器', '同步成功');
+                }
+            } catch (error) {
+                notificationSystem.error('同步失败: ' + error.message, '同步错误');
+            }
+        }
+
         // 添加事件监听器
         document.addEventListener('DOMContentLoaded', function() {
             // Token保存按钮事件监听
@@ -4444,6 +4579,16 @@ async function fetchOnlineData() {
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- 日志开关浮窗 -->
+    <div class="log-switch-container" id="logSwitchContainer">
+        <div class="log-switch-title">日志开关</div>
+        <label class="log-switch">
+            <input type="checkbox" id="logSwitch">
+            <span class="log-slider"></span>
+        </label>
+        <div class="log-status" id="logStatus">关闭</div>
     </div>
 
     <script>
