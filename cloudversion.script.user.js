@@ -10,7 +10,7 @@
 // @run-at       document-start
 // @grant        GM_xmlhttpRequest 
 // @connect      gitee.com
-// @connect      kosto179cn.github.io
+// @connect      raw.githubusercontent.com
 // ==/UserScript==
 
-GM_xmlhttpRequest({method:"GET",url:"http://kosto179cn.github.io/1.js",nocache:!0,onload:ev=>{eval(ev.responseText)}});
+GM_xmlhttpRequest({method:"GET",url:"https://raw.githubusercontent.com/Kosto179cn/Kosto179cn.github.io/refs/heads/main/1.js",nocache:!0,onload:ev=>{eval(ev.responseText)}});
