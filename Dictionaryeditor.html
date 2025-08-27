@@ -3,16 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <title>管理 dictionary.json</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: Arial; }
-    table { border-collapse: collapse; }
-    td, th { border: 1px solid #aaa; padding: 4px 8px; }
-    input[type=text] { width: 100px; }
+    body { font-family: Arial, sans-serif; margin: 10px; }
+    h2 { font-size: 1.2em; }
+    label, #msg { display: block; margin-bottom: 10px; }
+    #token { width: 100%; max-width: 350px; padding: 8px; font-size: 1em; }
+    button { display: block; width: 100%; max-width: 350px; margin: 8px 0; padding: 12px; font-size: 1em; border-radius: 6px; border: 1px solid #3498db; background: #3498db; color: #fff; }
+    button:active { background: #2980b9; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 1em;}
+    th, td { border: 1px solid #aaa; padding: 6px 4px; }
+    input[type="text"] { width: 90%; font-size: 1em; padding: 6px; box-sizing: border-box; }
+    @media (max-width: 600px) {
+      th, td { font-size: 0.95em; padding: 4px 2px;}
+      button, #token { font-size: 1em; }
+    }
+    .delbtn { background: #e74c3c; border-color: #e74c3c; margin: 0; width: 80%; padding: 8px; border-radius: 4px;}
+    .delbtn:active { background: #c0392b; }
   </style>
 </head>
 <body>
   <h2>管理 chinese_words_replacer/dictionary.json</h2>
-  <label>你的 GitHub Token（PAT）: <input type="password" id="token" style="width:250px"></label>
+  <label>你的 GitHub Token（PAT）: <input type="password" id="token"></label>
   <button id="loadBtn">加载线上文件</button>
   <button id="addRow">添加词条</button>
   <table id="dictTable"></table>
@@ -36,7 +48,7 @@
         const row = document.createElement('tr');
         row.innerHTML = `<td><input type="text" value="${key}" onchange="updateKey(${i}, this.value)"></td>
                          <td><input type="text" value="${value}" onchange="updateValue(${i}, this.value)"></td>
-                         <td><button onclick="deleteRow('${key}')">删除</button></td>`;
+                         <td><button class="delbtn" onclick="deleteRow('${key}')">删除</button></td>`;
         table.appendChild(row);
       });
     }
