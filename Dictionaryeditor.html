@@ -44,6 +44,17 @@
   <button id="saveBtn">自动上传到仓库</button>
   <span id="msg"></span>
   <script>
+
+// 自动记住和填充 Token
+window.addEventListener('DOMContentLoaded', () => {
+  const tokenInput = document.getElementById('token');
+  if (tokenInput) {
+    const savedToken = localStorage.getItem('github_token');
+    if (savedToken) tokenInput.value = savedToken;
+    tokenInput.addEventListener('input', () => {
+      localStorage.setItem('github_token', tokenInput.value);
+    });
+
     const owner = "Kosto179cn";
     const repo = "Kosto179cn.github.io";
     const path = "chinese_words_replacer/dictionary.json";
