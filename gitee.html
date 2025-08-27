@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+        <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kosto数据管理网站</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kosto管理系统</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css?v=1.0" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js?v=1.0"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -26,7 +26,7 @@
             color: white;
             display: flex;
             align-items: flex-start;
-            animation: slideIn 0.3 ease-out;
+            animation: slideIn 0.3s ease-out;
             position: relative;
             overflow: hidden;
         }
@@ -308,15 +308,34 @@
         .log-switch-container {
             position: fixed;
             top: 50%;
-            right: 20px;
+            right: -120px; /* 只隐藏主体部分，露出一小部分作为提示 */
             transform: translateY(-50%);
             z-index: 1000;
             background-color: white;
-            border-radius: 10px;
+            border-radius: 10px 0 0 10px; /* 只在左侧显示圆角 */
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             padding: 15px;
-            min-width: 120px;
+            min-width: 130px;
             text-align: center;
+            transition: right 0.3s ease-out; /* 添加过渡动画 */
+        }
+        
+        /* 鼠标悬停时显示 */
+        .log-switch-container:hover {
+            right: 0; /* 鼠标悬停时移到可见区域 */
+        }
+        
+        /* 增加一个提示条，让用户知道这里有开关 */
+        .log-switch-hint {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 60px;
+            background-color: var(--primary-color);
+            border-radius: 5px 0 0 5px;
+            cursor: pointer;
         }
 
         .log-switch-title {
@@ -690,120 +709,6 @@
             user-select: none;
         }
 
-        /* 游戏链接验证消息样式 */
-        .validation-message {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            min-width: 300px;
-            max-width: 400px;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            font-size: 14px;
-            line-height: 1.4;
-            animation: slideInRight 0.3s ease-out;
-        }
-
-        .validation-message.success {
-            background-color: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-        }
-
-        .validation-message.error {
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-        }
-
-        .validation-message.warning {
-            background-color: #fff3cd;
-            border: 1px solid #ffeaa7;
-            color: #856404;
-        }
-
-        .validation-message i {
-            margin-right: 8px;
-            font-size: 16px;
-        }
-
-        .validation-message .close-btn {
-            position: absolute;
-            top: 8px;
-            right: 10px;
-            background: none;
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
-            opacity: 0.7;
-            padding: 0;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .validation-message .close-btn:hover {
-            opacity: 1;
-        }
-
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideOutRight {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-        }
-
-        /* 验证日志查看器样式 */
-        .validation-logs {
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-        }
-
-        .log-entry {
-            margin-bottom: 8px;
-            padding: 5px;
-            border-radius: 3px;
-        }
-
-        .log-entry.success {
-            background-color: #d4edda;
-            border-left: 3px solid #28a745;
-        }
-
-        .log-entry.error {
-            background-color: #f8d7da;
-            border-left: 3px solid #dc3545;
-        }
-
-        .log-timestamp {
-            color: #6c757d;
-            font-size: 11px;
-        }
     </style>
 </head>
 <body>
@@ -874,13 +779,8 @@
                 </button>
             </li>
             <li role="presentation">
-                <button id="validation-tab" data-tab="validation" type="button">
-                    <i class="fas fa-shield-alt"></i> 链接验证日志
-                </button>
-            </li>
-            <li role="presentation">
-                <button id="test-tab" data-tab="test" type="button">
-                    <i class="fas fa-vial"></i> 验证测试
+                <button id="github-tab" data-tab="github" type="button">
+                    <i class="fab fa-github"></i> GitHub文件编辑
                 </button>
             </li>
         </ul>
@@ -1042,17 +942,37 @@
         <div id="groups-content" class="tab-content" style="display: none;">
             <div class="content-card">
                 <div class="card-header">
-                    <div>用户特定数据</div>
+                    <div>白名单军团</div>
                     <div class="action-buttons">
-                        <button type="button" class="btn btn-outline-primary" onclick="toggleTableSearch('users')">
+                        <button type="button" class="btn btn-outline-primary" onclick="toggleTableSearch('groups')">
                             <i class="fas fa-search"></i> 搜索
                         </button>
-                        <button type="button" class="btn btn-outline-warning" onclick="toggleBatchManagement('users')">
+                        <button type="button" class="btn btn-outline-warning" onclick="toggleBatchManagement('groups')">
                             <i class="fas fa-tasks"></i> 批量管理
                         </button>
-                        <button type="button" class="btn btn-primary" id="addFingerprintUserBtn">
-                            <i class="fas fa-plus"></i> 添加用户
+                        <button type="button" class="btn btn-primary" id="addGroupBtn">
+                            <i class="fas fa-plus"></i> 添加军团
                         </button>
+                    </div>
+                </div>
+                
+                <!-- 批量管理区域 -->
+                <div id="groupsBatchArea" style="display: none; padding: 15px; border-bottom: 1px solid var(--border-color); background-color: #f8f9fa;">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="groupsSelectAll" onchange="toggleSelectAll('groups', this.checked)">
+                                <label class="form-check-label" for="groupsSelectAll">全选</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelectedGroups()">
+                                <i class="fas fa-trash"></i> 删除选中
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleBatchManagement('groups')">
+                                <i class="fas fa-times"></i> 取消
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
@@ -1112,9 +1032,32 @@
                         <button type="button" class="btn btn-outline-primary" onclick="toggleTableSearch('ours')">
                             <i class="fas fa-search"></i> 搜索
                         </button>
+                        <button type="button" class="btn btn-outline-warning" onclick="toggleBatchManagement('ours')">
+                            <i class="fas fa-tasks"></i> 批量管理
+                        </button>
                         <button type="button" class="btn btn-primary" id="addOurBtn">
                             <i class="fas fa-plus"></i> 添加开发者
                         </button>
+                    </div>
+                </div>
+                
+                <!-- 批量管理区域 -->
+                <div id="oursBatchArea" style="display: none; padding: 15px; border-bottom: 1px solid var(--border-color); background-color: #f8f9fa;">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="oursSelectAll" onchange="toggleSelectAll('ours', this.checked)">
+                                <label class="form-check-label" for="oursSelectAll">全选</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelectedOurs()">
+                                <i class="fas fa-trash"></i> 删除选中
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleBatchManagement('ours')">
+                                <i class="fas fa-times"></i> 取消
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
@@ -1133,8 +1076,9 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>开发者ID</th>
-                                    <th>操作</th>
+                                    <th><input type="checkbox" id="oursHeaderSelectAll" onchange="toggleSelectAll('ours', this.checked)" style="display: none;"></th>
+                                <th>开发者ID</th>
+                                <th>操作</th>
                                 </tr>
                             </thead>
                             <tbody id="oursTableBody">
@@ -1238,6 +1182,9 @@
                         <button type="button" class="btn btn-outline-primary" onclick="toggleTableSearch('users')">
                             <i class="fas fa-search"></i> 搜索
                         </button>
+                        <button type="button" class="btn btn-outline-warning" onclick="toggleBatchManagement('users')">
+                            <i class="fas fa-tasks"></i> 批量管理
+                        </button>
                         <button type="button" class="btn btn-primary" id="addUserBtn">
                             <i class="fas fa-plus"></i> 添加用户
                         </button>
@@ -1259,9 +1206,10 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>名称</th>
-                                    <th>操作</th>
+                                    <th><input type="checkbox" id="usersHeaderSelectAll" onchange="toggleSelectAll('users', this.checked)" style="display: none;"></th>
+                                <th>ID</th>
+                                <th>名称</th>
+                                <th>操作</th>
                                 </tr>
                             </thead>
                             <tbody id="usersTableBody">
@@ -1282,9 +1230,32 @@
                         <button type="button" class="btn btn-outline-primary" onclick="toggleTableSearch('blacklist')">
                             <i class="fas fa-search"></i> 搜索
                         </button>
+                        <button type="button" class="btn btn-outline-warning" onclick="toggleBatchManagement('blacklist')">
+                            <i class="fas fa-tasks"></i> 批量管理
+                        </button>
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBlacklistModal">
                             <i class="fas fa-plus"></i> 添加黑名单用户
                         </button>
+                    </div>
+                </div>
+                
+                <!-- 批量管理区域 -->
+                <div id="blacklistBatchArea" style="display: none; padding: 15px; border-bottom: 1px solid var(--border-color); background-color: #f8f9fa;">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="blacklistSelectAll" onchange="toggleSelectAll('blacklist', this.checked)">
+                                <label class="form-check-label" for="blacklistSelectAll">全选</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelectedBlacklist()">
+                                <i class="fas fa-trash"></i> 删除选中
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleBatchManagement('blacklist')">
+                                <i class="fas fa-times"></i> 取消
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
@@ -1302,11 +1273,12 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>用户ID</th>
-                                    <th>用户名称</th>
-                                    <th>用户军团</th>
-                                    <th>用户指纹</th>
-                                    <th>操作</th>
+                                    <th><input type="checkbox" id="blacklistHeaderSelectAll" onchange="toggleSelectAll('blacklist', this.checked)" style="display: none;"></th>
+                                <th>用户ID</th>
+                                <th>用户名称</th>
+                                <th>用户军团</th>
+                                <th>用户指纹</th>
+                                <th>操作</th>
                                 </tr>
                             </thead>
                             <tbody id="blacklistTableBody">
@@ -1327,140 +1299,81 @@
             </div>
         </div>
 
-        <!-- 链接验证日志内容 -->
-        <div id="validation-content" class="tab-content" style="display: none;">
+        <!-- GitHub文件编辑内容 -->
+        <div id="github-content" class="tab-content" style="display: none;">
             <div class="content-card">
                 <div class="card-header">
-                    <div>游戏链接验证日志</div>
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-primary" id="refreshValidationLogs">
-                            <i class="fas fa-sync-alt"></i> 刷新日志
-                        </button>
-                        <button type="button" class="btn btn-warning" id="clearValidationLogs">
-                            <i class="fas fa-trash"></i> 清空日志
+                    <div>GitHub文件编辑</div>
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-primary" id="githubLoginBtn">
+                            <i class="fas fa-sign-in-alt"></i> 登录GitHub
                         </button>
                     </div>
                 </div>
+                
                 <div class="card-body">
-                    <!-- 验证统计信息 -->
-                    <div class="row mb-4">
-                        <div class="col-md-3">
-                            <div class="stat-card">
-                                <div class="stat-label">总验证次数</div>
-                                <div id="totalValidations" class="stat-value" style="font-size: 24px;">0</div>
-                            </div>
+                    <!-- 登录区域 -->
+                    <div id="githubLoginArea" class="mb-4 p-3 border rounded">
+                        <h5><i class="fab fa-github"></i> GitHub认证</h5>
+                        <p class="text-muted">请输入GitHub Token来编辑文件</p>
+                        <div class="input-group mb-3">
+                            <input type="password" id="githubToken" class="form-control" placeholder="输入GitHub Token">
+                            <button class="btn btn-primary" type="button" onclick="verifyGitHubToken()">
+                                <i class="fas fa-check"></i> 验证Token
+                            </button>
+                            <button class="btn btn-danger" type="button" onclick="clearGitHubToken()">
+                                <i class="fas fa-times"></i> 清除
+                            </button>
                         </div>
-                        <div class="col-md-3">
-                            <div class="stat-card">
-                                <div class="stat-label">验证通过</div>
-                                <div id="validValidations" class="stat-value" style="font-size: 24px; color: #28a745;">0</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stat-card">
-                                <div class="stat-label">验证失败</div>
-                                <div id="invalidValidations" class="stat-value" style="font-size: 24px; color: #dc3545;">0</div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stat-card">
-                                <div class="stat-label">成功率</div>
-                                <div id="successRate" class="stat-value" style="font-size: 24px; color: #17a2b8;">0%</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 验证日志列表 -->
-                    <div class="validation-logs" id="validationLogsList">
-                        <div class="text-center text-muted">暂无验证日志</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 验证测试内容 -->
-        <div id="test-content" class="tab-content" style="display: none;">
-            <div class="content-card">
-                <div class="card-header">
-                    <div><i class="fas fa-vial"></i> 游戏链接验证系统测试</div>
-                    <div class="text-muted small">测试验证功能是否正常工作</div>
-                </div>
-                <div class="card-body">
-                    <!-- 测试用例区域 -->
-                    <div class="row">
-                        <!-- 测试用例1: 正确的链接 -->
-                        <div class="col-md-6 mb-4">
-                            <div class="card h-100">
-                                <div class="card-header bg-success text-white">
-                                    <i class="fas fa-check-circle"></i> 测试用例1: 正确的游戏链接
-                                </div>
-                                <div class="card-body">
-                                    <p class="card-text">测试包含正确referrer的游戏链接验证</p>
-                                    <button class="btn btn-success" onclick="testValidLink()">
-                                        <i class="fas fa-play"></i> 测试正确链接
-                                    </button>
-                                    <div id="test1-result" class="mt-3"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 测试用例2: 错误的referrer -->
-                        <div class="col-md-6 mb-4">
-                            <div class="card h-100">
-                                <div class="card-header bg-danger text-white">
-                                    <i class="fas fa-times-circle"></i> 测试用例2: 错误的referrer
-                                </div>
-                                <div class="card-body">
-                                    <p class="card-text">测试包含错误referrer的链接验证</p>
-                                    <button class="btn btn-danger" onclick="testInvalidReferrer()">
-                                        <i class="fas fa-play"></i> 测试错误referrer
-                                    </button>
-                                    <div id="test2-result" class="mt-3"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 测试用例3: 缺少referrer -->
-                        <div class="col-md-6 mb-4">
-                            <div class="card h-100">
-                                <div class="card-header bg-warning text-white">
-                                    <i class="fas fa-exclamation-triangle"></i> 测试用例3: 缺少referrer
-                                </div>
-                                <div class="card-body">
-                                    <p class="card-text">测试缺少referrer字段的链接验证</p>
-                                    <button class="btn btn-warning" onclick="testMissingReferrer()">
-                                        <i class="fas fa-play"></i> 测试缺少referrer
-                                    </button>
-                                    <div id="test3-result" class="mt-3"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 测试用例4: URL参数验证 -->
-                        <div class="col-md-6 mb-4">
-                            <div class="card h-100">
-                                <div class="card-header bg-info text-white">
-                                    <i class="fas fa-link"></i> 测试用例4: URL参数验证
-                                </div>
-                                <div class="card-body">
-                                    <p class="card-text">测试URL参数中的referrer验证</p>
-                                    <button class="btn btn-info" onclick="testUrlParameter()">
-                                        <i class="fas fa-play"></i> 测试URL参数
-                                    </button>
-                                    <div id="test4-result" class="mt-3"></div>
-                                </div>
-                            </div>
-                        </div>
+                        <div id="githubTokenStatus" class="mt-2"></div>
                     </div>
 
-                    <!-- 批量测试按钮 -->
-                    <div class="text-center mt-4">
-                        <button class="btn btn-primary btn-lg" onclick="runAllTests()">
-                            <i class="fas fa-play-circle"></i> 运行所有测试
-                        </button>
-                        <button class="btn btn-secondary btn-lg ms-2" onclick="clearAllTestResults()">
-                            <i class="fas fa-eraser"></i> 清空测试结果
-                        </button>
+                    <!-- 文件编辑区域 -->
+                    <div id="githubEditArea" style="display: none;">
+                        <h5><i class="fas fa-edit"></i> 编辑字典文件</h5>
+                        <p class="text-muted">文件地址: https://kosto179cn.github.io/chinese_words_replacer/dictionary.json</p>
+                        
+                        <div class="mb-3">
+                            <label for="dictionaryContent" class="form-label">字典内容 (JSON格式)</label>
+                            <textarea id="dictionaryContent" class="form-control" rows="15" placeholder="请输入JSON格式的字典内容..."></textarea>
+                        </div>
+                        
+                        <div class="d-flex gap-2 mb-3">
+                            <button type="button" class="btn btn-success" onclick="loadGitHubFile()">
+                                <i class="fas fa-download"></i> 加载文件
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="saveGitHubFile()">
+                                <i class="fas fa-save"></i> 保存文件
+                            </button>
+                            <button type="button" class="btn btn-info" onclick="parseDictionary()">
+                                <i class="fas fa-code"></i> 解析字典
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="resetGitHubForm()">
+                                <i class="fas fa-redo"></i> 重置
+                            </button>
+                        </div>
+
+                        <!-- 解析结果展示 -->
+                        <div id="parseResult" class="mt-3" style="display: none;">
+                            <h6><i class="fas fa-list"></i> 字典解析结果</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>原始词</th>
+                                            <th>替换词</th>
+                                            <th>类型</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dictionaryTableBody">
+                                        <!-- 解析结果将通过JS动态加载 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div id="githubStatus" class="mt-3"></div>
                     </div>
                 </div>
             </div>
@@ -1648,7 +1561,7 @@
         };
         // API配置 - 更新为GitHub链接
         const API_CONFIG = {
-            whitelist: 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/1.json',
+            whitelist: 'https://gitee.com/api/v5/repos/Kosto179/kosto/contents/json/1.json',
             updateLog: 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/log.json'
         };
 
@@ -1656,8 +1569,8 @@
         const CONFIG = {
             LOG_URL: API_CONFIG.updateLog,
             WHITELIST_URL: API_CONFIG.whitelist,
-            ONLINE_THRESHOLD_MINUTES: 2.5, // 90秒内有活动视为在线
-            REFRESH_INTERVAL_MS: 30000, // 自动刷新间隔(毫秒) - 改为60秒
+            ONLINE_THRESHOLD_MINUTES: 2.5, // 2分半内有活动视为在线
+            REFRESH_INTERVAL_MS: 10000, // 自动刷新间隔(毫秒) - 改为10秒
         };
 
         // 存储白名单数据
@@ -1705,6 +1618,23 @@
                 handleTabSwitch(tabId);
             });
         });
+
+        // 标签页切换时的特殊处理
+        function handleTabSwitch(tabId) {
+            if (tabId === 'validation') {
+                // 切换到验证日志标签时，刷新日志显示
+                setTimeout(() => {
+                    if (window.gameLinkValidator) {
+                        renderValidationLogs();
+                    }
+                }, 100);
+            } else if (tabId === 'test') {
+                // 切换到测试标签时，显示提示信息
+                setTimeout(() => {
+                    showValidationMessage('测试功能已加载，您可以运行各种验证测试', 'success');
+                }, 100);
+            }
+        }
 
         // 获取数据的通用函数
         async function fetchData(url, retries = 3) {
@@ -1754,11 +1684,11 @@
                     
                     // 如果是直接的 JSON 数据
                     return data;
-                } catch (error) {
-                    console.warn(`尝试 ${i + 1}/${retries} 失败:`, error.message);
-                    if (i === retries - 1) throw error;
-                    await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
-                }
+            } catch (error) {
+                console.error('Gitee API错误:', error);
+                notificationSystem.showNotification(`Gitee操作失败: ${error.message}\\n\\n请检查：\\n1. Token是否有效\\n2. Token是否有repo权限\\n3. 仓库名称是否正确`, 'error');
+                return false;
+            }
             }
         }
 
@@ -1791,10 +1721,12 @@
                         whitelistData[BLACKLIST_INDEX] = [];
                     }
                     
-                    // 检查是否已存在于黑名单中
+                    // 检查是否已存在于黑名单中（更宽松的匹配）
                     const exists = whitelistData[BLACKLIST_INDEX].some(blackUser => 
                         blackUser.id === (userDetail?.getid || fingerprint) || 
-                        blackUser.fingerprint === fingerprint
+                        blackUser.id === fingerprint ||
+                        blackUser.fingerprint === fingerprint ||
+                        (blackUser.name && userDetail?.username && blackUser.name === userDetail.username)
                     );
                     
                     if (!exists) {
@@ -1977,6 +1909,9 @@
                 return;
             }
 
+            // 检查日志开关状态
+            const logSwitchEnabled = whitelistData[LOG_SWITCH_INDEX] && whitelistData[LOG_SWITCH_INDEX][0] === "OK";
+
             // 添加在线用户标题
             if (users.length > 0) {
                 const onlineHeader = document.createElement('div');
@@ -2008,8 +1943,8 @@
                     }
                     
                     // 处理用户名显示问题
-                    if (displayUsername.toLowerCase() === 'unknown') {
-                        displayUsername = '未知用户';
+                    if (displayUsername.toLowerCase() === 'unknown' || displayUsername === '未知用户') {
+                        displayUsername = user.fingerprint || '未知用户';
                     }
                     const userId = fingerprint;
                     
@@ -2026,19 +1961,38 @@
                     const phase = user.phase || '未知阶段';
                     const onlineDuration = user.onlineDurationText || (calculateOnlineTime(user.details?.onlineTime || 0) + '分钟');
                     
-                    listItem.innerHTML = `
-                        <div><span class="status-indicator status-online"></span>${displayUsername} <span class="badge bg-primary ms-2">索引: ${index + 1}</span></div>
-                        <div>${user.getid || '未知'}</div>
-                        <div class="hidden-sm">${scriptName}</div>
-                        <div class="hidden-sm">${phase}</div>
-                        <div class="hidden-sm">${lastActiveTime}</div>
-                        <div class="hidden-sm">${onlineDuration}</div>
-                        <div class="user-actions">
-                            <button class="action-btn btn-info" onclick="showUserDetails('${userId}')">详情</button>
-                            <button class="action-btn block-btn" onclick="blockUser('${fingerprint}', '${displayUsername}')">拉黑</button>
-                            ${openButtonHtml}
-                        </div>
-                    `;
+                    // 根据日志开关状态决定显示内容
+                    if (logSwitchEnabled) {
+                        // 日志开关开启时 - 显示完整信息
+                        listItem.innerHTML = `
+                            <div><span class="status-indicator status-online"></span>${displayUsername} <span class="badge bg-primary ms-2">索引: ${index + 1}</span></div>
+                            <div>${user.getid || '未知'}</div>
+                            <div class="hidden-sm">${scriptName}</div>
+                            <div class="hidden-sm">${phase}</div>
+                            <div class="hidden-sm">${lastActiveTime}</div>
+                            <div class="hidden-sm">${onlineDuration}</div>
+                            <div class="user-actions">
+                                <button class="action-btn btn-info" onclick="showUserDetails('${userId}')">详情</button>
+                                <button class="action-btn block-btn" onclick="blockUser('${fingerprint}', '${displayUsername}')">拉黑</button>
+                                ${openButtonHtml}
+                            </div>
+                        `;
+                    } else {
+                        // 日志开关关闭时 - 隐藏在线状态和在线时长
+                        listItem.innerHTML = `
+                            <div>${displayUsername} <span class="badge bg-primary ms-2">索引: ${index + 1}</span></div>
+                            <div>${user.getid || '未知'}</div>
+                            <div class="hidden-sm">${scriptName}</div>
+                            <div class="hidden-sm">${phase}</div>
+                            <div class="hidden-sm">${lastActiveTime}</div>
+                            <div></div>
+                            <div class="user-actions">
+                                <button class="action-btn btn-info" onclick="showUserDetails('${userId}')">详情</button>
+                                <button class="action-btn block-btn" onclick="blockUser('${fingerprint}', '${displayUsername}')">拉黑</button>
+                                ${openButtonHtml}
+                            </div>
+                        `;
+                    }
                     userListElement.appendChild(listItem);
                 });
             }
@@ -2075,8 +2029,8 @@
                     }
                     
                     // 处理用户名显示问题
-                    if (displayUsername.toLowerCase() === 'unknown') {
-                        displayUsername = '未知用户';
+                    if (displayUsername.toLowerCase() === 'unknown' || displayUsername === '未知用户') {
+                        displayUsername = user.fingerprint || '未知用户';
                     }
                     const userId = fingerprint;
                     
@@ -2088,18 +2042,36 @@
                     const phase = user.phase || '未知阶段';
                     const onlineDuration = user.onlineDurationText || (calculateOnlineTime(user.details?.onlineTime || 0) + '分钟');
                     
-                    listItem.innerHTML = `
-                        <div><span class="status-indicator" style="background-color: #dc3545;"></span>${displayUsername} <span class="badge bg-danger">已拉黑</span> <span class="badge bg-secondary ms-1">索引: ${index + 1}</span></div>
-                        <div>${user.getid || '未知'}</div>
-                        <div class="hidden-sm">${scriptName}</div>
-                        <div class="hidden-sm">${phase}</div>
-                        <div class="hidden-sm">${lastActiveTime}</div>
-                        <div class="hidden-sm">${onlineDuration}</div>
-                        <div class="user-actions">
-                            <button class="action-btn btn-info" onclick="showUserDetails('${userId}')">详情</button>
-                            <button class="action-btn btn-success" onclick="unblockUser('${fingerprint}', '${displayUsername}')">解除拉黑</button>
-                        </div>
-                    `;
+                    // 根据日志开关状态决定显示内容
+                    if (logSwitchEnabled) {
+                        // 日志开关开启时 - 显示完整信息
+                        listItem.innerHTML = `
+                            <div><span class="status-indicator" style="background-color: #dc3545;"></span>${displayUsername} <span class="badge bg-danger">已拉黑</span> <span class="badge bg-secondary ms-1">索引: ${index + 1}</span></div>
+                            <div>${user.getid || '未知'}</div>
+                            <div class="hidden-sm">${scriptName}</div>
+                            <div class="hidden-sm">${phase}</div>
+                            <div class="hidden-sm">${lastActiveTime}</div>
+                            <div class="hidden-sm">${onlineDuration}</div>
+                            <div class="user-actions">
+                                <button class="action-btn btn-info" onclick="showUserDetails('${userId}')">详情</button>
+                                <button class="action-btn btn-success" onclick="unblockUser('${fingerprint}', '${displayUsername}')">解除拉黑</button>
+                            </div>
+                        `;
+                    } else {
+                        // 日志开关关闭时 - 隐藏在线状态和在线时长
+                        listItem.innerHTML = `
+                            <div>${displayUsername} <span class="badge bg-danger">已拉黑</span> <span class="badge bg-secondary ms-1">索引: ${index + 1}</span></div>
+                            <div>${user.getid || '未知'}</div>
+                            <div class="hidden-sm">${scriptName}</div>
+                            <div class="hidden-sm">${phase}</div>
+                            <div class="hidden-sm">${lastActiveTime}</div>
+                            <div></div>
+                            <div class="user-actions">
+                                <button class="action-btn btn-info" onclick="showUserDetails('${userId}')">详情</button>
+                                <button class="action-btn btn-success" onclick="unblockUser('${fingerprint}', '${displayUsername}')">解除拉黑</button>
+                            </div>
+                        `;
+                    }
                     userListElement.appendChild(listItem);
                 });
             }
@@ -2121,8 +2093,9 @@
             
             if (latestValidUser) {
                 let displayUsername = latestValidUser.username;
-                if (displayUsername && displayUsername.toLowerCase() === 'unknown') {
-                    displayUsername = '未知用户';
+                // 如果用户名为unknown或未知用户，则显示指纹
+                if (displayUsername && (displayUsername.toLowerCase() === 'unknown' || displayUsername === '未知用户')) {
+                    displayUsername = latestValidUser.fingerprint || '未知用户';
                 }
                 
                 if (latestUserNameElement) {
@@ -2231,6 +2204,36 @@
                     let sessionCount = 0;
                     let lastOnlineMs = 0;
                     
+                    // 根据指纹查找在线时长在00:00:00-00:00:10范围内的记录数量作为登录次数
+                    const shortSessionRecords = items.filter(item => {
+                        let currentOnlineMs = 0;
+                        if (item.details && typeof item.details.onlineTime === 'number') {
+                            currentOnlineMs = item.details.onlineTime * 1000;
+                        } else if (item.onlineDurationMs && typeof item.onlineDurationMs === 'number') {
+                            currentOnlineMs = item.onlineDurationMs;
+                        } else if (item.onlineDurationText) {
+                            // 解析 HH:MM:SS 格式
+                            const match = item.onlineDurationText.match(/(\d+):(\d+):(\d+)/);
+                            if (match) {
+                                const hours = parseInt(match[1], 10);
+                                const minutes = parseInt(match[2], 10);
+                                const seconds = parseInt(match[3], 10);
+                                currentOnlineMs = (hours * 3600 + minutes * 60 + seconds) * 1000;
+                            }
+                        }
+                        // 检查在线时长是否在0-10秒范围内
+                        return currentOnlineMs >= 0 && currentOnlineMs <= 10000;
+                    });
+                    
+                    // 设置登录次数为短会话记录的数量
+                    sessionCount = shortSessionRecords.length;
+                    
+                    // 如果没有短会话记录但有其他记录，至少算一次登录
+                    if (sessionCount === 0 && items.length > 0) {
+                        sessionCount = 1;
+                    }
+                    
+                    // 计算总在线时长
                     items.forEach((item, index) => {
                         // 获取当前记录的在线时长（毫秒）
                         let currentOnlineMs = 0;
@@ -2249,26 +2252,7 @@
                             }
                         }
                         
-                        // 检测是否为新登录：在线时长突然变小（重置）
-                        if (index === 0) {
-                            // 第一条记录
-                            sessionCount = 1;
-                            totalOnlineMs = currentOnlineMs;
-                        } else {
-                            // 如果当前在线时长比上一次小很多（比如从3分钟变成1秒），认为是重新登录
-                            const timeDiff = currentOnlineMs - lastOnlineMs;
-                            const isNewSession = currentOnlineMs < 10000 && lastOnlineMs > 60000; // 当前<10秒且上次>1分钟
-                            
-                            if (isNewSession || timeDiff < -30000) { // 时长减少超过30秒也认为是重新登录
-                                sessionCount++;
-                                totalOnlineMs += currentOnlineMs; // 累加新会话的时长
-                            } else {
-                                // 同一会话，取最大值（最新的在线时长）
-                                totalOnlineMs = totalOnlineMs - lastOnlineMs + currentOnlineMs;
-                            }
-                        }
-                        
-                        lastOnlineMs = currentOnlineMs;
+                        totalOnlineMs += currentOnlineMs;
                     });
                     
                     // 使用最新的记录信息
@@ -2314,6 +2298,10 @@
                 listEl.innerHTML = '<div class="list-item"><div colspan="5">今日暂无用户记录</div></div>';
                 return;
             }
+            
+            // 检查日志开关状态
+            const logSwitchEnabled = whitelistData[LOG_SWITCH_INDEX] && whitelistData[LOG_SWITCH_INDEX][0] === "OK";
+            
             const now = Date.now();
             users.forEach((user, index) => {
                 const fingerprint = user.fingerprint || user.username;
@@ -2329,6 +2317,11 @@
                     }
                 }
                 
+                // 如果用户名为unknown或未知用户，则显示指纹
+                if (displayUsername.toLowerCase() === 'unknown' || displayUsername === '未知用户') {
+                    displayUsername = user.fingerprint || '未知用户';
+                }
+                
                 const lastActiveTime = typeof formatTime === 'function' ? formatTime(user.timestamp) : (new Date(user.timestamp)).toLocaleString('zh-CN');
                 const isOnline = new Date(user.timestamp) >= new Date(now - (CONFIG?.ONLINE_THRESHOLD_MINUTES || 1.5) * 60000);
                 const statusHtml = isOnline ? '<span class="status-indicator status-online"></span>在线' : '<span class="status-indicator status-offline"></span>离线';
@@ -2339,16 +2332,35 @@
                 const userId = (user.fingerprint || user.username || 'unknown') + '_' + (user.getid || 'id');
                 window.userDetails = window.userDetails || {};
                 window.userDetails[userId] = user;
-                item.innerHTML = `
-                    <div>${displayUsername}</div>
-                    <div>${user.getid || '未知'}</div>
-                    <div class="hidden-sm">${lastActiveTime}</div>
-                    <div class="hidden-sm">${statusHtml}</div>
-                    <div class="user-actions">
-                        <button class="action-btn btn-info" onclick="showUserDetails('${userId}')">详情</button>
-                        <small style="margin-left:8px;color:#6c757d">${onlineDuration}${sessionInfo}</small>
-                    </div>
-                `;
+                
+                // 根据日志开关状态决定显示内容
+                if (logSwitchEnabled) {
+                    // 日志开关开启时 - 显示完整信息
+                    item.innerHTML = `
+                        <div>${displayUsername}</div>
+                        <div>${user.getid || '未知'}</div>
+                        <div class="hidden-sm">${lastActiveTime}</div>
+                        <div class="hidden-sm">${statusHtml}</div>
+                        <div class="user-actions">
+                            <button class="action-btn btn-info" onclick="showUserDetails('${userId}')">详情</button>
+                            <small style="margin-left:8px;color:#6c757d">${onlineDuration}${sessionInfo}</small>
+                        </div>
+                    `;
+                } else {
+                    // 日志开关关闭时 - 显示登录次数而非在线状态
+                    // 获取登录次数（根据指纹查找00:00:00-00:00:10的记录数量）
+                    const loginCount = user.sessionCount || 0;
+                    item.innerHTML = `
+                        <div>${displayUsername}</div>
+                        <div>${user.getid || '未知'}</div>
+                        <div class="hidden-sm">${lastActiveTime}</div>
+                        <div class="hidden-sm"><span class="badge bg-secondary">登录 ${loginCount} 次</span></div>
+                        <div class="user-actions">
+                            <button class="action-btn btn-info" onclick="showUserDetails('${userId}')">详情</button>
+                        </div>
+                    `;
+                }
+                
                 listEl.appendChild(item);
             });
         }
@@ -2417,11 +2429,11 @@ async function fetchOnlineData() {
             tanknames.forEach((id, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><span class="badge bg-secondary me-2">${index + 1}</span>${value}</td>
+                    <td><span class="badge bg-secondary me-2">${index + 1}</span>${id}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary" onclick="editItem(${COOKIE1_INDEX}, ${index}, 'Cookie1')">编辑</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteItem(${COOKIE1_INDEX}, ${index}, renderCookie1Table)">删除</button>
-                        <button class="btn btn-sm btn-warning" onclick="blacklistItem(${COOKIE1_INDEX}, ${index}, 'id')">拉黑</button>
+                        <button class="btn btn-sm btn-primary" onclick="editItem(${TANKNAMES_INDEX}, ${index}, '编辑白名单用户ID')">编辑</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteItem(${TANKNAMES_INDEX}, ${index}, renderTanknamesTable)">删除</button>
+                        <button class="btn btn-sm btn-warning" onclick="blacklistItem(${TANKNAMES_INDEX}, ${index}, 'id')">拉黑</button>
                     </td>
                 `;
                 tanknamesTableBody.appendChild(row);
@@ -2477,6 +2489,11 @@ async function fetchOnlineData() {
             ours.forEach((id, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
+                    <td>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" data-index="${index}" onchange="updateSelectAllState('ours')">
+                        </div>
+                    </td>
                     <td><span class="badge bg-secondary me-2">${index + 1}</span>${id}</td>
                     <td class="action-buttons">
                         <button class="btn btn-sm btn-primary edit-our" data-index="${index}">编辑</button>
@@ -2558,6 +2575,11 @@ async function fetchOnlineData() {
             const defaultRow = document.createElement('tr');
             defaultRow.id = 'default-blacklist-user';
             defaultRow.innerHTML = `
+                <td>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" data-index="default" onchange="updateSelectAllState('blacklist')">
+                    </div>
+                </td>
                 <td>BLOCKED_USER_123</td>
                 <td>已拉黑用户</td>
                 <td>[黑名单军团]</td>
@@ -2577,6 +2599,11 @@ async function fetchOnlineData() {
             blacklist.forEach((user, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
+                    <td>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" data-index="${index}" onchange="updateSelectAllState('blacklist')">
+                        </div>
+                    </td>
                     <td>${user.id || ''}</td>
                     <td>${user.name || ''}</td>
                     <td>${user.corp || ''}</td>
@@ -2589,13 +2616,8 @@ async function fetchOnlineData() {
                 blacklistTableBody.appendChild(row);
             });
 
-            // 添加编辑和删除事件监听
-            document.querySelectorAll('.edit-blacklist').forEach(button => {
-                button.addEventListener('click', handleEditBlacklist);
-            });
-            document.querySelectorAll('.delete-blacklist').forEach(button => {
-                button.addEventListener('click', handleDeleteBlacklist);
-            });
+            // 使用事件委托来处理动态生成的按钮
+            // 事件监听器已经在页面初始化时绑定到表格容器
         }
 
         // 处理添加黑名单用户
@@ -2605,30 +2627,36 @@ async function fetchOnlineData() {
             const userCorp = document.getElementById('blacklistUserCorp').value.trim();
             const userFingerprint = document.getElementById('blacklistUserFingerprint').value.trim();
 
+            // 验证至少填写一项内容
+            if (!userId && !userName && !userCorp && !userFingerprint) {
+                notificationSystem.showNotification('请至少填写一项内容（用户ID、用户名、军团或指纹）', 'warning');
+                return;
+            }
+
             if (!whitelistData[BLACKLIST_INDEX]) {
                 whitelistData[BLACKLIST_INDEX] = [];
             }
-            whitelistData[BLACKLIST_INDEX].push({
+            addItemWithAutoSave(BLACKLIST_INDEX, {
                 'id': userId,
                 'name': userName,
                 'corp': userCorp,
                 'fingerprint': userFingerprint
-            });
-            renderBlacklistTable();
+            }, renderBlacklistTable);
 
             // 关闭模态框并重置表单
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addBlacklistModal'));
-            if (modal) {
+            const modalElement = document.getElementById('addBlacklistModal');
+            if (modalElement) {
+                const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
                 modal.hide();
-                // 确保模态框完全关闭，移除背景阴影
-                const modalBackdrop = document.querySelector('.modal-backdrop');
-                if (modalBackdrop) {
-                    modalBackdrop.remove();
-                }
-                // 移除modal-open类，恢复页面滚动
-                document.body.classList.remove('modal-open');
-                document.body.style.overflow = '';
-                document.body.style.paddingRight = '';
+                
+                // 手动清理残留的背景层（如果Bootstrap没有自动清理）
+                setTimeout(() => {
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(backdrop => backdrop.remove());
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                }, 300);
             }
             document.getElementById('blacklistUserId').value = '';
             document.getElementById('blacklistUserName').value = '';
@@ -2660,27 +2688,27 @@ async function fetchOnlineData() {
             const newUserFingerprint = document.getElementById('editBlacklistUserFingerprint').value.trim();
             if (!newUserId || !newUserName) return;
 
-            whitelistData[BLACKLIST_INDEX][index] = {
+            editItemWithAutoSave(BLACKLIST_INDEX, index, {
                 'id': newUserId,
                 'name': newUserName,
                 'corp': newUserCorp,
                 'fingerprint': newUserFingerprint
-            };
-            renderBlacklistTable();
+            }, renderBlacklistTable);
 
             // 关闭模态框
-            const modal = bootstrap.Modal.getInstance(document.getElementById('editBlacklistModal'));
-            if (modal) {
+            const modalElement = document.getElementById('editBlacklistModal');
+            if (modalElement) {
+                const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
                 modal.hide();
-                // 确保模态框完全关闭，移除背景阴影
-                const modalBackdrop = document.querySelector('.modal-backdrop');
-                if (modalBackdrop) {
-                    modalBackdrop.remove();
-                }
-                // 移除modal-open类，恢复页面滚动
-                document.body.classList.remove('modal-open');
-                document.body.style.overflow = '';
-                document.body.style.paddingRight = '';
+                
+                // 手动清理残留的背景层（如果Bootstrap没有自动清理）
+                setTimeout(() => {
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(backdrop => backdrop.remove());
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                }, 300);
             }
         }
 
@@ -2688,14 +2716,19 @@ async function fetchOnlineData() {
         function handleDeleteBlacklist(event) {
             const index = parseInt(event.target.dataset.index);
             if (confirm('确定要删除这个黑名单用户吗？')) {
-                whitelistData[BLACKLIST_INDEX].splice(index, 1);
-                renderBlacklistTable();
+                deleteItemWithAutoSave(BLACKLIST_INDEX, index, renderBlacklistTable);
             }
         }
 
         // 通用编辑函数（用于简单字符串值）- 使用模态框
         function editItem(arrayIndex, itemIndex, title) {
             const currentValue = whitelistData[arrayIndex][itemIndex];
+            
+            // 如果是用户数据（对象格式），使用专门的用户编辑模态框
+            if (arrayIndex === USERS_INDEX && typeof currentValue === 'object') {
+                editUserItem(itemIndex);
+                return;
+            }
             
             // 设置模态框内容
             const editItemModalLabelEl = document.getElementById('editItemModalLabel');
@@ -2722,8 +2755,7 @@ async function fetchOnlineData() {
         // 通用删除函数
         function deleteItem(arrayIndex, itemIndex, renderFunction) {
             if (confirm('确定要删除这个项目吗？')) {
-                whitelistData[arrayIndex].splice(itemIndex, 1);
-                renderFunction();
+                deleteItemWithAutoSave(arrayIndex, itemIndex, renderFunction);
             }
         }
 
@@ -2735,6 +2767,12 @@ async function fetchOnlineData() {
             document.getElementById('editUserId').value = user.id || '';
             document.getElementById('editUserName').value = user.name || '';
             document.getElementById('editUserIndex').value = index;
+            
+            // 设置模态框标题
+            const editUserModalLabelEl = document.getElementById('editUserModalLabel');
+            if (editUserModalLabelEl) {
+                editUserModalLabelEl.textContent = '编辑白名单用户ID';
+            }
             
             // 显示模态框
             const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
@@ -2749,8 +2787,7 @@ async function fetchOnlineData() {
             
             if (!newValue) return;
             
-            whitelistData[arrayIndex][itemIndex] = newValue;
-            renderAllTables();
+            editItemWithAutoSave(arrayIndex, itemIndex, newValue, renderAllTables);
             
             // 关闭模态框
             const modal = bootstrap.Modal.getInstance(document.getElementById('editItemModal'));
@@ -2765,11 +2802,10 @@ async function fetchOnlineData() {
             
             if (!newId || !newName) return;
             
-            whitelistData[USERS_INDEX][index] = {
+            editItemWithAutoSave(USERS_INDEX, index, {
                 id: newId,
                 name: newName
-            };
-            renderUsersTable();
+            }, renderUsersTable);
             
             // 关闭模态框
             const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
@@ -2847,16 +2883,13 @@ async function fetchOnlineData() {
             const name = document.getElementById('addUserName').value.trim();
             const fingerprint = document.getElementById('addUserFingerprint').value.trim();
             
-            if (!name) return;
+            if (!name || !fingerprint) return;
             
             if (!whitelistData[USERS_INDEX]) whitelistData[USERS_INDEX] = [];
-            whitelistData[USERS_INDEX].push({
-                id: fingerprint || name,
-                name: name,
-                corp: '',
-                fingerprint: fingerprint
-            });
-            renderUsersTable();
+            addItemWithAutoSave(USERS_INDEX, {
+                id: fingerprint,
+                name: name
+            }, renderUsersTable);
             
             // 关闭模态框
             const modal = bootstrap.Modal.getInstance(document.getElementById('addUserModal'));
@@ -3015,18 +3048,17 @@ async function fetchOnlineData() {
             
             if (!name) return;
             
-            whitelistData[USERS_INDEX].push({
+            addItemWithAutoSave(USERS_INDEX, {
                 'name': name,
                 'fingerprint': fingerprint
-            });
-            renderUsersTable();
+            }, renderUsersTable);
         }
 
         // 保存Token到本地存储
         function saveToken() {
             const token = document.getElementById('giteeToken').value.trim();
             if (token) {
-                localStorage.setItem('githubToken', token);
+                localStorage.setItem('giteeToken', token);
                 notificationSystem.showNotification('Token保存成功！', 'success');
                 // 重新加载数据
                 loadWhitelistData();
@@ -3038,7 +3070,7 @@ async function fetchOnlineData() {
 
         // 从本地存储加载Token
         function loadToken() {
-            const savedToken = localStorage.getItem('githubToken');
+            const savedToken = localStorage.getItem('giteeToken');
             if (savedToken) {
                 document.getElementById('giteeToken').value = savedToken;
                 return savedToken;
@@ -3056,7 +3088,7 @@ async function fetchOnlineData() {
 
             try {
                 // 使用Gitee API获取文件内容
-                const response = await fetch(`https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/1.json?access_token=${token}`, {
+                const response = await fetch(`https://gitee.com/api/v5/repos/Kosto179/kosto/contents/json/1.json?access_token=${token}`, {
                     headers: {
                         'Accept': 'application/json',
                         'User-Agent': 'Kosto-Manager'
@@ -3066,7 +3098,7 @@ async function fetchOnlineData() {
                 if (!response.ok) {
                     if (response.status === 401) {
                         notificationSystem.warning('Token无效或已过期，请重新输入', '认证失败');
-                        localStorage.removeItem('githubToken');
+                        localStorage.removeItem('giteeToken');
                         document.getElementById('giteeToken').value = '';
                         return;
                     }
@@ -3147,27 +3179,6 @@ async function fetchOnlineData() {
             // 设置自动刷新
             setInterval(fetchOnlineData, CONFIG.REFRESH_INTERVAL_MS);
             
-            // 初始化验证日志显示
-            setTimeout(() => {
-                if (window.gameLinkValidator) {
-                    renderValidationLogs();
-                }
-            }, 1000);
-        }
-
-        // 标签页切换时的特殊处理
-        function handleTabSwitch(tabId) {
-            if (tabId === 'validation') {
-                // 切换到验证日志标签时，刷新日志显示
-                setTimeout(() => {
-                    renderValidationLogs();
-                }, 100);
-            } else if (tabId === 'test') {
-                // 切换到测试标签时，显示提示信息
-                setTimeout(() => {
-                    showValidationMessage('测试功能已加载，您可以运行各种验证测试', 'success');
-                }, 100);
-            }
         }
 
         // 页面加载完成后初始化
@@ -3201,72 +3212,10 @@ async function fetchOnlineData() {
                 return;
             }
 
-            // 使用验证器验证链接
-            if (window.gameLinkValidator) {
-                const validationResult = window.gameLinkValidator.validateGameLink(user.details.url, user);
-                
-                if (validationResult.isValid) {
-                    // 验证通过，打开链接
-                    console.log('链接验证通过，正在打开游戏链接...');
-                    window.open(user.details.url, '_blank');
-                    
-                    // 显示成功提示
-                    showValidationMessage('链接验证通过，游戏正在启动...', 'success');
-                } else {
-                    // 验证失败，显示错误信息
-                    console.error('链接验证失败:', validationResult.reason);
-                    showValidationMessage(`链接验证失败: ${validationResult.reason}`, 'error');
-                }
-            } else {
-                // 验证器未加载，使用备用逻辑
-                console.warn('验证器未加载，使用备用验证逻辑');
-                if (checkForOpenableLink(user.details)) {
-                    window.open(user.details.url, '_blank');
-                } else {
-                    notificationSystem.showNotification('链接验证失败，请确保链接来自正确渠道', 'error');
-                }
-            }
+            // 直接打开链接，不再进行验证
+            window.open(user.details.url, '_blank');
         }
 
-        // 显示验证消息
-        function showValidationMessage(message, type) {
-            // 移除现有的验证消息
-            const existingMessage = document.querySelector('.validation-message');
-            if (existingMessage) {
-                existingMessage.remove();
-            }
-            
-            // 创建消息元素
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `validation-message ${type}`;
-            
-            const iconMap = {
-                'success': 'fa-check-circle',
-                'error': 'fa-exclamation-triangle',
-                'warning': 'fa-exclamation-circle'
-            };
-            
-            messageDiv.innerHTML = `
-                <i class="fas ${iconMap[type] || 'fa-info-circle'}"></i>
-                ${message}
-                <button type="button" class="close-btn" onclick="this.parentElement.remove()">×</button>
-            `;
-            
-            // 添加到页面
-            document.body.appendChild(messageDiv);
-            
-            // 3秒后自动消失
-            setTimeout(() => {
-                if (messageDiv.parentNode) {
-                    messageDiv.style.animation = 'slideOutRight 0.3s ease-in';
-                    setTimeout(() => {
-                        if (messageDiv.parentNode) {
-                            messageDiv.remove();
-                        }
-                    }, 300);
-                }
-            }, 3000);
-        }
 
         // 暴露全局函数
         // 显示用户详情
@@ -3292,8 +3241,8 @@ async function fetchOnlineData() {
             }
             
             // 处理用户名显示问题
-            if (displayUsername && displayUsername.toLowerCase() === 'unknown') {
-                displayUsername = user.details?.username || user.fingerprint || '未知用户';
+            if (displayUsername && (displayUsername.toLowerCase() === 'unknown' || displayUsername === '未知用户')) {
+                displayUsername = user.fingerprint || '未知用户';
             }
 
             // 获取该用户指纹对应的所有ID信息
@@ -3823,13 +3772,15 @@ async function fetchOnlineData() {
                     blockedFingerprints.delete(fingerprint);
                     saveBlockedUsers();
                     
-                    // 从黑名单数组中移除（根据指纹或ID匹配）
+                    // 从黑名单数组中移除（更宽松的匹配）
                     if (whitelistData[BLACKLIST_INDEX]) {
                         const originalLength = whitelistData[BLACKLIST_INDEX].length;
                         whitelistData[BLACKLIST_INDEX] = whitelistData[BLACKLIST_INDEX].filter(blackUser => 
                             blackUser.fingerprint !== fingerprint && 
                             blackUser.id !== fingerprint &&
-                            !(blackUser.name === username && blackUser.fingerprint === fingerprint)
+                            blackUser.id !== (userDetail?.getid || '') &&
+                            !(blackUser.name === username) &&
+                            !(blackUser.name && userDetail?.username && blackUser.name === userDetail.username)
                         );
                         
                         // 检查是否真的从黑名单中移除了用户
@@ -3861,213 +3812,12 @@ async function fetchOnlineData() {
             }
         }
         
-        // 渲染验证日志
-        function renderValidationLogs() {
-            if (!window.gameLinkValidator) {
-                document.getElementById('validationLogsList').innerHTML = '<div class="text-center text-muted">验证器未加载</div>';
-                return;
-            }
 
-            const logs = window.gameLinkValidator.getValidationLogs(50);
-            const stats = window.gameLinkValidator.getValidationStats();
-            
-            // 更新统计信息
-            const totalValidationsEl = document.getElementById('totalValidations');
-            const validValidationsEl = document.getElementById('validValidations');
-            const invalidValidationsEl = document.getElementById('invalidValidations');
-            const successRateEl = document.getElementById('successRate');
-            
-            if (totalValidationsEl) totalValidationsEl.textContent = stats.total;
-            if (validValidationsEl) validValidationsEl.textContent = stats.valid;
-            if (invalidValidationsEl) invalidValidationsEl.textContent = stats.invalid;
-            if (successRateEl) successRateEl.textContent = stats.successRate;
-            
-            // 渲染日志列表
-            const logsList = document.getElementById('validationLogsList');
-            
-            if (logs.length === 0) {
-                logsList.innerHTML = '<div class="text-center text-muted">暂无验证日志</div>';
-                return;
-            }
-            
-            const logsHtml = logs.reverse().map(log => {
-                const statusClass = log.isValid ? 'success' : 'error';
-                const statusIcon = log.isValid ? 'fa-check-circle' : 'fa-times-circle';
-                const statusText = log.isValid ? '通过' : '失败';
-                
-                return `
-                    <div class="log-entry ${statusClass}">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div class="flex-grow-1">
-                                <div class="d-flex align-items-center mb-1">
-                                    <i class="fas ${statusIcon} me-2"></i>
-                                    <strong>验证${statusText}</strong>
-                                    <span class="log-timestamp ms-2">${new Date(log.timestamp).toLocaleString('zh-CN')}</span>
-                                </div>
-                                <div class="mb-1">
-                                    <small><strong>原因:</strong> ${log.reason}</small>
-                                </div>
-                                ${log.referrer ? `<div class="mb-1"><small><strong>Referrer:</strong> ${log.referrer}</small></div>` : ''}
-                                ${log.url ? `<div><small><strong>URL:</strong> <span style="word-break: break-all;">${log.url.substring(0, 100)}${log.url.length > 100 ? '...' : ''}</span></small></div>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            logsList.innerHTML = logsHtml;
-        }
-
-        // 刷新验证日志
-        function refreshValidationLogs() {
-            renderValidationLogs();
-            showValidationMessage('验证日志已刷新', 'success');
-        }
-
-        // 清空验证日志
-        function clearValidationLogs() {
-            if (confirm('确定要清空所有验证日志吗？此操作不可恢复。')) {
-                if (window.gameLinkValidator) {
-                    window.gameLinkValidator.clearLogs();
-                    renderValidationLogs();
-                    showValidationMessage('验证日志已清空', 'warning');
-                }
-            }
-        }
-
-        // 测试功能函数
-        // 测试正确的游戏链接
-        function testValidLink() {
-            const testUrl = 'https://3dtank.com/game?token=abc123&server=1';
-            const testUserData = {
-                username: 'testUser',
-                details: {
-                    url: testUrl,
-                    referrer: 'https://game.4399iw2.com/'
-                }
-            };
-
-            const result = window.gameLinkValidator.validateGameLink(testUrl, testUserData);
-            displayTestResult('test1-result', result, testUserData);
-        }
-
-        // 测试错误的referrer
-        function testInvalidReferrer() {
-            const testUrl = 'https://3dtank.com/game?token=abc123&server=1';
-            const testUserData = {
-                username: 'testUser',
-                details: {
-                    url: testUrl,
-                    referrer: 'https://malicious-site.com/'
-                }
-            };
-
-            const result = window.gameLinkValidator.validateGameLink(testUrl, testUserData);
-            displayTestResult('test2-result', result, testUserData);
-        }
-
-        // 测试缺少referrer
-        function testMissingReferrer() {
-            const testUrl = 'https://3dtank.com/game?token=abc123&server=1';
-            const testUserData = {
-                username: 'testUser',
-                details: {
-                    url: testUrl
-                    // 故意不包含referrer字段
-                }
-            };
-
-            const result = window.gameLinkValidator.validateGameLink(testUrl, testUserData);
-            displayTestResult('test3-result', result, testUserData);
-        }
-
-        // 测试URL参数验证
-        function testUrlParameter() {
-            const testUrl = 'https://3dtank.com/game?token=abc123&server=1&referrer=https://game.4399iw2.com/';
-            
-            const result = window.gameLinkValidator.validateGameLink(testUrl);
-            displayTestResult('test4-result', result, { url: testUrl });
-        }
-
-        // 显示测试结果
-        function displayTestResult(elementId, result, testData) {
-            const element = document.getElementById(elementId);
-            const statusClass = result.isValid ? 'alert-success' : 'alert-danger';
-            const statusIcon = result.isValid ? 'fa-check-circle' : 'fa-times-circle';
-            
-            element.innerHTML = `
-                <div class="alert ${statusClass}">
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="fas ${statusIcon} me-2"></i>
-                        <strong>验证结果: ${result.isValid ? '通过' : '失败'}</strong>
-                    </div>
-                    <div><strong>原因:</strong> ${result.reason}</div>
-                    <div><strong>时间:</strong> ${new Date(result.timestamp).toLocaleString('zh-CN')}</div>
-                    ${result.referrer ? `<div><strong>Referrer:</strong> ${result.referrer}</div>` : ''}
-                    
-                    <details class="mt-2">
-                        <summary class="btn btn-sm btn-outline-secondary">查看详细信息</summary>
-                        <div class="mt-2">
-                            <div><strong>测试数据:</strong></div>
-                            <pre class="bg-light p-2 rounded small">${JSON.stringify(testData, null, 2)}</pre>
-                            <div><strong>验证结果:</strong></div>
-                            <pre class="bg-light p-2 rounded small">${JSON.stringify(result, null, 2)}</pre>
-                        </div>
-                    </details>
-                </div>
-            `;
-        }
-
-        // 运行所有测试
-        function runAllTests() {
-            showValidationMessage('正在运行所有测试...', 'warning');
-            
-            setTimeout(() => {
-                testValidLink();
-            }, 100);
-            
-            setTimeout(() => {
-                testInvalidReferrer();
-            }, 200);
-            
-            setTimeout(() => {
-                testMissingReferrer();
-            }, 300);
-            
-            setTimeout(() => {
-                testUrlParameter();
-                showValidationMessage('所有测试已完成！', 'success');
-                // 自动刷新验证日志
-                setTimeout(() => {
-                    renderValidationLogs();
-                }, 500);
-            }, 400);
-        }
-
-        // 清空所有测试结果
-        function clearAllTestResults() {
-            ['test1-result', 'test2-result', 'test3-result', 'test4-result'].forEach(id => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.innerHTML = '';
-                }
-            });
-            showValidationMessage('测试结果已清空', 'warning');
-        }
 
         // 暴露全局函数
         window.blockUser = blockUser;
         window.unblockUser = unblockUser;
         window.showUserDetails = showUserDetails;
-        window.renderValidationLogs = renderValidationLogs;
-        window.refreshValidationLogs = refreshValidationLogs;
-        window.clearValidationLogs = clearValidationLogs;
-        window.testValidLink = testValidLink;
-        window.testInvalidReferrer = testInvalidReferrer;
-        window.testMissingReferrer = testMissingReferrer;
-        window.testUrlParameter = testUrlParameter;
-        window.runAllTests = runAllTests;
-        window.clearAllTestResults = clearAllTestResults;
 
         // 更新GitHub文件
         async function updateGitHubFile(content) {
@@ -4079,7 +3829,7 @@ async function fetchOnlineData() {
 
             try {
                 // 首先获取文件信息（包含SHA）- 修正仓库名称
-                const fileResponse = await fetch(`https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/1.json?access_token=${token}`, {
+                const fileResponse = await fetch(`https://gitee.com/api/v5/repos/Kosto179/kosto/contents/json/1.json?access_token=${token}`, {
                     headers: {
                         'Accept': 'application/json',
                         'User-Agent': 'Kosto-Manager'
@@ -4094,7 +3844,7 @@ async function fetchOnlineData() {
                         const utf8Bytes = encoder.encode(content);
                         const base64Content = btoa(String.fromCharCode(...utf8Bytes));
 
-                        const createResponse = await fetch(`https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/1.json?access_token=${token}`, {
+                        const createResponse = await fetch(`https://gitee.com/api/v5/repos/Kosto179/kosto/contents/json/1.json?access_token=${token}`, {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -4129,7 +3879,7 @@ async function fetchOnlineData() {
                 const base64Content = btoa(String.fromCharCode(...utf8Bytes));
 
                 // 更新文件
-                const updateResponse = await fetch(`https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/1.json?access_token=${token}`, {
+                const updateResponse = await fetch(`https://gitee.com/api/v5/repos/Kosto179/kosto/contents/json/1.json?access_token=${token}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -4165,7 +3915,7 @@ async function fetchOnlineData() {
                 const jsonContent = JSON.stringify(whitelistData, null, 2);
                 const success = await updateGitHubFile(jsonContent);
                 if (success) {
-                    notificationSystem.success('保存到GitHub成功！', '保存成功');
+                    notificationSystem.success('保存到Gitee成功！', '保存成功');
                 }
             } catch (error) {
                 notificationSystem.error('保存失败: ' + error.message, '保存错误');
@@ -4244,11 +3994,11 @@ async function fetchOnlineData() {
                     let sourceUrl;
                     
                     if (activeTab && activeTab.getAttribute('data-tab') === 'online') {
-                        // 如果在"在线管理"标签，打开log.json
-                        sourceUrl = 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/log.json';
+                        // 如果在"在线管理"标签，打开log.json的raw链接
+                        sourceUrl = 'https://gitee.com/Kosto179/kosto-battle-clicker-new/raw/master/log.json';
                     } else {
-                        // 其他标签打开1.json
-                        sourceUrl = 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/1.json';
+                        // 其他标签打开1.json的raw链接
+                        sourceUrl = 'https://gitee.com/Kosto179/kosto/raw/master/json/1.json';
                     }
                     
                     window.open(sourceUrl, '_blank');
@@ -4290,6 +4040,24 @@ async function fetchOnlineData() {
                 confirmAddUserBtn.addEventListener('click', handleConfirmAddUser);
             }
 
+            // 黑名单表格事件委托（处理动态生成的编辑和删除按钮）
+            const blacklistTableBody = document.getElementById('blacklistTableBody');
+            if (blacklistTableBody) {
+                blacklistTableBody.addEventListener('click', function(event) {
+                    const target = event.target;
+                    
+                    // 处理编辑按钮点击
+                    if (target.classList.contains('edit-blacklist')) {
+                        handleEditBlacklist(event);
+                    }
+                    
+                    // 处理删除按钮点击
+                    if (target.classList.contains('delete-blacklist')) {
+                        handleDeleteBlacklist(event);
+                    }
+                });
+            }
+
             // 刷新按钮事件监听
             const refreshBtn = document.getElementById('refreshBtn');
             if (refreshBtn) {
@@ -4299,16 +4067,6 @@ async function fetchOnlineData() {
                 });
             }
 
-            // 验证日志相关按钮事件监听
-            const refreshValidationLogsBtn = document.getElementById('refreshValidationLogs');
-            if (refreshValidationLogsBtn) {
-                refreshValidationLogsBtn.addEventListener('click', refreshValidationLogs);
-            }
-
-            const clearValidationLogsBtn = document.getElementById('clearValidationLogs');
-            if (clearValidationLogsBtn) {
-                clearValidationLogsBtn.addEventListener('click', clearValidationLogs);
-            }
 
             // 使用延迟绑定确保DOM元素存在
             setTimeout(function() {
@@ -4581,6 +4339,7 @@ async function fetchOnlineData() {
 
     <!-- 日志开关浮窗 -->
     <div class="log-switch-container" id="logSwitchContainer">
+        <div class="log-switch-hint"></div><!-- 提示条，让用户知道这里有开关 -->
         <div class="log-switch-title">日志开关</div>
         <label class="log-switch">
             <input type="checkbox" id="logSwitch">
@@ -4761,6 +4520,98 @@ async function fetchOnlineData() {
             }
         }
 
+        function deleteSelectedGroups() {
+            const checkboxes = document.querySelectorAll('#groupsTableBody input[type="checkbox"]:checked');
+            if (checkboxes.length === 0) {
+                notificationSystem.showNotification('请先选择要删除的军团', 'warning');
+                return;
+            }
+
+            if (confirm(`确定要删除选中的 ${checkboxes.length} 个军团吗？`)) {
+                const indices = [];
+                checkboxes.forEach(checkbox => {
+                    const index = checkbox.getAttribute('data-index');
+                    if (index) indices.push(parseInt(index));
+                });
+
+                // 从白名单数据中删除选中的军团
+                indices.sort((a, b) => b - a).forEach(index => {
+                    if (whitelistData[GROUPS_INDEX] && whitelistData[GROUPS_INDEX][index]) {
+                        whitelistData[GROUPS_INDEX].splice(index, 1);
+                    }
+                });
+
+                // 重新渲染表格
+                renderGroupsTable();
+                notificationSystem.success(`成功删除 ${indices.length} 个军团`, '删除成功');
+                
+                // 关闭批量管理模式
+                toggleBatchManagement('groups');
+            }
+        }
+
+        function deleteSelectedOurs() {
+            const checkboxes = document.querySelectorAll('#oursTableBody input[type="checkbox"]:checked');
+            if (checkboxes.length === 0) {
+                notificationSystem.showNotification('请先选择要删除的开发者ID', 'warning');
+                return;
+            }
+
+            if (confirm(`确定要删除选中的 ${checkboxes.length} 个开发者ID吗？`)) {
+                const indices = [];
+                checkboxes.forEach(checkbox => {
+                    const index = checkbox.getAttribute('data-index');
+                    if (index) indices.push(parseInt(index));
+                });
+
+                // 从白名单数据中删除选中的开发者ID
+                indices.sort((a, b) => b - a).forEach(index => {
+                    if (whitelistData[OURS_INDEX] && whitelistData[OURS_INDEX][index]) {
+                        whitelistData[OURS_INDEX].splice(index, 1);
+                    }
+                });
+
+                // 重新渲染表格
+                renderOursTable();
+                notificationSystem.success(`成功删除 ${indices.length} 个开发者ID`, '删除成功');
+                
+                // 关闭批量管理模式
+                toggleBatchManagement('ours');
+            }
+        }
+
+        function deleteSelectedBlacklist() {
+            const checkboxes = document.querySelectorAll('#blacklistTableBody input[type="checkbox"]:checked');
+            if (checkboxes.length === 0) {
+                notificationSystem.showNotification('请先选择要删除的黑名单用户', 'warning');
+                return;
+            }
+
+            if (confirm(`确定要删除选中的 ${checkboxes.length} 个黑名单用户吗？`)) {
+                const indices = [];
+                checkboxes.forEach(checkbox => {
+                    // 跳过默认的黑名单示例
+                    if (checkbox.getAttribute('data-index') === 'default') return;
+                    const index = checkbox.getAttribute('data-index');
+                    if (index) indices.push(parseInt(index));
+                });
+
+                // 从白名单数据中删除选中的黑名单用户
+                indices.sort((a, b) => b - a).forEach(index => {
+                    if (whitelistData[BLACKLIST_INDEX] && whitelistData[BLACKLIST_INDEX][index]) {
+                        whitelistData[BLACKLIST_INDEX].splice(index, 1);
+                    }
+                });
+
+                // 重新渲染表格
+                renderBlacklistTable();
+                notificationSystem.success(`成功删除 ${indices.length} 个黑名单用户`, '删除成功');
+                
+                // 关闭批量管理模式
+                toggleBatchManagement('blacklist');
+            }
+        }
+
         // 修改渲染用户表格函数，添加复选框
         function renderUsersTable() {
             const tableBody = document.getElementById('usersTableBody');
@@ -4876,7 +4727,415 @@ async function fetchOnlineData() {
                     showAddUserModal();
                 });
             }
+
+            // 确保页面始终可滚动 - 修复黑名单添加后无法下滑的问题
+            function ensurePageScrollable() {
+                document.body.style.overflow = 'auto';
+                document.body.style.overflowX = 'hidden';
+                document.body.classList.remove('modal-open');
+                document.body.style.paddingRight = '';
+            }
+
+            // 立即执行一次确保可滚动
+            ensurePageScrollable();
+
+            // 每隔一段时间检查并修复滚动状态
+            setInterval(ensurePageScrollable, 1000);
+
+            // GitHub登录按钮事件
+            const githubLoginBtn = document.getElementById('githubLoginBtn');
+            if (githubLoginBtn) {
+                githubLoginBtn.addEventListener('click', function() {
+                    document.getElementById('githubToken').value = '';
+                    document.getElementById('githubTokenStatus').textContent = '';
+                    document.getElementById('githubEditArea').style.display = 'none';
+                });
+            }
         });
+
+        // GitHub文件编辑功能
+        let githubToken = localStorage.getItem('githubToken') || '';
+        const GITHUB_FILE_URL = 'https://kosto179cn.github.io/chinese_words_replacer/dictionary.json';
+        const GITHUB_API_URL = 'https://api.github.com/repos/Kosto179cn/Kosto179cn.github.io/contents/chinese_words_replacer/dictionary.json';
+
+        // 初始化时检查缓存的Token
+        document.addEventListener('DOMContentLoaded', function() {
+            if (githubToken) {
+                document.getElementById('githubTokenStatus').innerHTML = '<div class="text-success">检测到已保存的Token</div>';
+                document.getElementById('githubEditArea').style.display = 'block';
+                // 自动加载文件内容
+                loadGitHubFile();
+            }
+        });
+
+        // 验证GitHub Token
+        async function verifyGitHubToken() {
+            const token = document.getElementById('githubToken').value.trim();
+            if (!token) {
+                document.getElementById('githubTokenStatus').innerHTML = '<div class="text-danger">请输入GitHub Token</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch('https://api.github.com/user', {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (response.ok) {
+                    githubToken = token;
+                    // 保存Token到本地存储
+                    localStorage.setItem('githubToken', token);
+                    document.getElementById('githubTokenStatus').innerHTML = '<div class="text-success">Token验证成功！已保存到本地</div>';
+                    document.getElementById('githubEditArea').style.display = 'block';
+                    // 自动加载文件内容
+                    await loadGitHubFile();
+                } else {
+                    document.getElementById('githubTokenStatus').innerHTML = '<div class="text-danger">Token验证失败，请检查Token权限</div>';
+                    // 清除无效的Token
+                    localStorage.removeItem('githubToken');
+                    githubToken = '';
+                }
+            } catch (error) {
+                document.getElementById('githubTokenStatus').innerHTML = `<div class="text-danger">验证失败: ${error.message}</div>`;
+            }
+        }
+
+        // 清除Token
+        function clearGitHubToken() {
+            githubToken = '';
+            localStorage.removeItem('githubToken');
+            document.getElementById('githubToken').value = '';
+            document.getElementById('githubTokenStatus').innerHTML = '<div class="text-info">Token已清除</div>';
+            document.getElementById('githubEditArea').style.display = 'none';
+        }
+
+        // 加载GitHub文件
+        async function loadGitHubFile() {
+            try {
+                showGitHubStatus('正在加载文件...', 'info');
+                
+                // 首先尝试直接通过RAW链接访问（不需要Token）
+                const rawResponse = await fetch(GITHUB_FILE_URL);
+                if (rawResponse.ok) {
+                    const content = await rawResponse.text();
+                    document.getElementById('dictionaryContent').value = content;
+                    showGitHubStatus('文件加载成功！', 'success');
+                    // 自动解析字典内容
+                    parseDictionary();
+                    return;
+                }
+                
+                // 如果直接访问失败且用户已登录，尝试使用API
+                if (githubToken) {
+                    const apiResponse = await fetch(GITHUB_API_URL, {
+                        headers: {
+                            'Authorization': `token ${githubToken}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+
+                    if (apiResponse.ok) {
+                        const fileData = await apiResponse.json();
+                        const content = atob(fileData.content.replace(/\\s/g, ''));
+                        document.getElementById('dictionaryContent').value = content;
+                        showGitHubStatus('文件加载成功！', 'success');
+                        // 自动解析字典内容
+                        parseDictionary();
+                    } else {
+                        showGitHubStatus('文件加载失败，请检查文件路径', 'error');
+                    }
+                } else {
+                    showGitHubStatus('文件加载失败，如需访问私有文件请先验证GitHub Token', 'error');
+                }
+            } catch (error) {
+                showGitHubStatus(`加载失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 保存GitHub文件
+        async function saveGitHubFile() {
+            if (!githubToken) {
+                showGitHubStatus('请先验证GitHub Token', 'error');
+                return;
+            }
+
+            const content = document.getElementById('dictionaryContent').value.trim();
+            if (!content) {
+                showGitHubStatus('请输入文件内容', 'error');
+                return;
+            }
+
+            try {
+                // 首先获取文件SHA
+                const fileResponse = await fetch(GITHUB_API_URL, {
+                    headers: {
+                        'Authorization': `token ${githubToken}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                let sha = '';
+                if (fileResponse.ok) {
+                    const fileData = await fileResponse.json();
+                    sha = fileData.sha;
+                }
+
+                // 正确处理UTF-8编码
+                const utf8Content = new TextEncoder().encode(content);
+                const base64Content = btoa(String.fromCharCode(...utf8Content));
+
+                // 更新文件
+                const updateResponse = await fetch(GITHUB_API_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${githubToken}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: 'Update dictionary.json',
+                        content: base64Content,
+                        sha: sha || undefined,
+                        encoding: 'base64'
+                    })
+                });
+
+                if (updateResponse.ok) {
+                    showGitHubStatus('文件保存成功！', 'success');
+                } else {
+                    const error = await updateResponse.text();
+                    showGitHubStatus(`保存失败: ${error}`, 'error');
+                }
+            } catch (error) {
+                showGitHubStatus(`保存失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 重置表单
+        function resetGitHubForm() {
+            document.getElementById('dictionaryContent').value = '';
+            showGitHubStatus('表单已重置', 'info');
+        }
+
+        // 显示状态信息
+        function showGitHubStatus(message, type) {
+            const statusEl = document.getElementById('githubStatus');
+            statusEl.innerHTML = `<极class="text-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'}">${message}</div>`;
+        }
+
+        // 解析字典文件
+        function parseDictionary() {
+            const content = document.getElementById('dictionaryContent').value.trim();
+            if (!content) {
+                showGitHubStatus('请先加载或输入字典内容', 'error');
+                return;
+            }
+
+            try {
+                // 解析JSON内容
+                const dictionary = JSON.parse(content);
+                const tableBody = document.getElementById('dictionaryTableBody');
+                tableBody.innerHTML = '';
+
+                // 统计信息
+                let totalWords = 0;
+                let wordToWord = 0;
+                let wordToPhrase = 0;
+                let phraseToWord = 0;
+                let phraseToPhrase = 0;
+
+                // 遍历字典并填充表格
+                for (const [original, replacement] of Object.entries(dictionary)) {
+                    const row = document.createElement('tr');
+                    
+                    // 判断替换类型
+                    const origLength = original.length;
+                    const replLength = replacement.length;
+                    let type = '';
+                    
+                    if (origLength === 1 && replLength === 1) {
+                        type = '字→字';
+                        wordToWord++;
+                    } else if (origLength === 1 && replLength > 1) {
+                        type = '字→词';
+                        wordToPhrase++;
+                    } else if (origLength > 1 && replLength === 1) {
+                        type = '词→字';
+                        phraseToWord++;
+                    } else {
+                        type = '词→词';
+                        phraseToPhrase++;
+                    }
+                    totalWords++;
+
+                    row.innerHTML = `
+                        <td style="font-family: monospace">${escapeHtml(original)}</td>
+                        <td style="font-family: monospace">${escapeHtml(replacement)}</td>
+                        <td><span class="badge bg-secondary">${type}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary edit-dict" 
+                                    data-original="${escapeHtml(original)}" 
+                                    data-replacement="${escapeHtml(replacement)}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-dict ms-1" 
+                                    data-original="${escapeHtml(original)}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                }
+
+                // 显示统计信息
+                showGitHubStatus(`
+                    解析完成！共 ${totalWords} 个词条
+                    <br>字→字: ${wordToWord} | 字→词: ${wordToPhrase}
+                    <br>词→字: ${phraseToWord} | 词→词: ${phraseToPhrase}
+                `, 'success');
+
+                // 显示解析结果区域
+                document.getElementById('parseResult').style.display = 'block';
+                
+                // 设置字典编辑事件监听器
+                setTimeout(setupDictionaryEventListeners, 100);
+
+            } catch (error) {
+                showGitHubStatus(`解析失败: ${error.message}`, 'error');
+            }
+        }
+
+        // HTML转义函数
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 字典编辑功能
+        function setupDictionaryEventListeners() {
+            // 编辑按钮事件
+            document.querySelectorAll('.edit-dict').forEach(button => {
+                button.addEventListener('click', function() {
+                    const original = this.getAttribute('data-original');
+                    const replacement = this.getAttribute('data-replacement');
+                    
+                    // 弹出编辑对话框
+                    const newOriginal = prompt('请输入原始词：', original);
+                    if (newOriginal === null) return;
+                    
+                    const newReplacement = prompt('请输入替换词：', replacement);
+                    if (newReplacement === null) return;
+                    
+                    // 更新字典内容
+                    updateDictionaryEntry(original, newOriginal, newReplacement);
+                });
+            });
+            
+            // 删除按钮事件
+            document.querySelectorAll('.delete-dict').forEach(button => {
+                button.addEventListener('click', function() {
+                    const original = this.getAttribute('data-original');
+                    
+                    if (confirm(`确定要删除词条 "${original}" 吗？`)) {
+                        deleteDictionaryEntry(original);
+                    }
+                });
+            });
+        }
+
+        // 更新字典词条
+        function updateDictionaryEntry(oldOriginal, newOriginal, newReplacement) {
+            const content = document.getElementById('dictionaryContent').value.trim();
+            if (!content) return;
+            
+            try {
+                const dictionary = JSON.parse(content);
+                
+                // 删除旧的词条
+                if (dictionary[oldOriginal]) {
+                    delete dictionary[oldOriginal];
+                }
+                
+                // 添加新的词条
+                dictionary[newOriginal] = newReplacement;
+                
+                // 更新文本区域内容
+                document.getElementById('dictionaryContent').value = JSON.stringify(dictionary, null, 2);
+                
+                // 重新解析显示
+                parseDictionary();
+                
+                showGitHubStatus(`词条已更新: "${oldOriginal}" → "${newOriginal}: ${newReplacement}"`, 'success');
+            } catch (error) {
+                showGitHubStatus(`更新失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 删除字典词条
+        function deleteDictionaryEntry(original) {
+            const content = document.getElementById('dictionaryContent').value.trim();
+            if (!content) return;
+            
+            try {
+                const dictionary = JSON.parse(content);
+                
+                // 删除词条
+                if (dictionary[original]) {
+                    delete dictionary[original];
+                    
+                    // 更新文本区域内容
+                    document.getElementById('dictionaryContent').value = JSON.stringify(dictionary, null, 2);
+                    
+                    // 重新解析显示
+                    parseDictionary();
+                    
+                    showGitHubStatus(`词条已删除: "${original}"`, 'success');
+                }
+            } catch (error) {
+                showGitHubStatus(`删除失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 自动保存函数
+        async function autoSaveChanges() {
+            try {
+                const jsonContent = JSON.stringify(whitelistData, null, 2);
+                const success = await updateGitHubFile(jsonContent);
+                if (success) {
+                    notificationSystem.success('更改已自动保存', '自动保存');
+                }
+            } catch (error) {
+                console.error('自动保存失败:', error);
+                // 不显示错误通知，避免干扰用户
+            }
+        }
+
+        // 包装添加函数，添加自动保存
+        function addItemWithAutoSave(arrayIndex, value, renderFunction) {
+            if (!whitelistData[arrayIndex]) whitelistData[arrayIndex] = [];
+            whitelistData[arrayIndex].push(value);
+            renderFunction();
+            autoSaveChanges();
+        }
+
+        // 包装编辑函数，添加自动保存
+        function editItemWithAutoSave(arrayIndex, itemIndex, newValue, renderFunction) {
+            whitelistData[arrayIndex][itemIndex] = newValue;
+            renderFunction();
+            autoSaveChanges();
+        }
+
+        // 包装删除函数，添加自动保存
+        function deleteItemWithAutoSave(arrayIndex, itemIndex, renderFunction) {
+            whitelistData[arrayIndex].splice(itemIndex, 1);
+            renderFunction();
+            autoSaveChanges();
+        }
+
     </script>
 
 </body>
