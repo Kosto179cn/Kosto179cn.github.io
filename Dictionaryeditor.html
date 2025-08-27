@@ -8,25 +8,38 @@
     body { font-family: Arial, sans-serif; margin: 10px; }
     h2 { font-size: 1.2em; }
     label, #msg { display: block; margin-bottom: 10px; }
-    #token { width: 100%; max-width: 350px; padding: 8px; font-size: 1em; }
+    #token, #search { width: 100%; max-width: 350px; padding: 8px; font-size: 1em; margin-bottom: 8px;}
     button { display: block; width: 100%; max-width: 350px; margin: 8px 0; padding: 12px; font-size: 1em; border-radius: 6px; border: 1px solid #3498db; background: #3498db; color: #fff; }
     button:active { background: #2980b9; }
     table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 1em;}
     th, td { border: 1px solid #aaa; padding: 6px 4px; }
-    input[type="text"] { width: 90%; font-size: 1em; padding: 6px; box-sizing: border-box; }
-    @media (max-width: 600px) {
-      th, td { font-size: 0.95em; padding: 4px 2px;}
-      button, #token { font-size: 1em; }
-    }
+    input[type="text"], input[type="search"] { width: 90%; font-size: 1em; padding: 6px; box-sizing: border-box; }
     .delbtn { background: #e74c3c; border-color: #e74c3c; margin: 0; width: 80%; padding: 8px; border-radius: 4px;}
     .delbtn:active { background: #c0392b; }
+    .editbtn { background: #f1c40f; border-color: #f1c40f; color: #222; width: 80%; padding: 8px; border-radius: 4px;}
+    .editbtn:active { background: #f39c12;}
+    #addForm { background: #f9f9f9; padding: 12px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 12px; display:none;}
+    #addForm input { width: 90%; margin-bottom: 8px;}
+    #addForm button { margin-bottom: 0;}
+    @media (max-width: 600px) {
+      th, td { font-size: 0.95em; padding: 4px 2px;}
+      button, #token, #search { font-size: 1em; }
+    }
   </style>
 </head>
 <body>
   <h2>管理 chinese_words_replacer/dictionary.json</h2>
   <label>你的 GitHub Token（PAT）: <input type="password" id="token"></label>
   <button id="loadBtn">加载线上文件</button>
-  <button id="addRow">添加词条</button>
+  <input type="search" id="search" placeholder="搜索关键词或释义...">
+  <button id="addRow">添加新词条</button>
+  <div id="addForm">
+    <label>词：<input id="newKey" type="text" autocomplete="off"></label>
+    <label>释义：<input id="newVal" type="text" autocomplete="off"></label>
+    <button id="confirmAddBtn">确认添加</button>
+    <button onclick="document.getElementById('addForm').style.display='none'">取消</button>
+    <span id="addMsg"></span>
+  </div>
   <table id="dictTable"></table>
   <button id="saveBtn">自动上传到仓库</button>
   <span id="msg"></span>
@@ -36,23 +49,44 @@
     const path = "chinese_words_replacer/dictionary.json";
     let dict = {};
     let sha = null;
+    let filter = "";
 
     function showMsg(text, color="blue") {
       document.getElementById('msg').innerHTML = `<span style="color:${color}">${text}</span>`;
     }
 
+    function showAddMsg(text, color="red") {
+      document.getElementById('addMsg').innerHTML = `<span style="color:${color}">${text}</span>`;
+    }
+
     function renderTable() {
       const table = document.getElementById('dictTable');
       table.innerHTML = "<tr><th>词</th><th>释义</th><th>操作</th></tr>";
-      Object.entries(dict).forEach(([key, value], i) => {
+      const entries = Object.entries(dict)
+        .filter(([key, val]) => key.includes(filter) || val.includes(filter));
+      if(entries.length===0){
+        table.innerHTML += "<tr><td colspan=3 style='text-align:center;color:#aaa'>无结果</td></tr>";
+        return;
+      }
+      entries.forEach(([key, value], i) => {
         const row = document.createElement('tr');
-        row.innerHTML = `<td><input type="text" value="${key}" onchange="updateKey(${i}, this.value)"></td>
-                         <td><input type="text" value="${value}" onchange="updateValue(${i}, this.value)"></td>
-                         <td><button class="delbtn" onclick="deleteRow('${key}')">删除</button></td>`;
+        row.innerHTML = `<td>${key}</td>
+                         <td><input type="text" value="${value}" onchange="updateValue('${key}', this.value)"></td>
+                         <td>
+                            <button class="editbtn" onclick="editKey('${key}')">改词</button>
+                            <button class="delbtn" onclick="deleteRow('${key}')">删除</button>
+                         </td>`;
         table.appendChild(row);
       });
     }
 
+    // 搜索功能
+    document.getElementById('search').oninput = function(){
+      filter = this.value.trim();
+      renderTable();
+    };
+
+    // 加载文件
     document.getElementById('loadBtn').onclick = async () => {
       showMsg("正在加载...", "grey");
       const token = document.getElementById('token').value;
@@ -72,11 +106,52 @@
       }
     };
 
+    // 添加词条弹窗
     document.getElementById('addRow').onclick = () => {
-      dict["新词"] = "新释义";
+      document.getElementById('addForm').style.display = 'block';
+      document.getElementById('addMsg').textContent = '';
+      document.getElementById('newKey').value = '';
+      document.getElementById('newVal').value = '';
+      document.getElementById('newKey').focus();
+    };
+
+    // 确认添加词条
+    document.getElementById('confirmAddBtn').onclick = () => {
+      let key = document.getElementById('newKey').value.trim();
+      let val = document.getElementById('newVal').value.trim();
+      if(!key) { showAddMsg("词不能为空"); return;}
+      if(dict[key]) { showAddMsg("该词已存在"); return;}
+      dict[key] = val;
+      document.getElementById('addForm').style.display = 'none';
       renderTable();
     };
 
+    // 编辑词
+    window.editKey = (oldKey) => {
+      let newKey = prompt("请输入新词名", oldKey);
+      if(newKey===null || newKey.trim()===oldKey) return;
+      newKey = newKey.trim();
+      if(!newKey) { alert("词不能为空"); return;}
+      if(dict[newKey]) { alert("该词已存在"); return;}
+      dict[newKey] = dict[oldKey];
+      delete dict[oldKey];
+      renderTable();
+    };
+
+    // 编辑释义
+    window.updateValue = (key, newValue) => {
+      dict[key] = newValue;
+    };
+
+    // 删除词条
+    window.deleteRow = (key) => {
+      if(confirm(`确定要删除 "${key}" 这个词条吗？`)){
+        delete dict[key];
+        renderTable();
+      }
+    };
+
+    // 保存上传
     document.getElementById('saveBtn').onclick = async () => {
       const token = document.getElementById('token').value;
       if (!token) { showMsg("请先输入 Token", "red"); return; }
@@ -103,22 +178,6 @@
       } catch(e) {
         showMsg("上传失败，请检查Token和网络", "red");
       }
-    };
-
-    window.updateKey = (i, newKey) => {
-      const oldKey = Object.keys(dict)[i];
-      const value = dict[oldKey];
-      delete dict[oldKey];
-      dict[newKey] = value;
-      renderTable();
-    };
-    window.updateValue = (i, newValue) => {
-      const key = Object.keys(dict)[i];
-      dict[key] = newValue;
-    };
-    window.deleteRow = (key) => {
-      delete dict[key];
-      renderTable();
     };
   </script>
 </body>
