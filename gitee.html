@@ -893,7 +893,7 @@
                 
                 <!-- 批量管理区域 -->
                 <div id="usersBatchArea" style="display: none; padding: 15px; border-bottom: 1px solid var(--border-color); background-color: #f8f9fa;">
-                    <div class="row align-items-center">
+                    <div class="row align-items-center mb-3">
                         <div class="col-md-6">
                             <div class="form-check">
                                 <input type="checkbox" class="form-check-input" id="usersSelectAll" onchange="toggleSelectAll('users', this.checked)">
@@ -901,12 +901,20 @@
                             </div>
                         </div>
                         <div class="col-md-6 text-end">
-                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelectedUsers()">
+                            <button type="button" class="btn btn-success btn-sm me-2" onclick="batchAddUsers()">
+                                <i class="fas fa-plus"></i> 批量添加
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm me-2" onclick="deleteSelectedUsers()">
                                 <i class="fas fa-trash"></i> 删除选中
                             </button>
                             <button type="button" class="btn btn-secondary btn-sm" onclick="toggleBatchManagement('users')">
                                 <i class="fas fa-times"></i> 取消
                             </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <textarea id="batchUsersInput" class="form-control" rows="4" placeholder="请输入用户数据，每行一个用户，格式：用户ID,用户名&#10;例如：&#10;fingerprint123,用户A&#10;fingerprint456,用户B"></textarea>
                         </div>
                     </div>
                 </div>
@@ -1333,9 +1341,56 @@
                         <h5><i class="fas fa-edit"></i> 编辑字典文件</h5>
                         <p class="text-muted">文件地址: https://kosto179cn.github.io/chinese_words_replacer/dictionary.json</p>
                         
-                        <div class="mb-3">
-                            <label for="dictionaryContent" class="form-label">字典内容 (JSON格式)</label>
-                            <textarea id="dictionaryContent" class="form-control" rows="15" placeholder="请输入JSON格式的字典内容..."></textarea>
+                        <!-- 解析结果展示 - 与字典内容相同样式的容器 -->
+                        <div id="parseResult" class="mb-3" style="display: none;">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-list"></i> 字典解析结果
+                                    <span class="float-end">
+                                        <button type="button" class="btn btn-success btn-sm me-2" onclick="showAddDictModal()">
+                                            <i class="fas fa-plus"></i> 添加新词条
+                                        </button>
+                                        <span style="cursor: pointer;" onclick="toggleDictionaryResults()">
+                                            <i class="fas fa-chevron-down collapse-icon"></i>
+                                            <i class="fas fa-chevron-up expand-icon" style="display: none;"></i>
+                                        </span>
+                                    </span>
+                                </label>
+                                <!-- 搜索框 -->
+                                <div class="row mb-2">
+                                    <div class="col-md-6">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                            <input type="text" id="searchOriginal" class="form-control" placeholder="搜索原始词..." oninput="filterDictionary()">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                            <input type="text" id="searchReplacement" class="form-control" placeholder="搜索替换词..." oninput="filterDictionary()">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card collapse show">
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-bordered mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>原始词</th>
+                                                        <th>替换词</th>
+                                                        <th>类型</th>
+                                                        <th>操作</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="dictionaryTableBody">
+                                                    <!-- 解析结果将通过JS动态加载 -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="d-flex gap-2 mb-3">
@@ -1345,32 +1400,9 @@
                             <button type="button" class="btn btn-primary" onclick="saveGitHubFile()">
                                 <i class="fas fa-save"></i> 保存文件
                             </button>
-                            <button type="button" class="btn btn-info" onclick="parseDictionary()">
-                                <i class="fas fa-code"></i> 解析字典
-                            </button>
                             <button type="button" class="btn btn-secondary" onclick="resetGitHubForm()">
                                 <i class="fas fa-redo"></i> 重置
                             </button>
-                        </div>
-
-                        <!-- 解析结果展示 -->
-                        <div id="parseResult" class="mt-3" style="display: none;">
-                            <h6><i class="fas fa-list"></i> 字典解析结果</h6>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>原始词</th>
-                                            <th>替换词</th>
-                                            <th>类型</th>
-                                            <th>操作</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="dictionaryTableBody">
-                                        <!-- 解析结果将通过JS动态加载 -->
-                                    </tbody>
-                                </table>
-                            </div>
                         </div>
                         
                         <div id="githubStatus" class="mt-3"></div>
@@ -1547,9 +1579,10 @@
             }
         };
         
-        // 初始化通知系统
+        // 初始化通知系统和折叠状态
         document.addEventListener('DOMContentLoaded', () => {
             notificationSystem.init();
+            initDictionaryResultsState();
         });
         
         // 替换原生alert函数
@@ -1686,7 +1719,7 @@
                     return data;
             } catch (error) {
                 console.error('Gitee API错误:', error);
-                notificationSystem.showNotification(`Gitee操作失败: ${error.message}\\n\\n请检查：\\n1. Token是否有效\\n2. Token是否有repo权限\\n3. 仓库名称是否正确`, 'error');
+                notificationSystem.error(`Gitee操作失败: ${error.message}\\n\\n请检查：\\n1. Token是否有效\\n2. Token是否有repo权限\\n3. 仓库名称是否正确`, '错误');
                 return false;
             }
             }
@@ -2629,7 +2662,7 @@ async function fetchOnlineData() {
 
             // 验证至少填写一项内容
             if (!userId && !userName && !userCorp && !userFingerprint) {
-                notificationSystem.showNotification('请至少填写一项内容（用户ID、用户名、军团或指纹）', 'warning');
+                notificationSystem.warning('请至少填写一项内容（用户ID、用户名、军团或指纹）', '警告');
                 return;
             }
 
@@ -2966,19 +2999,19 @@ async function fetchOnlineData() {
                         const success = await updateGitHubFile(jsonContent);
                         
                         if (success) {
-                            notificationSystem.showNotification(`"${displayValue}" 已成功加入黑名单并上传到服务器！`, 'success');
+                            notificationSystem.success(`"${displayValue}" 已成功加入黑名单并上传到服务器！`, '成功');
                         } else {
-                            notificationSystem.showNotification(`"${displayValue}" 已加入黑名单，但上传到服务器失败，请稍后手动保存。`, 'warning');
+                            notificationSystem.warning(`"${displayValue}" 已加入黑名单，但上传到服务器失败，请稍后手动保存。`, '警告');
                         }
                         
                         // 重新渲染相关表格
                         renderAllTables();
                     } else {
-                        notificationSystem.showNotification(`"${displayValue}" 已存在于黑名单中！`, 'info');
+                        notificationSystem.info(`"${displayValue}" 已存在于黑名单中！`, '提示');
                     }
                 } catch (error) {
                     console.error('拉黑操作失败:', error);
-                    notificationSystem.showNotification(`拉黑操作失败: ${error.message}`, 'error');
+                    notificationSystem.error(`拉黑操作失败: ${error.message}`, '错误');
                 }
             }
         }
@@ -3018,19 +3051,19 @@ async function fetchOnlineData() {
                         const success = await updateGitHubFile(jsonContent);
                         
                         if (success) {
-                            notificationSystem.showNotification(`用户 "${displayValue}" 已成功加入黑名单并上传到服务器！`, 'success');
+                            notificationSystem.success(`用户 "${displayValue}" 已成功加入黑名单并上传到服务器！`, '成功');
                         } else {
-                            notificationSystem.showNotification(`用户 "${displayValue}" 已加入黑名单，但上传到服务器失败，请稍后手动保存。`, 'warning');
+                            notificationSystem.warning(`用户 "${displayValue}" 已加入黑名单，但上传到服务器失败，请稍后手动保存。`, '警告');
                         }
                         
                         // 重新渲染相关表格
                         renderAllTables();
                     } else {
-                        notificationSystem.showNotification(`用户 "${displayValue}" 已存在于黑名单中！`, 'info');
+                        notificationSystem.info(`用户 "${displayValue}" 已存在于黑名单中！`, '提示');
                     }
                 } catch (error) {
                     console.error('拉黑用户失败:', error);
-                    notificationSystem.showNotification(`拉黑用户失败: ${error.message}`, 'error');
+                    notificationSystem.error(`拉黑用户失败: ${error.message}`, '错误');
                 }
             }
         }
@@ -3059,12 +3092,12 @@ async function fetchOnlineData() {
             const token = document.getElementById('giteeToken').value.trim();
             if (token) {
                 localStorage.setItem('giteeToken', token);
-                notificationSystem.showNotification('Token保存成功！', 'success');
+                notificationSystem.success('Token保存成功！', '成功');
                 // 重新加载数据
                 loadWhitelistData();
                 fetchOnlineData();
             } else {
-                notificationSystem.showNotification('请输入有效的Token', 'warning');
+                notificationSystem.warning('请输入有效的Token', '警告');
             }
         }
 
@@ -3208,7 +3241,7 @@ async function fetchOnlineData() {
         function openUserLink(userId) {
             const user = window.userDetails[userId];
             if (!user || !user.details || !user.details.url) {
-                notificationSystem.showNotification('用户链接数据不存在', 'error');
+                notificationSystem.error('用户链接数据不存在', '错误');
                 return;
             }
 
@@ -3222,7 +3255,7 @@ async function fetchOnlineData() {
         function showUserDetails(userId) {
             const user = window.userDetails[userId];
             if (!user) {
-                notificationSystem.showNotification('用户详情不存在', 'error');
+                notificationSystem.error('用户详情不存在', '错误');
                 return;
             }
 
@@ -3537,7 +3570,7 @@ async function fetchOnlineData() {
             if (!searchTerm || !searchTerm.trim()) return;
             
             if (!window.todayData || window.todayData.length === 0) {
-                notificationSystem.showNotification('暂无数据可搜索', 'info');
+                notificationSystem.info('暂无数据可搜索', '提示');
                 return;
             }
             
@@ -3549,7 +3582,7 @@ async function fetchOnlineData() {
             });
             
             if (matchedRecords.length === 0) {
-                notificationSystem.showNotification('未找到匹配的记录', 'info');
+                notificationSystem.info('未找到匹配的记录', '提示');
                 return;
             }
             
@@ -3792,14 +3825,14 @@ async function fetchOnlineData() {
                             const success = await updateGitHubFile(jsonContent);
                             
                             if (success) {
-                                notificationSystem.showNotification(`用户 ${username} 已解除拉黑并同步到服务器！`, 'success');
+                                notificationSystem.success(`用户 ${username} 已解除拉黑并同步到服务器！`, '成功');
                                 // 刷新黑名单表格显示
                                 renderBlacklistTable();
                             } else {
-                                notificationSystem.showNotification(`用户 ${username} 已本地解除拉黑，但同步到服务器失败，请稍后手动保存。`, 'warning');
+                                notificationSystem.warning(`用户 ${username} 已本地解除拉黑，但同步到服务器失败，请稍后手动保存。`, '警告');
                             }
                         } else {
-                            notificationSystem.showNotification(`用户 ${username} 已从本地拉黑列表中移除！`, 'success');
+                            notificationSystem.success(`用户 ${username} 已从本地拉黑列表中移除！`, '成功');
                         }
                     }
                     
@@ -3807,7 +3840,7 @@ async function fetchOnlineData() {
                     fetchOnlineData();
                 } catch (error) {
                     console.error('解除拉黑失败:', error);
-                    notificationSystem.showNotification(`解除拉黑失败: ${error.message}`, 'error');
+                    notificationSystem.error(`解除拉黑失败: ${error.message}`, '错误');
                 }
             }
         }
@@ -3823,7 +3856,7 @@ async function fetchOnlineData() {
         async function updateGitHubFile(content) {
             const token = loadToken();
             if (!token) {
-                notificationSystem.showNotification('请先保存GitHub Token', 'warning');
+                notificationSystem.warning('请先保存GitHub Token', '警告');
                 return false;
             }
 
@@ -3904,7 +3937,7 @@ async function fetchOnlineData() {
                 return true;
             } catch (error) {
                 console.error('GitHub API错误:', error);
-                notificationSystem.showNotification(`GitHub操作失败: ${error.message}\n\n请检查：\n1. Token是否有效\n2. Token是否有repo权限\n3. 仓库名称是否正确`, 'error');
+                notificationSystem.error(`GitHub操作失败: ${error.message}\n\n请检查：\n1. Token是否有效\n2. Token是否有repo权限\n3. 仓库名称是否正确`, '错误');
                 return false;
             }
         }
@@ -4463,7 +4496,7 @@ async function fetchOnlineData() {
         function deleteSelectedUsers() {
             const checkboxes = document.querySelectorAll('#usersTableBody input[type="checkbox"]:checked');
             if (checkboxes.length === 0) {
-                notificationSystem.showNotification('请先选择要删除的用户', 'warning');
+                notificationSystem.warning('请先选择要删除的用户', '警告');
                 return;
             }
 
@@ -4493,7 +4526,7 @@ async function fetchOnlineData() {
         function deleteSelectedTanknames() {
             const checkboxes = document.querySelectorAll('#tanknamesTableBody input[type="checkbox"]:checked');
             if (checkboxes.length === 0) {
-                notificationSystem.showNotification('请先选择要删除的用户ID', 'warning');
+                notificationSystem.warning('请先选择要删除的用户ID', '警告');
                 return;
             }
 
@@ -4523,7 +4556,7 @@ async function fetchOnlineData() {
         function deleteSelectedGroups() {
             const checkboxes = document.querySelectorAll('#groupsTableBody input[type="checkbox"]:checked');
             if (checkboxes.length === 0) {
-                notificationSystem.showNotification('请先选择要删除的军团', 'warning');
+                notificationSystem.warning('请先选择要删除的军团', '警告');
                 return;
             }
 
@@ -4553,7 +4586,7 @@ async function fetchOnlineData() {
         function deleteSelectedOurs() {
             const checkboxes = document.querySelectorAll('#oursTableBody input[type="checkbox"]:checked');
             if (checkboxes.length === 0) {
-                notificationSystem.showNotification('请先选择要删除的开发者ID', 'warning');
+                notificationSystem.warning('请极先选择要删除的开发者ID', '警告');
                 return;
             }
 
@@ -4583,7 +4616,7 @@ async function fetchOnlineData() {
         function deleteSelectedBlacklist() {
             const checkboxes = document.querySelectorAll('#blacklistTableBody input[type="checkbox"]:checked');
             if (checkboxes.length === 0) {
-                notificationSystem.showNotification('请先选择要删除的黑名单用户', 'warning');
+                notificationSystem.warning('请先选择要删除的黑名单用户', '警告');
                 return;
             }
 
@@ -4821,10 +4854,9 @@ async function fetchOnlineData() {
                 const rawResponse = await fetch(GITHUB_FILE_URL);
                 if (rawResponse.ok) {
                     const content = await rawResponse.text();
-                    document.getElementById('dictionaryContent').value = content;
                     showGitHubStatus('文件加载成功！', 'success');
                     // 自动解析字典内容
-                    parseDictionary();
+                    parseDictionary(content);
                     return;
                 }
                 
@@ -4840,10 +4872,9 @@ async function fetchOnlineData() {
                     if (apiResponse.ok) {
                         const fileData = await apiResponse.json();
                         const content = atob(fileData.content.replace(/\\s/g, ''));
-                        document.getElementById('dictionaryContent').value = content;
                         showGitHubStatus('文件加载成功！', 'success');
                         // 自动解析字典内容
-                        parseDictionary();
+                        parseDictionary(content);
                     } else {
                         showGitHubStatus('文件加载失败，请检查文件路径', 'error');
                     }
@@ -4862,9 +4893,10 @@ async function fetchOnlineData() {
                 return;
             }
 
-            const content = document.getElementById('dictionaryContent').value.trim();
+            // 从localStorage获取字典内容
+            const content = localStorage.getItem('dictionaryContent');
             if (!content) {
-                showGitHubStatus('请输入文件内容', 'error');
+                showGitHubStatus('没有字典数据可保存', 'error');
                 return;
             }
 
@@ -4916,8 +4948,11 @@ async function fetchOnlineData() {
 
         // 重置表单
         function resetGitHubForm() {
-            document.getElementById('dictionaryContent').value = '';
-            showGitHubStatus('表单已重置', 'info');
+            // 清空localStorage中的字典内容
+            localStorage.removeItem('dictionaryContent');
+            // 重新解析显示空字典
+            parseDictionary();
+            showGitHubStatus('字典已重置', 'info');
         }
 
         // 显示状态信息
@@ -4926,17 +4961,72 @@ async function fetchOnlineData() {
             statusEl.innerHTML = `<极class="text-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'}">${message}</div>`;
         }
 
+        // 切换字典解析结果的折叠状态
+        function toggleDictionaryResults() {
+            const card = document.querySelector('#parseResult .card');
+            const collapseIcon = document.querySelector('#parseResult .collapse-icon');
+            const expandIcon = document.querySelector('#parseResult .expand-icon');
+            
+            if (card.classList.contains('show')) {
+                card.classList.remove('show');
+                collapseIcon.style.display = 'none';
+                expandIcon.style.display = 'inline';
+                // 保存折叠状态到本地存储
+                localStorage.setItem('dictionaryResultsCollapsed', 'true');
+            } else {
+                card.classList.add('show');
+                collapseIcon.style.display = 'inline';
+                expandIcon.style.display = 'none';
+                // 保存展开状态到本地存储
+                localStorage.setItem('dictionaryResultsCollapsed', 'false');
+            }
+        }
+
+        // 初始化时恢复折叠状态
+        function initDictionaryResultsState() {
+            const collapsed = localStorage.getItem('dictionaryResultsCollapsed');
+            const card = document.querySelector('#parseResult .card');
+            const collapseIcon = document.querySelector('#parseResult .collapse-icon');
+            const expandIcon = document.querySelector('#parseResult .expand-icon');
+            
+            if (collapsed === 'true') {
+                card.classList.remove('show');
+                collapseIcon.style.display = 'none';
+                expandIcon.style.display = 'inline';
+            } else {
+                card.classList.add('show');
+                collapseIcon.style.display = 'inline';
+                expandIcon.style.display = 'none';
+            }
+        }
+
+        // 字典搜索过滤功能
+        function filterDictionary() {
+            const searchOriginal = document.getElementById('searchOriginal').value.toLowerCase();
+            const searchReplacement = document.getElementById('searchReplacement').value.toLowerCase();
+            const rows = document.querySelectorAll('#dictionaryTableBody tr');
+            
+            rows.forEach(row => {
+                const original = row.cells[0].textContent.toLowerCase();
+                const replacement = row.cells[1].textContent.toLowerCase();
+                
+                const matchOriginal = original.includes(searchOriginal);
+                const matchReplacement = replacement.includes(searchReplacement);
+                
+                row.style.display = (matchOriginal && matchReplacement) ? '' : 'none';
+            });
+        }
+
         // 解析字典文件
-        function parseDictionary() {
-            const content = document.getElementById('dictionaryContent').value.trim();
+        function parseDictionary(content) {
             if (!content) {
-                showGitHubStatus('请先加载或输入字典内容', 'error');
+                showGitHubStatus('请先加载字典内容', 'error');
                 return;
             }
 
             try {
                 // 解析JSON内容
-                const dictionary = JSON.parse(content);
+                const dictionary = typeof content === 'string' ? JSON.parse(content) : content;
                 const tableBody = document.getElementById('dictionaryTableBody');
                 tableBody.innerHTML = '';
 
@@ -5023,15 +5113,57 @@ async function fetchOnlineData() {
                     const original = this.getAttribute('data-original');
                     const replacement = this.getAttribute('data-replacement');
                     
-                    // 弹出编辑对话框
-                    const newOriginal = prompt('请输入原始词：', original);
-                    if (newOriginal === null) return;
+                    // 创建编辑模态框
+                    const modalHtml = `
+                        <div class="modal fade" id="editDictModal" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">编辑字典词条</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">原始词</label>
+                                            <input type="text" class="form-control" id="editOriginal" value="${escapeHtml(original)}">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">替换词</label>
+                                            <input type="text" class="form-control" id="editReplacement" value="${escapeHtml(replacement)}">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">分类</label>
+                                            <input type="text" class="form-control" id="editCategory" placeholder="输入分类（可选）">
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="editEnabled" checked>
+                                                <label class="form-check-label">启用</label>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">优先级</label>
+                                            <input type="number" class="form-control" id="editPriority" value="1" min="1" max="10">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                        <button type="button" class="btn btn-primary" onclick="saveDictEdit('${escapeHtml(original)}')">保存</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
                     
-                    const newReplacement = prompt('请输入替换词：', replacement);
-                    if (newReplacement === null) return;
+                    // 添加模态框到页面
+                    document.body.insertAdjacentHTML('beforeend', modalHtml);
+                    const modal = new bootstrap.Modal(document.getElementById('editDictModal'));
+                    modal.show();
                     
-                    // 更新字典内容
-                    updateDictionaryEntry(original, newOriginal, newReplacement);
+                    // 模态框关闭后清理
+                    document.getElementById('editDictModal').addEventListener('hidden.bs.modal', function() {
+                        this.remove();
+                    });
                 });
             });
             
@@ -5047,48 +5179,108 @@ async function fetchOnlineData() {
             });
         }
 
-        // 更新字典词条
-        function updateDictionaryEntry(oldOriginal, newOriginal, newReplacement) {
-            const content = document.getElementById('dictionaryContent').value.trim();
-            if (!content) return;
+        // 保存字典编辑
+        function saveDictEdit(oldOriginal) {
+            const newOriginal = document.getElementById('editOriginal').value.trim();
+            const newReplacement = document.getElementById('editReplacement').value.trim();
+            const category = document.getElementById('editCategory').value.trim();
+            const enabled = document.getElementById('editEnabled').checked;
+            const priority = parseInt(document.getElementById('editPriority').value) || 1;
             
+            if (!newOriginal || !newReplacement) {
+                alert('原始词和替换词不能为空');
+                return;
+            }
+            
+            // 关闭模态框
+            bootstrap.Modal.getInstance(document.getElementById('editDictModal')).hide();
+            
+            // 更新字典内容
+            updateDictionaryEntry(oldOriginal, newOriginal, newReplacement, category, enabled, priority);
+        }
+
+        // 更新字典词条
+        function updateDictionaryEntry(oldOriginal, newOriginal, newReplacement, category = '', enabled = true, priority = 0) {
             try {
-                const dictionary = JSON.parse(content);
+                // 从localStorage获取字典数据或初始化新字典
+                let dictionary = {};
+                const savedContent = localStorage.getItem('dictionaryContent');
+                if (savedContent) {
+                    dictionary = JSON.parse(savedContent);
+                }
                 
-                // 删除旧的词条
-                if (dictionary[oldOriginal]) {
+                // 如果是添加新词条（oldOriginal为空），或者更新现有词条
+                if (oldOriginal && dictionary[oldOriginal]) {
+                    // 删除旧的词条（如果是重命名）
                     delete dictionary[oldOriginal];
                 }
                 
-                // 添加新的词条
-                dictionary[newOriginal] = newReplacement;
+                // 添加/更新词条（支持扩展字段的对象格式）
+                dictionary[newOriginal] = {
+                    replacement: newReplacement,
+                    category: category,
+                    enabled: enabled,
+                    priority: parseInt(priority) || 0
+                };
                 
-                // 更新文本区域内容
-                document.getElementById('dictionaryContent').value = JSON.stringify(dictionary, null, 2);
+                // 保存回localStorage
+                localStorage.setItem('dictionaryContent', JSON.stringify(dictionary, null, 2));
                 
                 // 重新解析显示
                 parseDictionary();
                 
-                showGitHubStatus(`词条已更新: "${oldOriginal}" → "${newOriginal}: ${newReplacement}"`, 'success');
+                if (oldOriginal && oldOriginal !== newOriginal) {
+                    showGitHubStatus(`词条已更新: "${oldOriginal}" → "${newOriginal}: ${newReplacement}"`, 'success');
+                } else {
+                    showGitHubStatus(`新词条已添加: "${newOriginal}: ${newReplacement}"`, 'success');
+                }
             } catch (error) {
-                showGitHubStatus(`更新失败: ${error.message}`, 'error');
+                showGitHubStatus(`操作失败: ${error.message}`, 'error');
             }
+        }
+
+        // 添加新字典词条
+        function addNewDictionaryEntry() {
+            const original = document.getElementById('addDictOriginal').value.trim();
+            const replacement = document.getElementById('addDictReplacement').value.trim();
+            const category = document.getElementById('addDictCategory').value.trim();
+            const enabled = document.getElementById('addDictEnabled').checked;
+            const priority = document.getElementById('addDictPriority').value.trim();
+            
+            if (!original || !replacement) {
+                alert('原始词和替换词不能为空');
+                return;
+            }
+            
+            // 关闭添加模态框
+            bootstrap.Modal.getInstance(document.getElementById('addDictModal')).hide();
+            
+            // 添加新词条
+            updateDictionaryEntry(null, original, replacement, category, enabled, priority);
+            
+            // 清空表单
+            document.getElementById('addDictOriginal').value = '';
+            document.getElementById('addDictReplacement').value = '';
+            document.getElementById('addDictCategory').value = '';
+            document.getElementById('addDictEnabled').checked = true;
+            document.getElementById('addDictPriority').value = '0';
         }
 
         // 删除字典词条
         function deleteDictionaryEntry(original) {
-            const content = document.getElementById('dictionaryContent').value.trim();
-            if (!content) return;
-            
             try {
-                const dictionary = JSON.parse(content);
+                // 从localStorage获取字典数据
+                const savedContent = localStorage.getItem('dictionaryContent');
+                if (!savedContent) return;
+                
+                const dictionary = JSON.parse(savedContent);
                 
                 // 删除词条
                 if (dictionary[original]) {
                     delete dictionary[original];
                     
-                    // 更新文本区域内容
-                    document.getElementById('dictionaryContent').value = JSON.stringify(dictionary, null, 2);
+                    // 保存回localStorage
+                    localStorage.setItem('dictionaryContent', JSON.stringify(dictionary, null, 2));
                     
                     // 重新解析显示
                     parseDictionary();
@@ -5134,6 +5326,129 @@ async function fetchOnlineData() {
             whitelistData[arrayIndex].splice(itemIndex, 1);
             renderFunction();
             autoSaveChanges();
+        }
+
+        // 批量添加用户指纹数据
+        function batchAddUsers() {
+            const inputText = document.getElementById('batchUsersInput').value.trim();
+            if (!inputText) {
+                notificationSystem.warning('请输入要添加的用户数据', '警告');
+                return;
+            }
+
+            const lines = inputText.split('\n');
+            let addedCount = 0;
+            let errorCount = 0;
+            const errors = [];
+
+            lines.forEach((line, index) => {
+                const trimmedLine = line.trim();
+                if (!trimmedLine) return;
+
+                const parts = trimmedLine.split(',');
+                if (parts.length < 2) {
+                    errors.push(`第${index + 1}行: 格式错误，需要用户ID和用户名，用逗号分隔`);
+                    errorCount++;
+                    return;
+                }
+
+                const userId = parts[0].trim();
+                const userName = parts[1].trim();
+
+                if (!userId || !userName) {
+                    errors.push(`第${index + 1}行: 用户ID或用户名为空`);
+                    errorCount++;
+                    return;
+                }
+
+                // 检查是否已存在相同用户ID
+                const exists = whitelistData[USERS_INDEX].some(user => user.id === userId);
+                if (exists) {
+                    errors.push(`第${index + 1}行: 用户ID "${userId}" 已存在`);
+                    errorCount++;
+                    return;
+                }
+
+                // 添加用户
+                whitelistData[USERS_INDEX].push({
+                    id: userId,
+                    name: userName
+                });
+                addedCount++;
+            });
+
+            // 重新渲染表格
+            renderUsersTable();
+            autoSaveChanges();
+
+            // 显示结果
+            if (addedCount > 0) {
+                notificationSystem.success(`成功添加 ${addedCount} 个用户`, '添加成功');
+            }
+            
+            if (errorCount > 0) {
+                const errorMessage = errors.join('\n');
+                notificationSystem.error(`有 ${errorCount} 个错误:\n${errorMessage}`, '添加失败');
+            }
+
+            // 清空输入框
+            document.getElementById('batchUsersInput').value = '';
+        }
+
+        // 显示添加字典词条模态框
+        function showAddDictModal() {
+            // 创建添加模态框
+            const modalHtml = `
+                <div class="modal fade" id="addDictModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">添加新字典词条</h5>
+                                <button type="button" class="btn-close" data-b极s-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label">原始词</label>
+                                    <input type="text" class="form-control" id="addDictOriginal" placeholder="输入原始词">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">替换词</label>
+                                    <input type="text" class极="form-control" id="addDictReplacement" placeholder="输入替换词">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">分类</label>
+                                    <input type="text" class="form-control" id="addDictCategory" placeholder="输入分类（可选）">
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="addDictEnabled" checked>
+                                    <label class="form-check-label" for="addDictEnabled">启用</label>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">优先级</label>
+                                    <input type="number" class="form-control" id="addDictPriority" value="0" min="0">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-primary" onclick="addNewDictionaryEntry()">添加</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 移除已存在的模态框
+            const existingModal = document.getElementById('addDictModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // 添加模态框到DOM
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // 显示模态框
+            const modal = new bootstrap.Modal(document.getElementById('addDictModal'));
+            modal.show();
         }
 
     </script>
