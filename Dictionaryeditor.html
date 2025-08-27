@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>管理 dictionary.json</title>
+  <style>
+    body { font-family: Arial; }
+    table { border-collapse: collapse; }
+    td, th { border: 1px solid #aaa; padding: 4px 8px; }
+    input[type=text] { width: 100px; }
+  </style>
+</head>
+<body>
+  <h2>管理 chinese_words_replacer/dictionary.json</h2>
+  <label>你的 GitHub Token（PAT）: <input type="password" id="token" style="width:250px"></label>
+  <button id="loadBtn">加载线上文件</button>
+  <button id="addRow">添加词条</button>
+  <table id="dictTable"></table>
+  <button id="saveBtn">自动上传到仓库</button>
+  <span id="msg"></span>
+  <script>
+    const owner = "Kosto179cn";
+    const repo = "Kosto179cn.github.io";
+    const path = "chinese_words_replacer/dictionary.json";
+    let dict = {};
+    let sha = null;
+
+    function showMsg(text, color="blue") {
+      document.getElementById('msg').innerHTML = `<span style="color:${color}">${text}</span>`;
+    }
+
+    function renderTable() {
+      const table = document.getElementById('dictTable');
+      table.innerHTML = "<tr><th>词</th><th>释义</th><th>操作</th></tr>";
+      Object.entries(dict).forEach(([key, value], i) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td><input type="text" value="${key}" onchange="updateKey(${i}, this.value)"></td>
+                         <td><input type="text" value="${value}" onchange="updateValue(${i}, this.value)"></td>
+                         <td><button onclick="deleteRow('${key}')">删除</button></td>`;
+        table.appendChild(row);
+      });
+    }
+
+    document.getElementById('loadBtn').onclick = async () => {
+      showMsg("正在加载...", "grey");
+      const token = document.getElementById('token').value;
+      if (!token) { showMsg("请先输入 Token", "red"); return; }
+      try {
+        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+          headers: { Authorization: 'token ' + token }
+        });
+        if (!res.ok) throw new Error("加载失败");
+        const data = await res.json();
+        sha = data.sha;
+        dict = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+        renderTable();
+        showMsg("文件已加载，可编辑", "green");
+      } catch(e) {
+        showMsg("加载失败，Token或网络错误", "red");
+      }
+    };
+
+    document.getElementById('addRow').onclick = () => {
+      dict["新词"] = "新释义";
+      renderTable();
+    };
+
+    document.getElementById('saveBtn').onclick = async () => {
+      const token = document.getElementById('token').value;
+      if (!token) { showMsg("请先输入 Token", "red"); return; }
+      if (!sha) { showMsg("请先加载文件", "red"); return; }
+      showMsg("正在上传...", "grey");
+      try {
+        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+          method: 'PUT',
+          headers: {
+            Authorization: 'token ' + token,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: "Update dictionary.json by web UI",
+            content: btoa(unescape(encodeURIComponent(JSON.stringify(dict, null, 2)))),
+            sha: sha,
+            branch: "main"
+          })
+        });
+        if (!res.ok) throw new Error("上传失败");
+        const data = await res.json();
+        sha = data.content.sha; // 更新新sha
+        showMsg("上传成功！", "green");
+      } catch(e) {
+        showMsg("上传失败，请检查Token和网络", "red");
+      }
+    };
+
+    window.updateKey = (i, newKey) => {
+      const oldKey = Object.keys(dict)[i];
+      const value = dict[oldKey];
+      delete dict[oldKey];
+      dict[newKey] = value;
+      renderTable();
+    };
+    window.updateValue = (i, newValue) => {
+      const key = Object.keys(dict)[i];
+      dict[key] = newValue;
+    };
+    window.deleteRow = (key) => {
+      delete dict[key];
+      renderTable();
+    };
+  </script>
+</body>
+</html>
