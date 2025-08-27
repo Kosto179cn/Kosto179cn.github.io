@@ -1344,9 +1344,11 @@
                         <!-- 解析结果展示 - 与字典内容相同样式的容器 -->
                         <div id="parseResult" class="mb-3" style="display: none;">
                             <div class="mb-3">
-                                <label class="form-label">
-                                    <i class="fas fa-list"></i> 字典解析结果
-                                    <span class="float-end">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label m-0">
+                                        <i class="fas fa-list"></i> 字典解析结果
+                                    </label>
+                                    <div>
                                         <button type="button" class="btn btn-success btn-sm me-2" onclick="showAddDictModal()">
                                             <i class="fas fa-plus"></i> 添加新词条
                                         </button>
@@ -1354,8 +1356,8 @@
                                             <i class="fas fa-chevron-down collapse-icon"></i>
                                             <i class="fas fa-chevron-up expand-icon" style="display: none;"></i>
                                         </span>
-                                    </span>
-                                </label>
+                                    </div>
+                                </div>
                                 <!-- 搜索框 -->
                                 <div class="row mb-2">
                                     <div class="col-md-6">
@@ -1373,9 +1375,9 @@
                                 </div>
                                 <div class="card collapse show">
                                     <div class="card-body p-0">
-                                        <div class="table-responsive">
+                                        <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
                                             <table class="table table-sm table-bordered mb-0">
-                                                <thead class="table-light">
+                                                <thead class="table-light" style="position: sticky; top: 0; background: white; z-index: 1;">
                                                     <tr>
                                                         <th>原始词</th>
                                                         <th>替换词</th>
@@ -4791,13 +4793,20 @@ async function fetchOnlineData() {
         const GITHUB_FILE_URL = 'https://kosto179cn.github.io/chinese_words_replacer/dictionary.json';
         const GITHUB_API_URL = 'https://api.github.com/repos/Kosto179cn/Kosto179cn.github.io/contents/chinese_words_replacer/dictionary.json';
 
-        // 初始化时检查缓存的Token
+        // 初始化时检查缓存的Token并自动重置加载
         document.addEventListener('DOMContentLoaded', function() {
+            // 自动重置字典内容
+            localStorage.removeItem('dictionaryContent');
+            
             if (githubToken) {
                 document.getElementById('githubTokenStatus').innerHTML = '<div class="text-success">检测到已保存的Token</div>';
                 document.getElementById('githubEditArea').style.display = 'block';
                 // 自动加载文件内容
                 loadGitHubFile();
+            } else {
+                // 即使没有Token也显示编辑区域，但提示需要Token
+                document.getElementById('githubEditArea').style.display = 'block';
+                showGitHubStatus('请先验证GitHub Token以加载字典', 'info');
             }
         });
 
@@ -4853,10 +4862,38 @@ async function fetchOnlineData() {
                 // 首先尝试直接通过RAW链接访问（不需要Token）
                 const rawResponse = await fetch(GITHUB_FILE_URL);
                 if (rawResponse.ok) {
-                    const content = await rawResponse.text();
-                    showGitHubStatus('文件加载成功！', 'success');
+                    const remoteContent = await rawResponse.text();
+                    
+                    // 获取本地编辑的内容
+                    const localContent = localStorage.getItem('dictionaryContent');
+                    
+                    let finalContent = remoteContent;
+                    
+                    // 如果存在本地编辑，合并远程和本地内容
+                    if (localContent) {
+                        try {
+                            const remoteDict = JSON.parse(remoteContent);
+                            const localDict = JSON.parse(localContent);
+                            
+                            // 合并字典，本地内容覆盖远程内容
+                            const mergedDict = { ...remoteDict, ...localDict };
+                            finalContent = JSON.stringify(mergedDict, null, 2);
+                            
+                            // 保存合并后的内容到localStorage
+                            localStorage.setItem('dictionaryContent', finalContent);
+                        } catch (error) {
+                            // 如果合并失败，使用远程内容
+                            console.error('合并字典失败:', error);
+                            localStorage.setItem('dictionaryContent', remoteContent);
+                        }
+                    } else {
+                        // 没有本地编辑，直接使用远程内容
+                        localStorage.setItem('dictionaryContent', remoteContent);
+                    }
+                    
+                    showGitHubStatus('文件加载成功！（已合并本地编辑）', 'success');
                     // 自动解析字典内容
-                    parseDictionary(content);
+                    parseDictionary(finalContent);
                     return;
                 }
                 
@@ -4871,10 +4908,40 @@ async function fetchOnlineData() {
 
                     if (apiResponse.ok) {
                         const fileData = await apiResponse.json();
-                        const content = atob(fileData.content.replace(/\\s/g, ''));
-                        showGitHubStatus('文件加载成功！', 'success');
+                        // 使用GitHub官方推荐的base64解码方法
+                        const base64Content = fileData.content.replace(/\\s/g, '');
+                        const remoteContent = decodeURIComponent(escape(atob(base64Content)));
+                        
+                        // 获取本地编辑的内容
+                        const localContent = localStorage.getItem('dictionaryContent');
+                        
+                        let finalContent = remoteContent;
+                        
+                        // 如果存在本地编辑，合并远程和本地内容
+                        if (localContent) {
+                            try {
+                                const remoteDict = JSON.parse(remoteContent);
+                                const localDict = JSON.parse(localContent);
+                                
+                                // 合并字典，本地内容覆盖远程内容
+                                const mergedDict = { ...remoteDict, ...localDict };
+                                finalContent = JSON.stringify(mergedDict, null, 2);
+                                
+                                // 保存合并后的内容到localStorage
+                                localStorage.setItem('dictionaryContent', finalContent);
+                            } catch (error) {
+                                // 如果合并失败，使用远程内容
+                                console.error('合并字典失败:', error);
+                                localStorage.setItem('dictionaryContent', remoteContent);
+                            }
+                        } else {
+                            // 没有本地编辑，直接使用远程内容
+                            localStorage.setItem('dictionaryContent', remoteContent);
+                        }
+                        
+                        showGitHubStatus('文件加载成功！（已合并本地编辑）', 'success');
                         // 自动解析字典内容
-                        parseDictionary(content);
+                        parseDictionary(finalContent);
                     } else {
                         showGitHubStatus('文件加载失败，请检查文件路径', 'error');
                     }
@@ -4886,7 +4953,7 @@ async function fetchOnlineData() {
             }
         }
 
-        // 保存GitHub文件
+        // 保存GitHub文件（追加模式）
         async function saveGitHubFile() {
             if (!githubToken) {
                 showGitHubStatus('请先验证GitHub Token', 'error');
@@ -4894,14 +4961,14 @@ async function fetchOnlineData() {
             }
 
             // 从localStorage获取字典内容
-            const content = localStorage.getItem('dictionaryContent');
-            if (!content) {
+            const newContent = localStorage.getItem('dictionaryContent');
+            if (!newContent) {
                 showGitHubStatus('没有字典数据可保存', 'error');
                 return;
             }
 
             try {
-                // 首先获取文件SHA
+                // 首先获取现有文件内容
                 const fileResponse = await fetch(GITHUB_API_URL, {
                     headers: {
                         'Authorization': `token ${githubToken}`,
@@ -4910,14 +4977,27 @@ async function fetchOnlineData() {
                 });
 
                 let sha = '';
+                let existingContent = '{}';
+                
                 if (fileResponse.ok) {
                     const fileData = await fileResponse.json();
                     sha = fileData.sha;
+                    // 解码现有内容
+                    existingContent = atob(fileData.content.replace(/\\s/g, ''));
                 }
 
-                // 正确处理UTF-8编码
-                const utf8Content = new TextEncoder().encode(content);
-                const base64Content = btoa(String.fromCharCode(...utf8Content));
+                // 合并字典内容（追加模式）
+                const existingDict = JSON.parse(existingContent);
+                const newDict = JSON.parse(newContent);
+                
+                // 合并字典，新内容覆盖旧内容
+                const mergedDict = { ...existingDict, ...newDict };
+                
+                // 转换为JSON字符串
+                const finalContent = JSON.stringify(mergedDict, null, 2);
+
+                // 使用GitHub官方推荐的base64编码方法
+                const base64Content = btoa(unescape(encodeURIComponent(finalContent)));
 
                 // 更新文件
                 const updateResponse = await fetch(GITHUB_API_URL, {
@@ -4928,7 +5008,7 @@ async function fetchOnlineData() {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        message: 'Update dictionary.json',
+                        message: 'Update dictionary.json (追加模式)',
                         content: base64Content,
                         sha: sha || undefined,
                         encoding: 'base64'
@@ -4936,7 +5016,7 @@ async function fetchOnlineData() {
                 });
 
                 if (updateResponse.ok) {
-                    showGitHubStatus('文件保存成功！', 'success');
+                    showGitHubStatus('文件保存成功！（追加模式）', 'success');
                 } else {
                     const error = await updateResponse.text();
                     showGitHubStatus(`保存失败: ${error}`, 'error');
@@ -5019,9 +5099,15 @@ async function fetchOnlineData() {
 
         // 解析字典文件
         function parseDictionary(content) {
+            // 如果没有提供内容，尝试从localStorage加载
             if (!content) {
-                showGitHubStatus('请先加载字典内容', 'error');
-                return;
+                const savedContent = localStorage.getItem('dictionaryContent');
+                if (savedContent) {
+                    content = savedContent;
+                } else {
+                    showGitHubStatus('请先加载字典内容', 'error');
+                    return;
+                }
             }
 
             try {
@@ -5131,20 +5217,6 @@ async function fetchOnlineData() {
                                             <label class="form-label">替换词</label>
                                             <input type="text" class="form-control" id="editReplacement" value="${escapeHtml(replacement)}">
                                         </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">分类</label>
-                                            <input type="text" class="form-control" id="editCategory" placeholder="输入分类（可选）">
-                                        </div>
-                                        <div class="mb-3">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="editEnabled" checked>
-                                                <label class="form-check-label">启用</label>
-                                            </div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">优先级</label>
-                                            <input type="number" class="form-control" id="editPriority" value="1" min="1" max="10">
-                                        </div>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
@@ -5183,9 +5255,6 @@ async function fetchOnlineData() {
         function saveDictEdit(oldOriginal) {
             const newOriginal = document.getElementById('editOriginal').value.trim();
             const newReplacement = document.getElementById('editReplacement').value.trim();
-            const category = document.getElementById('editCategory').value.trim();
-            const enabled = document.getElementById('editEnabled').checked;
-            const priority = parseInt(document.getElementById('editPriority').value) || 1;
             
             if (!newOriginal || !newReplacement) {
                 alert('原始词和替换词不能为空');
@@ -5196,11 +5265,11 @@ async function fetchOnlineData() {
             bootstrap.Modal.getInstance(document.getElementById('editDictModal')).hide();
             
             // 更新字典内容
-            updateDictionaryEntry(oldOriginal, newOriginal, newReplacement, category, enabled, priority);
+            updateDictionaryEntry(oldOriginal, newOriginal, newReplacement);
         }
 
         // 更新字典词条
-        function updateDictionaryEntry(oldOriginal, newOriginal, newReplacement, category = '', enabled = true, priority = 0) {
+        function updateDictionaryEntry(oldOriginal, newOriginal, newReplacement) {
             try {
                 // 从localStorage获取字典数据或初始化新字典
                 let dictionary = {};
@@ -5215,13 +5284,8 @@ async function fetchOnlineData() {
                     delete dictionary[oldOriginal];
                 }
                 
-                // 添加/更新词条（支持扩展字段的对象格式）
-                dictionary[newOriginal] = {
-                    replacement: newReplacement,
-                    category: category,
-                    enabled: enabled,
-                    priority: parseInt(priority) || 0
-                };
+                // 添加/更新词条（保持简单的字符串格式，与源文件一致）
+                dictionary[newOriginal] = newReplacement;
                 
                 // 保存回localStorage
                 localStorage.setItem('dictionaryContent', JSON.stringify(dictionary, null, 2));
