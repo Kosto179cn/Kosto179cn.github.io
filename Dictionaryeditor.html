@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>国服屏蔽字字典管理页</title>
+  <title>管理 dictionary.json</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     @keyframes spin {
@@ -16,7 +16,7 @@
       border: 2px solid rgba(0,0,0,0.3);
       border-radius: 50%;
       border-top-color: #3498db;
-      animation: spin 1 ease-in-out infinite;
+      animation: spin 1s ease-in-out infinite;
       margin-right: 8px;
       vertical-align: middle;
     }
@@ -43,14 +43,14 @@
   </style>
 </head>
 <body>
-  <h2>管理 屏蔽字</h2>
+  <h2>管理 chinese_words_replacer/dictionary.json</h2>
   <label>你的 GitHub Token（PAT）: <input type="password" id="token"></label>
   <button id="loadBtn">加载线上文件</button>
-  <input type="search" id="search" placeholder="搜索关键词或释义...">
+  <input type="search" id="search" placeholder="搜索关键词或替换词...">
   <button id="addRow">添加新词条</button>
   <div id="addForm">
-    <label>词：<input id="newKey" type="text" autocomplete="off"></label>
-    <label>释义：<input id="newVal" type="text" autocomplete="off"></label>
+    <label>原词：<input id="newKey" type="text" autocomplete="off"></label>
+    <label>替换词：<input id="newVal" type="text" autocomplete="off"></label>
     <button id="confirmAddBtn">确认添加</button>
     <button onclick="document.getElementById('addForm').style.display='none'">取消</button>
     <span id="addMsg"></span>
@@ -61,7 +61,7 @@
     right: 20px;
     bottom: 20px;
     opacity: 0.5;
-    transition: opacity 0.3;
+    transition: opacity 0.3s;
     max-width: 120px;
     padding: 8px;
   ">保存</button>
@@ -172,7 +172,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     function renderTable() {
       const table = document.getElementById('dictTable');
-      table.innerHTML = "<tr><th>词</th><th>释义</th><th>操作</th></tr>";
+      table.innerHTML = "<tr><th>原词</th><th>替换词</th><th>操作</th></tr>";
       const entries = Object.entries(dict)
         .filter(([key, val]) => key.includes(filter) || val.includes(filter));
       if(entries.length===0){
@@ -250,12 +250,12 @@ window.addEventListener('DOMContentLoaded', () => {
         return;
       }
       if(!val) {
-        showAddMsg("释义不能为空");
+        showAddMsg("替换词不能为空");
         document.getElementById('newVal').focus();
         return;
       }
       if(val.length > 200) {
-        showAddMsg("释义长度不能超过200个字符");
+        showAddMsg("替换词长度不能超过200个字符");
         document.getElementById('newVal').focus();
         return;
       }
@@ -284,7 +284,7 @@ window.addEventListener('DOMContentLoaded', () => {
       renderTable();
     };
 
-    // 编辑释义
+    // 编辑替换词
     window.updateValue = (key, newValue) => {
       dict[key] = newValue;
       triggerAutoSave();
