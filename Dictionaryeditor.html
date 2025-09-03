@@ -20,19 +20,143 @@
       margin-right: 8px;
       vertical-align: middle;
     }
-    body { font-family: Arial, sans-serif; margin: 10px; }
-    h2 { font-size: 1.2em; }
-    label, #msg { display: block; margin-bottom: 10px; }
-    #token, #search { width: 100%; max-width: 350px; padding: 8px; font-size: 1em; margin-bottom: 8px;}
-    button { display: block; width: 100%; max-width: 350px; margin: 8px 0; padding: 12px; font-size: 1em; border-radius: 6px; border: 1px solid #3498db; background: #3498db; color: #fff; }
-    button:active { background: #2980b9; }
-    table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 1em;}
-    th, td { border: 1px solid #aaa; padding: 6px 4px; }
-    input[type="text"], input[type="search"] { width: 90%; font-size: 1em; padding: 6px; box-sizing: border-box; }
-    .delbtn { background: #e74c3c; border-color: #e74c3c; margin: 0; width: 80%; padding: 8px; border-radius: 4px;}
-    .delbtn:active { background: #c0392b; }
-    .editbtn { background: #f1c40f; border-color: #f1c40f; color: #222; width: 80%; padding: 8px; border-radius: 4px;}
-    .editbtn:active { background: #f39c12;}
+    :root {
+      --primary-color: #3498db;
+      --primary-hover: #2980b9;
+      --success-color: #2ecc71;
+      --danger-color: #e74c3c;
+      --warning-color: #f39c12;
+      --light-bg: #f8f9fa;
+      --border-color: #dee2e6;
+      --text-color: #333;
+      --text-muted: #6c757d;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: var(--text-color);
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20极速赛车开奖结果查询 rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 25px 0;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      animation: fadeIn 0.5s ease;
+    }
+
+    th {
+      background: var(--primary-color);
+      color: white;
+      padding: 16px;
+      font-weight: 500;
+      text-align: left;
+    }
+
+    td {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+      transition: background 0.2s ease;
+    }
+
+    tr:hover td {
+      background: var(--light-bg);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    input[type="text"], input[type="search"] {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1em;
+      transition: all 0.3s ease;
+      height: 48px;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    .delbtn { 
+      background: var(--danger-color); 
+      border: none;
+      margin: 0; 
+      padding: 8px 16px; 
+      border-radius: 6px;
+      color: white;
+      font-size: 0.9em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .delbtn:hover {
+      background: #c0392b;
+      transform: translateY(-1px);
+    }
+    .editbtn { 
+      background: var(--warning-color); 
+      border: none;
+      margin: 0; 
+      padding: 8px 16px; 
+      border-radius: 6px;
+      color: white;
+      font-size: 0.9em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .editbtn:hover {
+      background: #e67e22;
+      transform: translateY(-1px);
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
     #addForm { background: #f9f9f9; padding: 12px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 12px; display:none;}
     #addForm input { width: 90%; margin-bottom: 8px;}
     #addForm button { margin-bottom: 0;}
@@ -43,28 +167,51 @@
   </style>
 </head>
 <body>
-  <h2>管理 国服屏蔽词</h2>
-  <label>你的密钥<input type="password" id="token"></label>
-  <button id="loadBtn">加载线上文件</button>
-  <input type="search" id="search" placeholder="搜索关键词或替换词...">
-  <button id="addRow">添加新词条</button>
-  <div id="addForm">
-    <label>原词：<input id="newKey" type="text" autocomplete="off"></label>
-    <label>替换词：<input id="newVal" type="text" autocomplete="off"></label>
-    <button id="confirmAddBtn">确认添加</button>
-    <button onclick="document.getElementById('addForm').style.display='none'">取消</button>
-    <span id="addMsg"></span>
+  <div class="container">
+    <div class="header">
+      <h1>国服屏蔽词管理</h1>
+      <p>安全地管理和编辑游戏屏蔽词库</p>
+    </div>
+    <div class="content">
+      <div class="form-group">
+        <label for="token">GitHub 访问密钥</label>
+        <input type="password" id="token" class="form-control" placeholder="输入 GitHub Personal Access Token" autocomplete="off">
+        <div class="form-help">需要 repo 权限来读写字典文件</div>
+      </div>
+      <div class="btn-group">
+        <button id="loadBtn" class="btn btn-primary modern-btn">
+          <span class="btn-icon">📥</span>
+          加载线上文件
+        </button>
+        <button id="addRow" class="btn btn-success modern-btn">
+          <span class="btn-icon">➕</span>
+          添加新词条
+        </button>
+      </div>
+      <div class="form-group">
+        <div class="search-box">
+          <input type="search" id="search" class="form-control search-input" placeholder="🔍 搜索关键词或替换词...">
+        </div>
+      </div>
+  <div id="addForm" class="add-form">
+    <div class="form-group">
+      <label for="newKey" class="modern-label">原词</label>
+      <input id="newKey" type="text" class="form-control modern-input" placeholder="输入要屏蔽的词语" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label for="newVal" class="modern-label">替换词</label>
+      <input id="newVal" type="text" class="form-control modern-input" placeholder="输入替换后的词语" autocomplete="off">
+    </div>
+    <div class="form-actions">
+      <button id="confirmAddBtn" class="btn btn-primary modern-btn">确认添加</button>
+      <button onclick="document.getElementById('addForm').style.display='none'" class="btn btn-secondary modern-btn">取消</button>
+    </div>
+    <div id="addMsg" class="status-message"></div>
   </div>
   <table id="dictTable"></table>
-  <button id="saveBtn" style="
-    position: fixed;
-    right: 20px;
-    bottom: 20px;
-    opacity: 0.5;
-    transition: opacity 0.3s;
-    max-width: 120px;
-    padding: 8px;
-  ">保存</button>
+  <button id="saveBtn" class="save-button">
+    💾 保存更改
+  </button>
   <!-- 右上角自动消失通知 -->
   <div id="notificationToast" style="display:none; position:fixed; top:20px; right:20px; max-width:300px; background:#fff; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000; overflow:hidden;">
     <div style="padding:12px 16px;">
@@ -86,6 +233,116 @@
       from { width: 100%; }
       to { width: 0%; }
     }
+    
+    /* 现代化样式 */
+    .modern-input {
+        padding: 12px 16px;
+        border: 2px solid #e1e5e9;
+        border-radius: 8px;
+        font-size: 14px;
+        background: #fff;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .modern-input:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    .modern-label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 14px;
+    }
+    
+    .modern-btn {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .modern-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .modern-btn:hover::before {
+        left: 100%;
+    }
+    
+    .modern-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .modern-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    }
+    
+    .btn-primary.modern-btn {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+    }
+    
+    .btn-success.modern-btn {
+        background: linear-gradient(135deg, #27ae60, #229954);
+        color: white;
+    }
+    
+    .btn-secondary.modern-btn {
+        background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+        color: white;
+    }
+    
+    .btn-danger.modern-btn {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        color: white;
+    }
+    
+    /* 固定保存按钮样式 */
+    .save-button {
+        position: fixed;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        padding: 16px 24px;
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        opacity: 0.3;
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+    
+    .save-button:hover {
+        opacity: 1;
+        transform: translateY(-50%) scale(1.05);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+    }
   </style>
   <script>
 
@@ -106,12 +363,45 @@ window.addEventListener('DOMContentLoaded', () => {
     const savedToken = decryptToken(sessionStorage.getItem('github_token'));
     if (savedToken) {
       tokenInput.value = savedToken;
-      // 有Token则自动加载
-      setTimeout(() => document.getElementById('loadBtn').click(), 500);
+      // 验证token有效性
+      validateToken(savedToken).then(isValid => {
+        if (isValid) {
+          // Token有效则自动加载
+          setTimeout(() => document.getElementById('loadBtn').click(), 500);
+        } else {
+          // Token无效则清除
+          sessionStorage.removeItem('github_token');
+          tokenInput.value = '';
+          showToast('Token验证', '保存的Token已失效，请重新输入', 'red');
+        }
+      });
     }
     tokenInput.addEventListener('input', () => {
-      sessionStorage.setItem('github_token', encryptToken(tokenInput.value));
+      const token = tokenInput.value.trim();
+      if (token) {
+        validateToken(token).then(isValid => {
+          if (isValid) {
+            sessionStorage.setItem('github_token', encryptToken(token));
+            showToast('Token验证', 'Token验证成功', 'green');
+          } else {
+            showToast('Token验证', 'Token无效，请检查后重新输入', 'red');
+          }
+        });
+      }
     });
+
+    // Token验证函数
+    async function validateToken(token) {
+      if (!token) return false;
+      try {
+        const res = await fetch(`https://api.github.com/user`, {
+          headers: { Authorization: 'token ' + token }
+        });
+        return res.ok;
+      } catch {
+        return false;
+      }
+    }
 
     // 添加自动保存开关
     const autoSaveToggle = document.createElement('label');
@@ -183,9 +473,9 @@ window.addEventListener('DOMContentLoaded', () => {
         const row = document.createElement('tr');
         row.innerHTML = `<td>${key}</td>
                          <td><input type="text" value="${value}" onchange="updateValue('${key}', this.value)"></td>
-                         <td>
-                            <button class="editbtn" onclick="editKey('${key}')">改词</button>
-                            <button class="delbtn" onclick="deleteRow('${key}')">删除</button>
+                         <td class="action-buttons">
+                            <button class="editbtn" onclick="editKey('${key}')">✏️ 编辑</button>
+                            <button class="delbtn" onclick="deleteRow('${key}')">🗑️ 删除</button>
                          </td>`;
         table.appendChild(row);
       });
@@ -272,16 +562,93 @@ window.addEventListener('DOMContentLoaded', () => {
       triggerAutoSave();
     };
 
+    // 自定义弹窗函数
+    function showCustomPrompt(message, defaultValue, callback) {
+      const modal = document.createElement('div');
+      modal.style = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(0,0,0,0.5); display: flex; justify-content: center; 
+        align-items: center; z-index: 10000;
+      `;
+      
+      modal.innerHTML = `
+        <div style="background: white; padding: 20px; border-radius: 8px; width: 300px;">
+          <div style="margin-bottom: 10px;">${message}</div>
+          <input type="text" id="promptInput" value="${defaultValue || ''}" 
+                 style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box;">
+          <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button id="promptCancelBtn" class="modern-btn btn-secondary">取消</button>
+            <button id="promptConfirmBtn" class="modern-btn btn-primary">确定</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      document.getElementById('promptInput').focus();
+      
+      // 添加事件监听器
+      document.getElementById('promptCancelBtn').onclick = function() {
+        modal.remove();
+      };
+      
+      document.getElementById('promptConfirmBtn').onclick = function() {
+        const value = document.getElementById('promptInput').value;
+        modal.remove();
+        callback(value);
+      };
+    }
+
+    function showCustomConfirm(message, callback) {
+      const modal = document.createElement('div');
+      modal.style = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(0,0,0,0.5); display: flex; justify-content: center; 
+        align-items: center; z-index: 10000;
+      `;
+      
+      modal.innerHTML = `
+        <div style="background: white; padding: 20px; border-radius: 8px; width: 300px;">
+          <div style="margin-bottom: 15px;">${message}</div>
+          <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button id="cancelBtn" class="modern-btn btn-secondary">取消</button>
+            <button id="confirmBtn" class="modern-btn btn-danger">确定</button>
+          </div>
+        </div>
+      `;
+      modal.id = 'confirmModal';
+      
+      document.body.appendChild(modal);
+      
+      // 添加事件监听器
+      document.getElementById('cancelBtn').onclick = function() {
+        modal.remove();
+        callback(false);
+      };
+      
+      document.getElementById('confirmBtn').onclick = function() {
+        modal.remove();
+        callback(true);
+      };
+    }
+
     // 编辑词
     window.editKey = (oldKey) => {
-      let newKey = prompt("请输入新词名", oldKey);
-      if(newKey===null || newKey.trim()===oldKey) return;
-      newKey = newKey.trim();
-      if(!newKey) { alert("词不能为空"); return;}
-      if(dict[newKey]) { alert("该词已存在"); return;}
-      dict[newKey] = dict[oldKey];
-      delete dict[oldKey];
-      renderTable();
+      showCustomPrompt("请输入新词名", oldKey, (newKey) => {
+        if(newKey === null || newKey.trim() === oldKey) return;
+        newKey = newKey.trim();
+        if(!newKey) { 
+          showMsg("词不能为空", "red");
+          return;
+        }
+        if(dict[newKey]) { 
+          showMsg("该词已存在", "red");
+          return;
+        }
+        dict[newKey] = dict[oldKey];
+        delete dict[oldKey];
+        renderTable();
+        triggerAutoSave();
+      });
     };
 
     // 编辑替换词
@@ -340,10 +707,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // 删除词条
     window.deleteRow = (key) => {
-      if(confirm(`确定要删除 "${key}" 这个词条吗？`)){
-        delete dict[key];
-        renderTable();
-      }
+      showCustomConfirm(`确定要删除 "${key}" 这个词条吗？`, (confirmed) => {
+        if(confirmed){
+          delete dict[key];
+          renderTable();
+          triggerAutoSave();
+        }
+      });
     };
 
     // 保存上传
