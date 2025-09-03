@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -8,6 +9,49 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js?v=1.0"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .container-fluid {
+                padding: 0 10px;
+            }
+            
+            .nav-tabs .nav-link {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+            
+            .card {
+                margin-bottom: 15px;
+            }
+            
+            .btn {
+                padding: 6px 12px;
+                font-size: 14px;
+            }
+            
+            .form-control {
+                font-size: 14px;
+                padding: 6px 10px;
+            }
+            
+            .table {
+                font-size: 12px;
+            }
+            
+            .notification-container {
+                right: 10px;
+                max-width: 300px;
+            }
+            
+            .modal-dialog {
+                margin: 10px;
+            }
+            
+            .search-results-container {
+                max-height: 300px;
+            }
+        }
+
         /* 通知弹窗样式 */
         .notification-container {
             position: fixed;
@@ -1483,10 +1527,9 @@
             }
         };
         
-        // 初始化通知系统和折叠状态
+        // 初始化通知系统
         document.addEventListener('DOMContentLoaded', () => {
             notificationSystem.init();
-            initDictionaryResultsState();
         });
         
         // 替换原生alert函数
@@ -1720,6 +1763,51 @@
             return Math.round(onlineTimeSeconds / 60);
         }
 
+        // 高亮搜索关键词
+        function highlightSearchTerm(text, searchTerm) {
+            if (!searchTerm || !text) return text;
+            
+            const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.replace(regex, '<strong class="text-warning">$1</strong>');
+        }
+
+        // 精确计算时间差 - 年、月、日、时、分、秒
+        function getPreciseTimeDifference(timestamp) {
+            const now = new Date();
+            const recordTime = new Date(timestamp);
+            const diffMs = now - recordTime;
+            
+            if (diffMs < 0) return '未来时间';
+            if (diffMs < 1000) return '刚刚';
+            
+            // 计算各个时间单位
+            const seconds = Math.floor(diffMs / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            const months = Math.floor(days / 30);
+            const years = Math.floor(months / 12);
+            
+            // 计算剩余时间
+            const remainingMonths = months % 12;
+            const remainingDays = days % 30;
+            const remainingHours = hours % 24;
+            const remainingMinutes = minutes % 60;
+            const remainingSeconds = seconds % 60;
+            
+            // 构建精确时间字符串
+            const parts = [];
+            
+            if (years > 0) parts.push(`${years}年`);
+            if (remainingMonths > 0) parts.push(`${remainingMonths}个月`);
+            if (remainingDays > 0) parts.push(`${remainingDays}天`);
+            if (remainingHours > 0) parts.push(`${remainingHours}小时`);
+            if (remainingMinutes > 0) parts.push(`${remainingMinutes}分钟`);
+            if (remainingSeconds > 0 && parts.length < 3) parts.push(`${remainingSeconds}秒`);
+            
+            return parts.length > 0 ? parts.join('') + '前' : '刚刚';
+        }
+
         // 处理数据
         function processData(data) {
             if (!data || !Array.isArray(data)) {
@@ -1740,6 +1828,7 @@
             
             // 设置为全局变量供搜索功能使用
             window.todayData = todayData;
+            window.allData = data; // 存储所有数据供搜索使用
 
             // 获取今日所有唯一用户(基于fingerprint)
             const todayUsers = new Set(todayData.map(item => item.fingerprint || item.username));
@@ -2081,18 +2170,6 @@
                     <div class="card-header">
                         <div>今日在线名单（含已离线）</div>
                         <div class="header-actions">
-                            <button class="btn btn-sm btn-outline-primary" onclick="showSearchDialog()">
-                                <i class="fas fa-search"></i> 搜索账号
-                            </button>
-                            <button class="btn btn-sm btn-outline-primary" onclick="toggleSearchView(event)">
-                                <i class="fas fa-search"></i> 搜索账号
-                            </button>
-                            <button class="btn btn-sm btn-outline-primary" onclick="toggleSearchView(event)">
-                                <i class="fas fa-search"></i> 搜索账号
-                            </button>
-                            <button class="btn btn-sm btn-outline-info" onclick="toggleMultiIdView(event)">
-                                <i class="fas fa-users"></i> 多ID统计
-                            </button>
                             <small id="todayUsersCount" style="color:#6c757d"></small>
                         </div>
                     </div>
@@ -3366,20 +3443,21 @@ async function fetchOnlineData() {
             const searchTerm = searchInput.value.trim().toLowerCase();
             
             if (!searchTerm) {
-                searchResults.innerHTML = '<div class="text-center text-muted py-3">请输入要搜索的ID或用户名</div>';
+                searchResults.innerHTML = '<div class="text-center text-muted py-3">请输入要搜索的ID、用户名或指纹</div>';
                 return;
             }
             
-            if (!window.todayData || window.todayData.length === 0) {
+            if (!window.allData || window.allData.length === 0) {
                 searchResults.innerHTML = '<div class="text-center text-muted py-3">暂无数据可搜索</div>';
                 return;
             }
             
-            // 搜索匹配的记录
-            const matchedRecords = window.todayData.filter(item => {
+            // 搜索匹配的记录 - 使用所有数据
+            const matchedRecords = window.allData.filter(item => {
                 const userId = (item.getid || item.details?.getid || '').toString().toLowerCase();
                 const username = (item.username || '').toLowerCase();
-                return userId.includes(searchTerm) || username.includes(searchTerm);
+                const fingerprint = (item.fingerprint || '').toLowerCase();
+                return userId.includes(searchTerm) || username.includes(searchTerm) || fingerprint.includes(searchTerm);
             });
             
             if (matchedRecords.length === 0) {
@@ -3394,8 +3472,22 @@ async function fetchOnlineData() {
             const uniqueRecordsMap = new Map();
             matchedRecords.forEach(record => {
                 const userId = (record.getid || record.details?.getid || '').toString();
-                if (!uniqueRecordsMap.has(userId) || new Date(record.timestamp) > new Date(uniqueRecordsMap.get(userId).timestamp)) {
+                
+                // 确保时间戳字段有效
+                const currentTimestamp = record.timestamp || record.time;
+                const existingRecord = uniqueRecordsMap.get(userId);
+                
+                if (!existingRecord) {
                     uniqueRecordsMap.set(userId, record);
+                } else {
+                    // 比较时间戳，保留最新的记录
+                    const existingTimestamp = existingRecord.timestamp || existingRecord.time;
+                    const currentTime = currentTimestamp ? new Date(currentTimestamp).getTime() : 0;
+                    const existingTime = existingTimestamp ? new Date(existingTimestamp).getTime() : 0;
+                    
+                    if (currentTime > existingTime) {
+                        uniqueRecordsMap.set(userId, record);
+                    }
                 }
             });
             
@@ -3421,31 +3513,11 @@ async function fetchOnlineData() {
                 if (item.details?.onlineTime) {
                     onlineTime = item.details.onlineTime + ' 分钟';
                 } else if (item.timestamp) {
-                    // 根据时间戳估算在线时长
-                    const now = new Date();
-                    const recordTime = new Date(item.timestamp);
-                    const diffMinutes = Math.round((now - recordTime) / (1000 * 60));
-                    
-                    if (diffMinutes < 60) {
-                        onlineTime = `约 ${diffMinutes} 分钟前`;
-                    } else if (diffMinutes < 1440) {
-                        onlineTime = `约 ${Math.round(diffMinutes / 60)} 小时前`;
-                    } else {
-                        onlineTime = `约 ${Math.round(diffMinutes / 1440)} 天前`;
-                    }
+                    // 使用精确时间计算
+                    onlineTime = getPreciseTimeDifference(item.timestamp);
                 } else if (item.time) {
-                    // 处理旧格式的时间字段
-                    const now = new Date();
-                    const recordTime = new Date(item.time);
-                    const diffMinutes = Math.round((now - recordTime) / (1000 * 60));
-                    
-                    if (diffMinutes < 60) {
-                        onlineTime = `约 ${diffMinutes} 分钟前`;
-                    } else if (diffMinutes < 1440) {
-                        onlineTime = `约 ${Math.round(diffMinutes / 60)} 小时前`;
-                    } else {
-                        onlineTime = `约 ${Math.round(diffMinutes / 1440)} 天前`;
-                    }
+                    // 使用精确时间计算
+                    onlineTime = getPreciseTimeDifference(item.time);
                 }
                 
                 const resultItem = document.createElement('div');
@@ -3457,14 +3529,75 @@ async function fetchOnlineData() {
                             ${index === 0 ? '<span class="badge bg-success ms-2">最新记录</span>' : ''}
                         </div>
                         <div class="user-details">
-                            <small><strong>在线时长:</strong> ${onlineTime}</small>
+                            <small><strong>上次上线:</strong> ${onlineTime}</small>
                         </div>
-                    </div>
-                            <small><strong>在线时长:</strong> ${onlineTime}</small>
+                        <div class="action-buttons mt-2">
+                            <button class="btn btn-sm btn-outline-primary view-details-btn" 
+                                    data-record='${JSON.stringify(item).replace(/'/g, "'")}'>
+                                <i class="fas fa-eye"></i> 查看详情
+                            </button>
                         </div>
                     </div>
                 `;
                 searchResults.appendChild(resultItem);
+                
+                // 添加详情按钮点击事件
+                const viewBtn = resultItem.querySelector('.view-details-btn');
+                viewBtn.addEventListener('click', function() {
+                    const recordData = JSON.parse(this.getAttribute('data-record'));
+                    showRecordDetails(recordData);
+                });
+            });
+        }
+
+        // 显示记录详情
+        function showRecordDetails(record) {
+            const detailsHtml = `
+                <div class="record-details">
+                    <h4 class="mb-3"><i class="fas fa-info-circle"></i> 记录详情</h4>
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <strong>游戏ID:</strong> ${record.getid || record.details?.getid || '未知'}
+                        </div>
+                        <div class="detail-item">
+                            <strong>用户名:</strong> ${record.username || '未知'}
+                        </div>
+                        <div class="detail-item">
+                            <strong>指纹:</strong> ${record.fingerprint || '未知'}
+                        </div>
+                        <div class="detail-item">
+                            <strong>时间戳:</strong> ${record.timestamp ? formatTime(record.timestamp) : '未知'}
+                        </div>
+                        ${record.details ? `
+                        <div class="detail-item">
+                            <strong>在线时长:</strong> ${record.details.onlineTime || '未知'} 分钟
+                        </div>
+                        <div class="detail-item">
+                            <strong>IP地址:</strong> ${record.details.ip || '未知'}
+                        </div>
+                        <div class="detail-item">
+                            <strong>用户代理:</strong> ${record.details.userAgent || '未知'}
+                        </div>
+                        ` : ''}
+                        ${record.time ? `
+                        <div class="detail-item">
+                            <strong>记录时间:</strong> ${formatTime(record.time)}
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div class="mt-3">
+                        <strong>完整数据:</strong>
+                        <pre class="bg-light p-2 mt-2 rounded" style="max-height: 200px; overflow: auto;">
+${JSON.stringify(record, null, 2)}
+                        </pre>
+                    </div>
+                </div>
+            `;
+            
+            showCustomConfirm(detailsHtml, '记录详情', {
+                confirmText: '关闭',
+                showCancel: false,
+                onConfirm: function() {}
             });
         }
 
@@ -3479,10 +3612,11 @@ async function fetchOnlineData() {
             }
             
             const term = searchTerm.trim().toLowerCase();
-            const matchedRecords = window.todayData.filter(item => {
+                const matchedRecords = window.todayData.filter(item => {
                 const userId = (item.getid || item.details?.getid || '').toString().toLowerCase();
                 const username = (item.username || '').toLowerCase();
-                return userId.includes(term) || username.includes(term);
+                const fingerprint = (item.fingerprint || '').toLowerCase();
+                return userId.includes(term) || username.includes(term) || fingerprint.includes(term);
             });
             
             if (matchedRecords.length === 0) {
@@ -3500,8 +3634,8 @@ async function fetchOnlineData() {
                 const timestamp = item.timestamp ? new Date(item.timestamp).toLocaleString('zh-CN') : '未知时间';
                 const onlineTime = item.details?.onlineTime ? (item.details.onlineTime + ' 分钟') : '未知';
                 
-                resultText += `${index + 1}. ID: ${userId}\n`;
-                resultText += `   用户名: ${username}\n`;
+                resultText += `${index + 1}. ID: ${highlightSearchTerm(userId, term)}\n`;
+                resultText += `   用户名: ${highlightSearchTerm(username, term)}\n`;
                 resultText += `   时间: ${timestamp}\n`;
                 resultText += `   在线时长: ${onlineTime}\n`;
                 if (index === 0) resultText += `   [最新记录]\n`;
@@ -3509,11 +3643,11 @@ async function fetchOnlineData() {
             });
             
             // 调用新的页面显示函数
-            showSearchResults(`搜索结果: "${searchTerm}"`, matchedRecords);
+            showSearchResults(`搜索结果: "${searchTerm}"`, matchedRecords, searchTerm);
         }
 
         // 在页面显示搜索结果并整合数据
-        function showSearchResults(title, records) {
+        function showSearchResults(title, records, searchTerm = '') {
             // 数据整合分析
             const analysis = analyzeSearchData(records);
             
@@ -3555,12 +3689,12 @@ async function fetchOnlineData() {
                             <div class="row">
                                 <div class="col-md-8">
                                     <h6 class="text-primary mb-2">
-                                        <i class="fas fa-id-card"></i> ID: <strong>${item.id}</strong>
+                                        <i class="fas fa-id-card"></i> ID: <strong>${highlightSearchTerm(item.id, searchTerm)}</strong>
                                         ${index === 0 ? '<span class="badge badge-success ml-2">最活跃</span>' : ''}
                                     </h6>
                                     <div class="row">
                                         <div class="col-sm-6">
-                                            <p class="mb-1"><i class="fas fa-user text-info"></i> <strong>使用者:</strong> ${usernameList}</p>
+                                            <p class="mb-1"><i class="fas fa-user text-info"></i> <strong>使用者:</strong> ${highlightSearchTerm(usernameList, searchTerm)}</p>
                                             <p class="mb-1"><i class="fas fa-clock text-success"></i> <strong>总在线:</strong> <span class="text-success font-weight-bold">${item.totalDuration}</span></p>
                                         </div>
                                         <div class="col-sm-6">
@@ -3597,7 +3731,7 @@ async function fetchOnlineData() {
                         html += `
                             <tr>
                                 <td>${time}</td>
-                                <td><span class="badge badge-secondary">${username}</span></td>
+                                <td><span class="badge badge-secondary">${highlightSearchTerm(username, searchTerm)}</span></td>
                                 <td><span class="text-success">${duration}</span></td>
                             </tr>
                         `;
@@ -4679,6 +4813,79 @@ async function fetchOnlineData() {
             // 每隔一段时间检查并修复滚动状态
             setInterval(ensurePageScrollable, 1000);
         });
+
+        // 自定义弹窗函数
+        function showCustomPrompt(message, defaultValue, callback) {
+            const modal = document.createElement('div');
+            modal.style = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                background: rgba(0,0,0,0.5); display: flex; justify-content: center; 
+                align-items: center; z-index: 10000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 20px; border-radius: 8px; width: 300px;">
+                    <div style="margin-bottom: 10px;">${message}</div>
+                    <input type="text" id="promptInput" value="${defaultValue || ''}" 
+                           style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box;">
+                    <div style="display: flex; gap: 10极速赛车开奖结果查询; justify-content: flex-end;">
+                        <button id="promptCancelBtn" class="btn btn-secondary">取消</button>
+                        <button id="promptConfirmBtn" class="btn btn-primary">确定</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            document.getElementById('promptInput').focus();
+            
+            // 添加事件监听器
+            document.getElementById('promptCancelBtn').onclick = function() {
+                modal.remove();
+            };
+            
+            document.getElementById('promptConfirmBtn').onclick = function() {
+                const value = document.getElementById('promptInput').value;
+                modal.remove();
+                callback(value);
+            };
+        }
+
+        function showCustomConfirm(message, title = '确认', options = {}) {
+            const modal = document.createElement('div');
+            modal.style = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                background: rgba(0,0,0,0.5); display: flex; justify-content: center; 
+                align-items: center; z-index: 10000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 20px; border-radius: 8px; width: 400px; max-width: 90vw;">
+                    <h5 style="margin-bottom: 15px;">${title}</h5>
+                    <div style="margin-bottom: 20px; max-height: 300px; overflow: auto;">${message}</div>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        ${options.showCancel !== false ? `
+                        <button id="cancelBtn" class="btn btn-secondary">${options.cancelText || '取消'}</button>
+                        ` : ''}
+                        <button id="confirmBtn" class="btn btn-primary">${options.confirmText || '确定'}</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // 添加事件监听器
+            if (options.showCancel !== false) {
+                document.getElementById('cancelBtn').onclick = function() {
+                    modal.remove();
+                    if (options.onCancel) options.onCancel();
+                };
+            }
+            
+            document.getElementById('confirmBtn').onclick = function() {
+                modal.remove();
+                if (options.onConfirm) options.onConfirm();
+            };
+        }
  </script>
 
 </body>
