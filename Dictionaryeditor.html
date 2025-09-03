@@ -2,9 +2,24 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>管理 dictionary.json</title>
+  <title>国服屏蔽字字典管理页</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(0,0,0,0.3);
+      border-radius: 50%;
+      border-top-color: #3498db;
+      animation: spin 1 ease-in-out infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
     body { font-family: Arial, sans-serif; margin: 10px; }
     h2 { font-size: 1.2em; }
     label, #msg { display: block; margin-bottom: 10px; }
@@ -28,7 +43,7 @@
   </style>
 </head>
 <body>
-  <h2>管理 chinese_words_replacer/dictionary.json</h2>
+  <h2>管理 屏蔽字</h2>
   <label>你的 GitHub Token（PAT）: <input type="password" id="token"></label>
   <button id="loadBtn">加载线上文件</button>
   <input type="search" id="search" placeholder="搜索关键词或释义...">
@@ -41,18 +56,76 @@
     <span id="addMsg"></span>
   </div>
   <table id="dictTable"></table>
-  <button id="saveBtn">自动上传到仓库</button>
-  <span id="msg"></span>
+  <button id="saveBtn" style="
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    opacity: 0.5;
+    transition: opacity 0.3;
+    max-width: 120px;
+    padding: 8px;
+  ">保存</button>
+  <!-- 右上角自动消失通知 -->
+  <div id="notificationToast" style="display:none; position:fixed; top:20px; right:20px; max-width:300px; background:#fff; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000; overflow:hidden;">
+    <div style="padding:12px 16px;">
+      <div style="display:flex; align-items:center; margin-bottom:6px;">
+        <div id="toastIcon" style="width:20px; height:20px; margin-right:8px; border-radius:50%;"></div>
+        <h3 id="toastTitle" style="margin:0; font-size:14px; font-weight:600;"></h3>
+      </div>
+      <p id="toastContent" style="margin:0; font-size:13px; color:#666;"></p>
+    </div>
+    <div id="toastProgress" style="height:3px; background:#3498db; width:100%;"></div>
+  </style>
+
+  <style>
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes progress {
+      from { width: 100%; }
+      to { width: 0%; }
+    }
+  </style>
   <script>
 
 // 自动记住和填充 Token
 window.addEventListener('DOMContentLoaded', () => {
   const tokenInput = document.getElementById('token');
   if (tokenInput) {
-    const savedToken = localStorage.getItem('github_token');
-    if (savedToken) tokenInput.value = savedToken;
+    // 加密存储Token
+    const encryptToken = (token) => btoa(token + '|' + Date.now());
+    const decryptToken = (encrypted) => {
+      try {
+        const [token, timestamp] = atob(encrypted).split('|');
+        if(Date.now() - Number(timestamp) > 3600000) return null; // 1小时有效期
+        return token;
+      } catch { return null; }
+    };
+
+    const savedToken = decryptToken(sessionStorage.getItem('github_token'));
+    if (savedToken) {
+      tokenInput.value = savedToken;
+      // 有Token则自动加载
+      setTimeout(() => document.getElementById('loadBtn').click(), 500);
+    }
     tokenInput.addEventListener('input', () => {
-      localStorage.setItem('github_token', tokenInput.value);
+      sessionStorage.setItem('github_token', encryptToken(tokenInput.value));
+    });
+
+    // 添加自动保存开关
+    const autoSaveToggle = document.createElement('label');
+    autoSaveToggle.innerHTML = `
+      <input type="checkbox" id="autoSaveToggle" checked> 启用自动保存
+      <span id="lastSaveTime" style="margin-left:10px;color:#666;font-size:0.9em;"></span>
+    `;
+    autoSaveToggle.style.display = 'block';
+    autoSaveToggle.style.margin = '10px 0';
+    tokenInput.parentNode.insertBefore(autoSaveToggle, tokenInput.nextSibling);
+
+    document.getElementById('autoSaveToggle').addEventListener('change', (e) => {
+      isAutoSaveEnabled = e.target.checked;
+      showToast('设置', `自动保存已${isAutoSaveEnabled ? '启用' : '禁用'}`, isAutoSaveEnabled ? 'green' : 'orange');
     });
 
     const owner = "Kosto179cn";
@@ -61,13 +134,40 @@ window.addEventListener('DOMContentLoaded', () => {
     let dict = {};
     let sha = null;
     let filter = "";
+    let autoSaveTimer = null;
+    let isAutoSaveEnabled = true;
+    let lastSaveTime = null;
+
+    function showToast(title, content, color="#3498db") {
+      const toast = document.getElementById('notificationToast');
+      const icon = document.getElementById('toastIcon');
+      const progress = document.getElementById('toastProgress');
+      
+      // 设置内容和样式
+      document.getElementById('toastTitle').textContent = title;
+      document.getElementById('toastContent').textContent = content;
+      icon.style.background = color;
+      
+      // 显示通知
+      toast.style.display = 'block';
+      toast.style.animation = 'slideInRight 0.3s forwards';
+      
+      // 进度条动画
+      progress.style.animation = 'progress 2s linear forwards';
+      
+      // 2秒后自动关闭
+      setTimeout(() => {
+        toast.style.animation = 'slideInRight 0.3s reverse forwards';
+        setTimeout(() => toast.style.display = 'none', 300);
+      }, 2000);
+    }
 
     function showMsg(text, color="blue") {
-      document.getElementById('msg').innerHTML = `<span style="color:${color}">${text}</span>`;
+      showToast('提示', text, color);
     }
 
     function showAddMsg(text, color="red") {
-      document.getElementById('addMsg').innerHTML = `<span style="color:${color}">${text}</span>`;
+      showToast('提示', text, color);
     }
 
     function renderTable() {
@@ -99,7 +199,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // 加载文件
     document.getElementById('loadBtn').onclick = async () => {
-      showMsg("正在加载...", "grey");
+      showMsg("正在加载...", "grey", 0);
+      document.getElementById('loadBtn').disabled = true;
+      document.getElementById('loadBtn').innerHTML = 
+        '<span class="loading-spinner"></span>加载中...';
       const token = document.getElementById('token').value;
       if (!token) { showMsg("请先输入 Token", "red"); return; }
       try {
@@ -112,8 +215,12 @@ window.addEventListener('DOMContentLoaded', () => {
         dict = JSON.parse(decodeURIComponent(escape(atob(data.content))));
         renderTable();
         showMsg("文件已加载，可编辑", "green");
+        document.getElementById('loadBtn').disabled = false;
+        document.getElementById('loadBtn').textContent = '加载线上文件';
       } catch(e) {
-        showMsg("加载失败，Token或网络错误", "red");
+        showMsg(`加载失败: ${e.message}`, "red");
+        document.getElementById('loadBtn').disabled = false;
+        document.getElementById('loadBtn').textContent = '加载线上文件';
       }
     };
 
@@ -130,11 +237,39 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('confirmAddBtn').onclick = () => {
       let key = document.getElementById('newKey').value.trim();
       let val = document.getElementById('newVal').value.trim();
-      if(!key) { showAddMsg("词不能为空"); return;}
-      if(dict[key]) { showAddMsg("该词已存在"); return;}
+      
+      // 数据验证
+      if(!key) { 
+        showAddMsg("词不能为空"); 
+        document.getElementById('newKey').focus();
+        return;
+      }
+      if(key.length > 50) {
+        showAddMsg("词长度不能超过50个字符");
+        document.getElementById('newKey').focus();
+        return;
+      }
+      if(!val) {
+        showAddMsg("释义不能为空");
+        document.getElementById('newVal').focus();
+        return;
+      }
+      if(val.length > 200) {
+        showAddMsg("释义长度不能超过200个字符");
+        document.getElementById('newVal').focus();
+        return;
+      }
+      if(dict[key]) { 
+        showAddMsg("该词已存在"); 
+        document.getElementById('newKey').focus();
+        return;
+      }
+      
       dict[key] = val;
       document.getElementById('addForm').style.display = 'none';
       renderTable();
+      showMsg(`已添加词条: ${key}`, "green");
+      triggerAutoSave();
     };
 
     // 编辑词
@@ -152,7 +287,56 @@ window.addEventListener('DOMContentLoaded', () => {
     // 编辑释义
     window.updateValue = (key, newValue) => {
       dict[key] = newValue;
+      triggerAutoSave();
     };
+
+    function triggerAutoSave() {
+      if (!isAutoSaveEnabled || !sha) return;
+      
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(() => {
+        saveToGithub();
+      }, 2000);
+      
+      updateLastSaveTime('保存中...');
+    }
+
+    function updateLastSaveTime(text) {
+      const el = document.getElementById('lastSaveTime');
+      if (el) el.textContent = text;
+    }
+
+    async function saveToGithub() {
+      const token = document.getElementById('token').value;
+      if (!token || !sha) return;
+      
+      try {
+        updateLastSaveTime('保存中...');
+        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+          method: 'PUT',
+          headers: {
+            Authorization: 'token ' + token,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: "Auto update dictionary.json",
+            content: btoa(unescape(encodeURIComponent(JSON.stringify(dict, null, 2)))),
+            sha: sha,
+            branch: "main"
+          })
+        });
+        
+        if (!res.ok) throw new Error("自动保存失败");
+        const data = await res.json();
+        sha = data.content.sha;
+        lastSaveTime = new Date();
+        updateLastSaveTime(`最后保存: ${lastSaveTime.toLocaleTimeString()}`);
+        showToast('自动保存', '字典已自动保存', 'green');
+      } catch(e) {
+        showToast('自动保存失败', e.message, 'red');
+        updateLastSaveTime('保存失败');
+      }
+    }
 
     // 删除词条
     window.deleteRow = (key) => {
@@ -163,11 +347,16 @@ window.addEventListener('DOMContentLoaded', () => {
     };
 
     // 保存上传
-    document.getElementById('saveBtn').onclick = async () => {
+    const saveBtn = document.getElementById('saveBtn');
+    saveBtn.addEventListener('mouseenter', () => saveBtn.style.opacity = '1');
+    saveBtn.addEventListener('mouseleave', () => saveBtn.style.opacity = '0.5');
+    
+    saveBtn.onclick = async () => {
       const token = document.getElementById('token').value;
       if (!token) { showMsg("请先输入 Token", "red"); return; }
       if (!sha) { showMsg("请先加载文件", "red"); return; }
       showMsg("正在上传...", "grey");
+      await saveToGithub();
       try {
         const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
           method: 'PUT',
@@ -185,11 +374,14 @@ window.addEventListener('DOMContentLoaded', () => {
         if (!res.ok) throw new Error("上传失败");
         const data = await res.json();
         sha = data.content.sha; // 更新新sha
-        showMsg("上传成功！", "green");
+        showToast('上传成功', '字典文件已成功更新到GitHub仓库', 'green');
       } catch(e) {
         showMsg("上传失败，请检查Token和网络", "red");
       }
     };
+  }
+});
+</script>
   </script>
 </body>
 </html>
