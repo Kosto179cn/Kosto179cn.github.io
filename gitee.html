@@ -1,4 +1,6 @@
 
+
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -2439,14 +2441,20 @@ async function fetchOnlineData() {
         function renderTanknamesTable() {
             const tanknames = whitelistData[TANKNAMES_INDEX] || [];
             tanknamesTableBody.innerHTML = '';
+            const showCheckboxes = isBatchManagementEnabled('tanknames');
 
             tanknames.forEach((id, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
+                    <td>
+                        <div class="form-check" style="${showCheckboxes ? '' : 'display: none;'}">
+                            <input type="checkbox" class="form-check-input" data-index="${index}" onchange="updateSelectAllState('tanknames')">
+                        </div>
+                    </td>
                     <td><span class="badge bg-secondary me-2">${index + 1}</span>${id}</td>
                     <td>
-                        <button class="btn btn-sm btn-primary" onclick="editItem(${TANKNAMES_INDEX}, ${index}, '编辑白名单用户ID')">编辑</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteItem(${TANKNAMES_INDEX}, ${index}, renderTanknamesTable)">删除</button>
+                        <button class="btn btn-sm btn-primary" onclick="editItemWithAutoSave(${TANKNAMES_INDEX}, ${index}, prompt('请输入新的白名单用户ID:', currentValue), renderTanknamesTable)">编辑</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteItemWithAutoSave(${TANKNAMES_INDEX}, ${index}, renderTanknamesTable)">删除</button>
                         <button class="btn btn-sm btn-warning" onclick="blacklistItem(${TANKNAMES_INDEX}, ${index}, 'id')">拉黑</button>
                     </td>
                 `;
@@ -2469,10 +2477,16 @@ async function fetchOnlineData() {
         function renderGroupsTable() {
             const groups = whitelistData[GROUPS_INDEX] || [];
             groupsTableBody.innerHTML = '';
+            const showCheckboxes = isBatchManagementEnabled('groups');
 
             groups.forEach((group, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
+                    <td>
+                        <div class="form-check" style="${showCheckboxes ? '' : 'display: none;'}">
+                            <input type="checkbox" class="form-check-input" data-index="${index}" onchange="updateSelectAllState('groups')">
+                        </div>
+                    </td>
                     <td><span class="badge bg-secondary me-2">${index + 1}</span>${group}</td>
                     <td>
                         <button class="btn btn-sm btn-primary" onclick="editItem(${GROUPS_INDEX}, ${index}, 'Groups')">编辑</button>
@@ -2499,12 +2513,13 @@ async function fetchOnlineData() {
         function renderOursTable() {
             const ours = whitelistData[OURS_INDEX] || [];
             oursTableBody.innerHTML = '';
+            const showCheckboxes = isBatchManagementEnabled('ours');
 
             ours.forEach((id, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>
-                        <div class="form-check">
+                        <div class="form-check" style="${showCheckboxes ? '' : 'display: none;'}">
                             <input type="checkbox" class="form-check-input" data-index="${index}" onchange="updateSelectAllState('ours')">
                         </div>
                     </td>
@@ -2530,10 +2545,16 @@ async function fetchOnlineData() {
         function renderSsTable() {
             const ss = whitelistData[SS_INDEX] || [];
             ssTableBody.innerHTML = '';
+            const showCheckboxes = isBatchManagementEnabled('ss');
 
             ss.forEach((value, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
+                    <td>
+                        <div class="form-check" style="${showCheckboxes ? '' : 'display: none;'}">
+                            <input type="checkbox" class="form-check-input" data-index="${index}" onchange="updateSelectAllState('ss')">
+                        </div>
+                    </td>
                     <td><span class="badge bg-secondary me-2">${index + 1}</span>${value}</td>
                     <td class="action-buttons">
                         <button class="btn btn-sm btn-primary edit-ss" data-index="${index}">编辑</button>
@@ -2556,10 +2577,16 @@ async function fetchOnlineData() {
         function renderCookie1Table() {
             const cookie1 = whitelistData[COOKIE1_INDEX] || [];
             cookie1TableBody.innerHTML = '';
+            const showCheckboxes = isBatchManagementEnabled('cookie1');
 
             cookie1.forEach((value, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
+                    <td>
+                        <div class="form-check" style="${showCheckboxes ? '' : 'display: none;'}">
+                            <input type="checkbox" class="form-check-input" data-index="${index}" onchange="updateSelectAllState('cookie1')">
+                        </div>
+                    </td>
                     <td><span class="badge bg-secondary me-2">${index + 1}</span>${value}</td>
                     <td class="action-buttons">
                         <button class="btn btn-sm btn-primary edit-cookie1" data-index="${index}">编辑</button>
@@ -2584,13 +2611,14 @@ async function fetchOnlineData() {
         function renderBlacklistTable() {
             const blacklist = whitelistData[BLACKLIST_INDEX] || [];
             blacklistTableBody.innerHTML = '';
+            const showCheckboxes = isBatchManagementEnabled('blacklist');
             
             // 添加默认的已拉黑用户示例
             const defaultRow = document.createElement('tr');
             defaultRow.id = 'default-blacklist-user';
             defaultRow.innerHTML = `
                 <td>
-                    <div class="form-check">
+                    <div class="form-check" style="${showCheckboxes ? '' : 'display: none;'}">
                         <input type="checkbox" class="form-check-input" data-index="default" onchange="updateSelectAllState('blacklist')">
                     </div>
                 </td>
@@ -2614,7 +2642,7 @@ async function fetchOnlineData() {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>
-                        <div class="form-check">
+                        <div class="form-check" style="${showCheckboxes ? '' : 'display: none;'}">
                             <input type="checkbox" class="form-check-input" data-index="${index}" onchange="updateSelectAllState('blacklist')">
                         </div>
                     </td>
@@ -2880,12 +2908,8 @@ async function fetchOnlineData() {
                 }
             }
             
-            whitelistData[arrayIndex].push(finalValue);
-            
-            // 调用对应的渲染函数
-            if (window.currentRenderFunction) {
-                window.currentRenderFunction();
-            }
+            // 使用自动保存添加项目
+            addItemWithAutoSave(arrayIndex, finalValue, window.currentRenderFunction);
             
             // 关闭模态框
             const modal = bootstrap.Modal.getInstance(document.getElementById('addItemModal'));
@@ -2921,9 +2945,7 @@ async function fetchOnlineData() {
             }
             
             // 重置表单
-            document.getElementById('addUserId').value = '';
             document.getElementById('addUserName').value = '';
-            document.getElementById('addUserCorp').value = '';
             document.getElementById('addUserFingerprint').value = '';
         }
 
@@ -4494,6 +4516,12 @@ ${JSON.stringify(record, null, 2)}
             }
         }
 
+        // 检查批量管理是否开启
+        function isBatchManagementEnabled(tableType) {
+            const batchArea = document.getElementById(`${tableType}BatchArea`);
+            return batchArea && batchArea.style.display === 'block';
+        }
+
         // 批量管理功能
         function toggleBatchManagement(tableType) {
             const batchArea = document.getElementById(`${tableType}BatchArea`);
@@ -4504,6 +4532,8 @@ ${JSON.stringify(record, null, 2)}
                 // 初始化选择状态
                 selectAllCheckbox.checked = false;
                 updateSelectAllState(tableType);
+                // 重新渲染表格以显示复选框
+                renderAllTables();
             } else {
                 batchArea.style.display = 'none';
                 // 取消所有选择
@@ -4511,6 +4541,8 @@ ${JSON.stringify(record, null, 2)}
                 checkboxes.forEach(checkbox => {
                     checkbox.checked = false;
                 });
+                // 重新渲染表格以隐藏复选框
+                renderAllTables();
             }
         }
 
@@ -4531,7 +4563,7 @@ ${JSON.stringify(record, null, 2)}
             selectAllCheckbox.indeterminate = someChecked && !allChecked;
         }
 
-        function deleteSelectedUsers() {
+        async function deleteSelectedUsers() {
             const checkboxes = document.querySelectorAll('#usersTableBody input[type="checkbox"]:checked');
             if (checkboxes.length === 0) {
                 notificationSystem.warning('请先选择要删除的用户', '警告');
@@ -4545,7 +4577,7 @@ ${JSON.stringify(record, null, 2)}
                     if (index) indices.push(parseInt(index));
                 });
 
-                // 从白名单数据中删除选中的用户
+                // 从白名单数据中删除选中的用户（倒序删除避免索引问题）
                 indices.sort((a, b) => b - a).forEach(index => {
                     if (whitelistData[USERS_INDEX] && whitelistData[USERS_INDEX][index]) {
                         whitelistData[USERS_INDEX].splice(index, 1);
@@ -4556,12 +4588,24 @@ ${JSON.stringify(record, null, 2)}
                 renderUsersTable();
                 notificationSystem.success(`成功删除 ${indices.length} 个用户`, '删除成功');
                 
+                // 自动保存到服务器
+                try {
+                    const jsonContent = JSON.stringify(whitelistData, null, 2);
+                    const success = await updateGitHubFile(jsonContent);
+                    if (success) {
+                        console.log('批量删除自动保存成功');
+                    }
+                } catch (error) {
+                    console.error('批量删除自动保存失败:', error);
+                    notificationSystem.error('批量删除自动保存失败: ' + error.message, '保存错误');
+                }
+                
                 // 关闭批量管理模式
                 toggleBatchManagement('users');
             }
         }
 
-        function deleteSelectedTanknames() {
+        async function deleteSelectedTanknames() {
             const checkboxes = document.querySelectorAll('#tanknamesTableBody input[type="checkbox"]:checked');
             if (checkboxes.length === 0) {
                 notificationSystem.warning('请先选择要删除的用户ID', '警告');
@@ -4586,12 +4630,24 @@ ${JSON.stringify(record, null, 2)}
                 renderTanknamesTable();
                 notificationSystem.success(`成功删除 ${indices.length} 个用户ID`, '删除成功');
                 
+                // 自动保存到服务器
+                try {
+                    const jsonContent = JSON.stringify(whitelistData, null, 2);
+                    const success = await updateGitHubFile(jsonContent);
+                    if (success) {
+                        console.log('批量删除自动保存成功');
+                    }
+                } catch (error) {
+                    console.error('批量删除自动保存失败:', error);
+                    notificationSystem.error('批量删除自动保存失败: ' + error.message, '保存错误');
+                }
+                
                 // 关闭批量管理模式
                 toggleBatchManagement('tanknames');
             }
         }
 
-        function deleteSelectedGroups() {
+        async function deleteSelectedGroups() {
             const checkboxes = document.querySelectorAll('#groupsTableBody input[type="checkbox"]:checked');
             if (checkboxes.length === 0) {
                 notificationSystem.warning('请先选择要删除的军团', '警告');
@@ -4616,15 +4672,27 @@ ${JSON.stringify(record, null, 2)}
                 renderGroupsTable();
                 notificationSystem.success(`成功删除 ${indices.length} 个军团`, '删除成功');
                 
+                // 自动保存到服务器
+                try {
+                    const jsonContent = JSON.stringify(whitelistData, null, 2);
+                    const success = await updateGitHubFile(jsonContent);
+                    if (success) {
+                        console.log('批量删除自动保存成功');
+                    }
+                } catch (error) {
+                    console.error('批量删除自动保存失败:', error);
+                    notificationSystem.error('批量删除自动保存失败: ' + error.message, '保存错误');
+                }
+                
                 // 关闭批量管理模式
                 toggleBatchManagement('groups');
             }
         }
 
-        function deleteSelectedOurs() {
+        async function deleteSelectedOurs() {
             const checkboxes = document.querySelectorAll('#oursTableBody input[type="checkbox"]:checked');
             if (checkboxes.length === 0) {
-                notificationSystem.warning('请极先选择要删除的开发者ID', '警告');
+                notificationSystem.warning('请先选择要删除的开发者ID', '警告');
                 return;
             }
 
@@ -4646,12 +4714,24 @@ ${JSON.stringify(record, null, 2)}
                 renderOursTable();
                 notificationSystem.success(`成功删除 ${indices.length} 个开发者ID`, '删除成功');
                 
+                // 自动保存到服务器
+                try {
+                    const jsonContent = JSON.stringify(whitelistData, null, 2);
+                    const success = await updateGitHub极File(jsonContent);
+                    if (success) {
+                        console.log('批量删除自动保存成功');
+                    }
+                } catch (error) {
+                    console.error('批量删除自动保存失败:', error);
+                    notificationSystem.error('批量删除自动保存失败: ' + error.message, '保存错误');
+                }
+                
                 // 关闭批量管理模式
                 toggleBatchManagement('ours');
             }
         }
 
-        function deleteSelectedBlacklist() {
+        async function deleteSelectedBlacklist() {
             const checkboxes = document.querySelectorAll('#blacklistTableBody input[type="checkbox"]:checked');
             if (checkboxes.length === 0) {
                 notificationSystem.warning('请先选择要删除的黑名单用户', '警告');
@@ -4677,6 +4757,18 @@ ${JSON.stringify(record, null, 2)}
                 // 重新渲染表格
                 renderBlacklistTable();
                 notificationSystem.success(`成功删除 ${indices.length} 个黑名单用户`, '删除成功');
+                
+                // 自动保存到服务器
+                try {
+                    const jsonContent = JSON.stringify(whitelistData, null, 2);
+                    const success = await updateGitHubFile(jsonContent);
+                    if (success) {
+                        console.log('批量删除自动保存成功');
+                    }
+                } catch (error) {
+                    console.error('批量删除自动保存失败:', error);
+                    notificationSystem.error('批量删除自动保存失败: ' + error.message, '保存错误');
+                }
                 
                 // 关闭批量管理模式
                 toggleBatchManagement('blacklist');
@@ -4885,6 +4977,89 @@ ${JSON.stringify(record, null, 2)}
                 modal.remove();
                 if (options.onConfirm) options.onConfirm();
             };
+        }
+
+        // 自动保存函数 - 编辑项目
+        async function editItemWithAutoSave(arrayIndex, itemIndex, newValue, renderFunction) {
+            if (!whitelistData[arrayIndex]) {
+                console.error('数组索引不存在:', arrayIndex);
+                return;
+            }
+            
+            // 更新数据
+            whitelistData[arrayIndex][itemIndex] = newValue;
+            
+            // 重新渲染表格
+            if (renderFunction && typeof renderFunction === 'function') {
+                renderFunction();
+            }
+            
+            // 自动保存到服务器
+            try {
+                const jsonContent = JSON.stringify(whitelistData, null, 2);
+                const success = await updateGitHubFile(jsonContent);
+                if (success) {
+                    console.log('自动保存成功');
+                }
+            } catch (error) {
+                console.error('自动保存失败:', error);
+                notificationSystem.error('自动保存失败: ' + error.message, '保存错误');
+            }
+        }
+
+        // 自动保存函数 - 添加项目
+        async function addItemWithAutoSave(arrayIndex, newItem, renderFunction) {
+            if (!whitelistData[arrayIndex]) {
+                whitelistData[arrayIndex] = [];
+            }
+            
+            // 添加新项目
+            whitelistData[arrayIndex].push(newItem);
+            
+            // 重新渲染表格
+            if (renderFunction && typeof renderFunction === 'function') {
+                renderFunction();
+            }
+            
+            // 自动保存到服务器
+            try {
+                const jsonContent = JSON.stringify(whitelistData, null, 2);
+                const success = await updateGitHubFile(jsonContent);
+                if (success) {
+                    console.log('自动保存成功');
+                }
+            } catch (error) {
+                console.error('自动保存失败:', error);
+                notificationSystem.error('自动保存失败: ' + error.message, '保存错误');
+            }
+        }
+
+        // 自动保存函数 - 删除项目
+        async function deleteItemWithAutoSave(arrayIndex, itemIndex, renderFunction) {
+            if (!whitelistData[arrayIndex]) {
+                console.error('数组索引不存在:', arrayIndex);
+                return;
+            }
+            
+            // 删除项目
+            whitelistData[arrayIndex].splice(itemIndex, 1);
+            
+            // 重新渲染表格
+            if (renderFunction && typeof renderFunction === 'function') {
+                renderFunction();
+            }
+            
+            // 自动保存到服务器
+            try {
+                const jsonContent = JSON.stringify(whitelistData, null, 2);
+                const success = await updateGitHubFile(jsonContent);
+                if (success) {
+                    console.log('自动保存成功');
+                }
+            } catch (error) {
+                console.error('自动保存失败:', error);
+                notificationSystem.error('自动保存失败: ' + error.message, '保存错误');
+            }
         }
  </script>
 
