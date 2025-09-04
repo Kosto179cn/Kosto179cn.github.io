@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -980,6 +979,7 @@
                         <table class="table">
                             <thead>
                                 <tr>
+                                    <th>选择</th>
                                     <th>用户ID</th>
                                     <th>操作</th>
                                 </tr>
@@ -1065,6 +1065,7 @@
                         <table class="table">
                             <thead>
                                 <tr>
+                                    <th>选择</th>
                                     <th>军团名称</th>
                                     <th>操作</th>
                                 </tr>
@@ -1130,7 +1131,7 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th><input type="checkbox" id="oursHeaderSelectAll" onchange="toggleSelectAll('ours', this.checked)" style="display: none;"></th>
+                                    <th>选择</th>
                                 <th>开发者ID</th>
                                 <th>操作</th>
                                 </tr>
@@ -4526,9 +4527,14 @@ ${JSON.stringify(record, null, 2)}
         function toggleBatchManagement(tableType) {
             const batchArea = document.getElementById(`${tableType}BatchArea`);
             const selectAllCheckbox = document.getElementById(`${tableType}SelectAll`);
+            const headerSelectAll = document.getElementById(`${tableType}HeaderSelectAll`);
             
             if (batchArea.style.display === 'none' || batchArea.style.display === '') {
                 batchArea.style.display = 'block';
+                // 显示表头全选复选框
+                if (headerSelectAll) {
+                    headerSelectAll.style.display = 'inline-block';
+                }
                 // 初始化选择状态
                 selectAllCheckbox.checked = false;
                 updateSelectAllState(tableType);
@@ -4536,6 +4542,10 @@ ${JSON.stringify(record, null, 2)}
                 renderAllTables();
             } else {
                 batchArea.style.display = 'none';
+                // 隐藏表头全选复选框
+                if (headerSelectAll) {
+                    headerSelectAll.style.display = 'none';
+                }
                 // 取消所有选择
                 const checkboxes = document.querySelectorAll(`#${tableType}TableBody input[type="checkbox"]`);
                 checkboxes.forEach(checkbox => {
