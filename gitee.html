@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -2683,13 +2684,18 @@ async function fetchOnlineData() {
         function handleAddBlacklist() {
             const userId = document.getElementById('blacklistUserId').value.trim();
             const userName = document.getElementById('blacklistUserName').value.trim();
-            const userCorp = document.getElementById('blacklistUserCorp').value.trim();
+            let userCorp = document.getElementById('blacklistUserCorp').value.trim();
             const userFingerprint = document.getElementById('blacklistUserFingerprint').value.trim();
 
             // 验证至少填写一项内容
             if (!userId && !userName && !userCorp && !userFingerprint) {
                 notificationSystem.warning('请至少填写一项内容（用户ID、用户名、军团或指纹）', '警告');
                 return;
+            }
+
+            // 如果填写了军团名称，自动加上方括号
+            if (userCorp && !userCorp.startsWith('[') && !userCorp.endsWith(']')) {
+                userCorp = `[${userCorp}]`;
             }
 
             if (!whitelistData[BLACKLIST_INDEX]) {
@@ -2745,7 +2751,8 @@ async function fetchOnlineData() {
             const newUserName = document.getElementById('editBlacklistUserName').value.trim();
             const newUserCorp = document.getElementById('editBlacklistUserCorp').value.trim();
             const newUserFingerprint = document.getElementById('editBlacklistUserFingerprint').value.trim();
-            if (!newUserId || !newUserName) return;
+            
+
 
             editItemWithAutoSave(BLACKLIST_INDEX, index, {
                 'id': newUserId,
