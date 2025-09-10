@@ -1,6 +1,6 @@
 {
-  "version": "2025.9.9",
-  "version_code": 12,
-  "update_info": "成功完善了录屏模式 当功能打开时 菜单无法正常呼出 需长按两秒你所设置的呼出键，当录屏模式打开时 模块显示 左下角的功能状态窗口 欢迎动画 通知弹窗不会显示 并且此功能会保存到本地配置",
+  "version": "2025.9.10",
+  "version_code": 13,
+  "update_info": "优化一些小问题",
   "download_url": "https://kosto179cn.github.io/cloudversion.script.user.js"
 }
