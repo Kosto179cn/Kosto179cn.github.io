@@ -351,13 +351,23 @@ window.addEventListener('DOMContentLoaded', () => {
   const tokenInput = document.getElementById('token');
   if (tokenInput) {
     // 加密存储Token
-    const encryptToken = (token) => btoa(token + '|' + Date.now());
+    const encryptToken = (token) => {
+      try {
+        return btoa(encodeURIComponent(token + '|' + Date.now()));
+      } catch {
+        return null;
+      }
+    };
+    
     const decryptToken = (encrypted) => {
       try {
-        const [token, timestamp] = atob(encrypted).split('|');
-        if(Date.now() - Number(timestamp) > 3600000) return null; // 1小时有效期
+        const decoded = atob(encrypted);
+        const [token, timestamp] = decodeURIComponent(decoded).split('|');
+        if(Date.now() - Number(timestamp) > 86400000) return null; // 24小时有效期
         return token;
-      } catch { return null; }
+      } catch { 
+        return null; 
+      }
     };
 
     const savedToken = decryptToken(sessionStorage.getItem('github_token'));
@@ -381,26 +391,25 @@ window.addEventListener('DOMContentLoaded', () => {
       if (token) {
         validateToken(token).then(isValid => {
           if (isValid) {
-            sessionStorage.setItem('github_token', encryptToken(token));
-            showToast('Token验证', 'Token验证成功', 'green');
+            const encrypted = encryptToken(token);
+            if (encrypted) {
+              sessionStorage.setItem('github_token', encrypted);
+              showToast('Token验证', 'Token已保存', 'green');
+            }
           } else {
-            showToast('Token验证', 'Token无效，请检查后重新输入', 'red');
+            showToast('Token验证', 'Token格式可能不正确', 'orange');
           }
         });
+      } else {
+        // 清空输入时移除保存的token
+        sessionStorage.removeItem('github_token');
       }
     });
 
-    // Token验证函数
+    // Token验证函数 - 基本格式检查
     async function validateToken(token) {
-      if (!token) return false;
-      try {
-        const res = await fetch(`https://api.github.com/user`, {
-          headers: { Authorization: 'token ' + token }
-        });
-        return res.ok;
-      } catch {
-        return false;
-      }
+      // GitHub token通常是40字符以上，放宽验证条件
+      return token && token.length >= 40;
     }
 
     // 添加自动保存开关
@@ -663,9 +672,9 @@ window.addEventListener('DOMContentLoaded', () => {
       clearTimeout(autoSaveTimer);
       autoSaveTimer = setTimeout(() => {
         saveToGithub();
-      }, 2000);
+      }, 3000); // 延长到3秒，避免频繁保存
       
-      updateLastSaveTime('保存中...');
+      updateLastSaveTime('等待保存...');
     }
 
     function updateLastSaveTime(text) {
