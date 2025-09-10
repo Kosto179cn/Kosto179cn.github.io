@@ -1503,6 +1503,17 @@
             },
             
             error: function(message, title = '错误', duration = 5000) {
+                // 检查是否是特定的"请先设置Gitee Token"错误消息
+                if (message === '请先设置Gitee Token才能获取在线人数') {
+                    // 使用sessionStorage记录是否已经显示过（每次会话只显示一次）
+                    const tokenErrorShown = sessionStorage.getItem('giteeTokenErrorShown');
+                    if (tokenErrorShown === 'true') {
+                        return null; // 本次会话已经显示过，不再显示
+                    }
+                    // 标记为本次会话已显示
+                    sessionStorage.setItem('giteeTokenErrorShown', 'true');
+                }
+                
                 return this.create({
                     type: 'error',
                     title: title,
@@ -1627,6 +1638,10 @@
                     let finalUrl = url;
                     if (url.includes('gitee.com/api/v5/repos')) {
                         const token = loadToken();
+                        if (!token) {
+                            notificationSystem.error('请先设置Gitee Token才能获取在线人数', '未设置Token');
+                            return false;
+                        }
                         if (token) {
                             finalUrl = url.includes('?') ? `${url}&access_token=${token}` : `${url}?access_token=${token}`;
                         }
@@ -1668,6 +1683,7 @@
                     // 如果是直接的 JSON 数据
                     return data;
             } catch (error) {
+                
                 console.error('Gitee API错误:', error);
                 notificationSystem.error(`Gitee操作失败: ${error.message}\\n\\n请检查：\\n1. Token是否有效\\n2. Token是否有repo权限\\n3. 仓库名称是否正确`, '错误');
                 return false;
@@ -5081,6 +5097,11 @@ ${JSON.stringify(record, null, 2)}
                 notificationSystem.error('自动保存失败: ' + error.message, '保存错误');
             }
         }
+ </script>
+
+</body>
+</html>
+
  </script>
 
 </body>
