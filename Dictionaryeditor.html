@@ -370,7 +370,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    const savedToken = decryptToken(sessionStorage.getItem('github_token'));
+    const savedToken = decryptToken(localStorage.getItem('github-Token'));
     if (savedToken) {
       tokenInput.value = savedToken;
       // 验证token有效性
@@ -380,7 +380,7 @@ window.addEventListener('DOMContentLoaded', () => {
           setTimeout(() => document.getElementById('loadBtn').click(), 500);
         } else {
           // Token无效则清除
-          sessionStorage.removeItem('github_token');
+          localStorage.removeItem('github-Token');
           tokenInput.value = '';
           showToast('Token验证', '保存的Token已失效，请重新输入', 'red');
         }
@@ -393,7 +393,7 @@ window.addEventListener('DOMContentLoaded', () => {
           if (isValid) {
             const encrypted = encryptToken(token);
             if (encrypted) {
-              sessionStorage.setItem('github_token', encrypted);
+              localStorage.setItem('github-Token', encrypted);
               showToast('Token验证', 'Token已保存', 'green');
             }
           } else {
@@ -402,7 +402,7 @@ window.addEventListener('DOMContentLoaded', () => {
         });
       } else {
         // 清空输入时移除保存的token
-        sessionStorage.removeItem('github_token');
+        localStorage.removeItem('github-Token');
       }
     });
 
@@ -667,10 +667,15 @@ window.addEventListener('DOMContentLoaded', () => {
     };
 
     function triggerAutoSave() {
-      if (!isAutoSaveEnabled || !sha) return;
+      console.log('triggerAutoSave called', { isAutoSaveEnabled, sha });
+      if (!isAutoSaveEnabled || !sha) {
+        console.log('Auto save skipped - isAutoSaveEnabled:', isAutoSaveEnabled, 'sha:', sha);
+        return;
+      }
       
       clearTimeout(autoSaveTimer);
       autoSaveTimer = setTimeout(() => {
+        console.log('Auto saving to GitHub...');
         saveToGithub();
       }, 3000); // 延长到3秒，避免频繁保存
       
@@ -684,9 +689,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
     async function saveToGithub() {
       const token = document.getElementById('token').value;
-      if (!token || !sha) return;
+      if (!token || !sha) {
+        console.log('saveToGithub skipped - token:', !!token, 'sha:', sha);
+        return;
+      }
       
       try {
+        console.log('Starting auto save to GitHub...');
         updateLastSaveTime('保存中...');
         const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
           method: 'PUT',
@@ -702,13 +711,20 @@ window.addEventListener('DOMContentLoaded', () => {
           })
         });
         
-        if (!res.ok) throw new Error("自动保存失败");
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error('GitHub API error:', res.status, errorText);
+          throw new Error(`自动保存失败: ${res.status}`);
+        }
+        
         const data = await res.json();
         sha = data.content.sha;
         lastSaveTime = new Date();
         updateLastSaveTime(`最后保存: ${lastSaveTime.toLocaleTimeString()}`);
+        console.log('Auto save successful, new sha:', sha);
         showToast('自动保存', '字典已自动保存', 'green');
       } catch(e) {
+        console.error('Auto save error:', e);
         showToast('自动保存失败', e.message, 'red');
         updateLastSaveTime('保存失败');
       }
