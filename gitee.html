@@ -4603,6 +4603,7 @@ ${JSON.stringify(record, null, 2)}
                     const jsonContent = JSON.stringify(whitelistData, null, 2);
                     const success = await updateGitHubFile(jsonContent);
                     if (success) {
+                        notificationSystem.success('自动保存成功', '成功');
                         console.log('批量删除自动保存成功');
                     }
                 } catch (error) {
@@ -4645,6 +4646,7 @@ ${JSON.stringify(record, null, 2)}
                     const jsonContent = JSON.stringify(whitelistData, null, 2);
                     const success = await updateGitHubFile(jsonContent);
                     if (success) {
+                        notificationSystem.success('自动保存成功', '成功');
                         console.log('批量删除自动保存成功');
                     }
                 } catch (error) {
@@ -4687,6 +4689,7 @@ ${JSON.stringify(record, null, 2)}
                     const jsonContent = JSON.stringify(whitelistData, null, 2);
                     const success = await updateGitHubFile(jsonContent);
                     if (success) {
+                        notificationSystem.success('自动保存成功', '成功');
                         console.log('批量删除自动保存成功');
                     }
                 } catch (error) {
@@ -4729,6 +4732,7 @@ ${JSON.stringify(record, null, 2)}
                     const jsonContent = JSON.stringify(whitelistData, null, 2);
                     const success = await updateGitHub极File(jsonContent);
                     if (success) {
+                        notificationSystem.success('自动保存成功', '成功');
                         console.log('批量删除自动保存成功');
                     }
                 } catch (error) {
@@ -4773,6 +4777,7 @@ ${JSON.stringify(record, null, 2)}
                     const jsonContent = JSON.stringify(whitelistData, null, 2);
                     const success = await updateGitHubFile(jsonContent);
                     if (success) {
+                        notificationSystem.success('自动保存成功', '成功');
                         console.log('批量删除自动保存成功');
                     }
                 } catch (error) {
@@ -4861,6 +4866,8 @@ ${JSON.stringify(record, null, 2)}
                     whitelistData[USERS_INDEX].splice(index, 1);
                     renderUsersTable();
                     notificationSystem.success('用户删除成功', '删除成功');
+                    // 自动保存到服务器
+                    deleteItemWithAutoSave(USERS_INDEX, index, renderUsersTable);
                 }
             }
         }
@@ -5009,6 +5016,7 @@ ${JSON.stringify(record, null, 2)}
                 const jsonContent = JSON.stringify(whitelistData, null, 2);
                 const success = await updateGitHubFile(jsonContent);
                 if (success) {
+                    notificationSystem.success('自动保存成功', '成功');
                     console.log('自动保存成功');
                 }
             } catch (error) {
@@ -5036,6 +5044,7 @@ ${JSON.stringify(record, null, 2)}
                 const jsonContent = JSON.stringify(whitelistData, null, 2);
                 const success = await updateGitHubFile(jsonContent);
                 if (success) {
+                    notificationSystem.success('自动保存成功', '成功');
                     console.log('自动保存成功');
                 }
             } catch (error) {
@@ -5064,6 +5073,7 @@ ${JSON.stringify(record, null, 2)}
                 const jsonContent = JSON.stringify(whitelistData, null, 2);
                 const success = await updateGitHubFile(jsonContent);
                 if (success) {
+                    notificationSystem.success('自动保存成功', '成功');
                     console.log('自动保存成功');
                 }
             } catch (error) {
