@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -60,7 +59,7 @@
             border: 1px solid #dee2e6;
             border-radius: 4px;
             cursor: pointer;
-            transition: all 0.3 ease;
+            transition: all 0.3s ease;
             font-weight: 500;
         }
         .tab-btn:hover {
@@ -79,11 +78,14 @@
             padding: 25px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            animation: fadeIn 0.3 ease;
+            animation: fadeIn 0.3s ease;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-content {
+            display: none;
         }
         .tab-content.active {
             display: block;
@@ -93,7 +95,7 @@
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
-            transition: all 0.3 ease;
+            transition: all 0.3s ease;
             background-color: white;
         }
         .feature-card:hover {
@@ -138,13 +140,8 @@
         <div id="user" class="tab-content active">
             <h2>用户功能</h2>
             <div class="feature-card">
-                <h3>脚本快速部署</h3>
-                <p>一键安装 cloudversion.script.user.js 脚本，自动同步最新版本，无需手动更新</p>
-                <a href="https://kosto179cn.github.io/Kosto.github.io/cloudversion.script.user.js">查看管理脚本</a>
-            </div>
-            <div class="feature-card">
                 <h3>版本状态查询</h3>
-                <p>实时查看当前工具版本信息，检测是否有更新可用</p>
+                <p>实时查看当前脚本版本信息，检测是否有更新可用</p>
                 <button id="checkVersionBtn" class="btn btn-primary">检查版本</button>
                 <div id="versionInfo" style="margin-top: 15px;"></div>
             </div>
@@ -156,21 +153,14 @@
             <p>以下是开发者可用的功能列表：</p>
 
             <div class="feature-card">
-                <h3>今日使用人数统计</h3>
-                <p>实时查看工具的今日使用人数统计和趋势分析。</p>
-                <div style="width: 100%; height: 250px;">
-                    <canvas id="usageChart"></canvas>
-                </div>
-            </div>
-            <div class="feature-card">
-                <h3>代码贡献指南</h3>
-                <p>详细介绍如何参与脚本开发，包括代码风格规范、提交 PR 的流程、审核标准和版本发布周期。</p>
-                <a href="https://github.com/Kosto179cn/Kosto.github.io" target="_blank" class="btn btn-primary">访问 GitHub 仓库</a>
+                <h3>国服屏蔽字脚本字典编辑器</h3>
+                <p>编辑国服屏蔽字脚本字典，支持添加、删除、修改屏蔽词。</p>
+                <a href="https://kosto179cn.github.io/Dictionaryeditor.html" target="_blank" class="btn btn-primary">访问字典管理页</a>
             </div>
             <div class="feature-card">
                 <h3>白名单管理工具</h3>
                 <p>可视化管理功能白名单，配置用户权限规则，导出/导入配置文件。</p>
-                <a href="https://kosto179cn.github.io/Kosto.github.io/Developer.html" class="btn btn-primary">管理白名单</a>
+                <a href="https://kosto179cn.github.io/gitee.html" target="_blank" class="btn btn-primary">管理白名单</a>
             </div>
             <div class="feature-card">
                 <h3>问题追踪系统</h3>
@@ -199,7 +189,6 @@
             // 隐藏所有内容
             document.querySelectorAll('.tab-content').forEach(el => {
                 el.classList.remove('active');
-                console.log('隐藏标签内容:', el.id);
             });
             // 移除所有按钮的活跃状态
             document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -209,13 +198,6 @@
             const tabContent = document.getElementById(tabName);
             if (tabContent) {
                 tabContent.classList.add('active');
-                console.log('显示标签内容:', tabName);
-                console.log('标签内容长度:', tabContent.innerHTML.length);
-                // 强制显示开发者功能区内容
-                if (tabName === 'developer') {
-                    console.log('强制显示开发者功能区');
-                    tabContent.style.display = 'block';
-                }
             } else {
                 console.error('未找到标签内容:', tabName);
             }
@@ -223,7 +205,6 @@
             let activated = false;
             if (event && event.currentTarget) {
                 event.currentTarget.classList.add('active');
-                console.log('激活按钮:', event.currentTarget.textContent);
                 activated = true;
             } 
             // 通过标签名找到对应的按钮
@@ -233,7 +214,6 @@
                     const onclickAttr = btn.getAttribute('onclick');
                     if (onclickAttr && onclickAttr.includes(`switchTab('${tabName}')`)) {
                         btn.classList.add('active');
-                        console.log('通过标签名激活按钮:', btn.textContent);
                         activated = true;
                     }
                 });
@@ -251,7 +231,6 @@
                     tabButtons.forEach(btn => {
                         if (btn.textContent.trim() === targetText) {
                             btn.classList.add('active');
-                            console.log('通过按钮文本激活按钮:', btn.textContent);
                             activated = true;
                         }
                     });
@@ -314,9 +293,15 @@
 
         // 初始化使用人数统计图表
         function initUsageChart() {
-            const ctx = document.getElementById('usageChart').getContext('2d');
+            const canvas = document.getElementById('usageChart');
+            if (!canvas) {
+                console.log('未找到图表画布元素，跳过图表初始化');
+                return;
+            }
+            
+            const ctx = canvas.getContext('2d');
             if (!ctx) {
-                console.error('未找到图表画布元素');
+                console.error('无法获取画布上下文');
                 return;
             }
 
