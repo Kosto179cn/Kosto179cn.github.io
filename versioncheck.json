@@ -1,6 +1,6 @@
 {
   "version": "2025.9.11",
-  "version_code": 15,
-  "update_info": "修复了在好友列表内也会显示敌/友军的问题 优化一些小问题",
+  "version_code": 16,
+  "update_info": "优化左下角的字典显示 根据不同的问题来显示不同的状态",
   "download_url": "https://kosto179cn.github.io/cloudversion.script.user.js"
 }
