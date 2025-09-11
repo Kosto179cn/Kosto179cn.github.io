@@ -1,6 +1,6 @@
 {
   "version": "2025.9.11",
-  "version_code": 14,
-  "update_info": "添加友军/敌军显示 在战场按tap即可看见 友军显示绿色 敌军显示红色",
+  "version_code": 15,
+  "update_info": "修复了在好友列表内也会显示敌/友军的问题 优化一些小问题",
   "download_url": "https://kosto179cn.github.io/cloudversion.script.user.js"
 }
