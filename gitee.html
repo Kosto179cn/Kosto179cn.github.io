@@ -1936,11 +1936,44 @@
                 )[0];
             }
 
+            // 提取版本信息
+            const versionInfo = extractVersionInfo(data);
+
             return {
                 currentOnlineUsers,
                 todayTotalUsers: todayUsers.size,
                 latestValidUser,
-                blockedOnlineUsers
+                blockedOnlineUsers,
+                versionInfo
+            };
+        }
+
+        // 提取版本信息
+        function extractVersionInfo(data) {
+            let latestVersion = null;
+            let latestCreateTime = null;
+            
+            // 查找包含版本信息的最新记录
+            const versionRecords = data.filter(item => item.Code || item.CreatTime);
+            
+            if (versionRecords.length > 0) {
+                // 按时间排序，取最新的版本记录
+                const latestRecord = versionRecords.sort((a, b) => 
+                    new Date(b.timestamp) - new Date(a.timestamp)
+                )[0];
+                
+                latestVersion = latestRecord.Code || '未知版本';
+                latestCreateTime = latestRecord.CreatTime || '未知日期';
+            } else {
+                // 如果没有找到版本信息，尝试从其他可能的位置查找
+                // 或者提供默认值
+                latestVersion = '旧版本 (无版本信息)';
+                latestCreateTime = '未知日期';
+            }
+            
+            return {
+                version: latestVersion,
+                createTime: latestCreateTime
             };
         }
 
@@ -2007,9 +2040,13 @@
                     const phase = user.phase || '未知阶段';
                     const onlineDuration = user.onlineDurationText || (calculateOnlineTime(user.details?.onlineTime || 0) + '分钟');
                     
+                    // 获取版本信息
+                    const versionCode = user.Code || '未知';
+                    const createTime = user.CreatTime || '未知';
+                    
                     // 根据日志开关状态决定显示内容
                     if (logSwitchEnabled) {
-                        // 日志开关开启时 - 显示完整信息
+                        // 日志开关开启时 - 显示完整信息（包括版本信息）
                         listItem.innerHTML = `
                             <div><span class="status-indicator status-online"></span>${displayUsername} <span class="badge bg-primary ms-2">索引: ${index + 1}</span></div>
                             <div>${user.getid || '未知'}</div>
@@ -2017,6 +2054,10 @@
                             <div class="hidden-sm">${phase}</div>
                             <div class="hidden-sm">${lastActiveTime}</div>
                             <div class="hidden-sm">${onlineDuration}</div>
+                            <div class="hidden-sm">
+                                <div style="font-size: 11px; color: #666;">当前用户脚本版本: ${versionCode}</div>
+                                <div style="font-size: 11px; color: #666;">当前用户脚本创建日期: ${createTime}</div>
+                            </div>
                             <div class="user-actions">
                                 <button class="action-btn btn-info" onclick="showUserDetails('${userId}')">详情</button>
                                 <button class="action-btn block-btn" onclick="blockUser('${fingerprint}', '${displayUsername}')">拉黑</button>
@@ -2024,14 +2065,17 @@
                             </div>
                         `;
                     } else {
-                        // 日志开关关闭时 - 隐藏在线状态和在线时长
+                        // 日志开关关闭时 - 隐藏在线状态和在线时长，但仍显示版本信息
                         listItem.innerHTML = `
                             <div>${displayUsername} <span class="badge bg-primary ms-2">索引: ${index + 1}</span></div>
                             <div>${user.getid || '未知'}</div>
                             <div class="hidden-sm">${scriptName}</div>
                             <div class="hidden-sm">${phase}</div>
                             <div class="hidden-sm">${lastActiveTime}</div>
-                            <div></div>
+                            <div class="hidden-sm">
+                                <div style="font-size: 11px; color: #666;">当前用户脚本版本: ${versionCode}</div>
+                                <div style="font-size: 11px; color: #666;">当前用户脚本创建日期: ${createTime}</div>
+                            </div>
                             <div class="user-actions">
                                 <button class="action-btn btn-info" onclick="showUserDetails('${userId}')">详情</button>
                                 <button class="action-btn block-btn" onclick="blockUser('${fingerprint}', '${displayUsername}')">拉黑</button>
@@ -2084,13 +2128,17 @@
                     window.userDetails = window.userDetails || {};
                     window.userDetails[userId] = user;
                     
+                    // 获取版本信息
+                    const versionCode = user.Code || '未知';
+                    const createTime = user.CreatTime || '未知';
+                    
                     const scriptName = user.scriptName || '未知脚本';
                     const phase = user.phase || '未知阶段';
                     const onlineDuration = user.onlineDurationText || (calculateOnlineTime(user.details?.onlineTime || 0) + '分钟');
                     
                     // 根据日志开关状态决定显示内容
                     if (logSwitchEnabled) {
-                        // 日志开关开启时 - 显示完整信息
+                        // 日志开关开启时 - 显示完整信息（包括版本信息）
                         listItem.innerHTML = `
                             <div><span class="status-indicator" style="background-color: #dc3545;"></span>${displayUsername} <span class="badge bg-danger">已拉黑</span> <span class="badge bg-secondary ms-1">索引: ${index + 1}</span></div>
                             <div>${user.getid || '未知'}</div>
@@ -2098,20 +2146,27 @@
                             <div class="hidden-sm">${phase}</div>
                             <div class="hidden-sm">${lastActiveTime}</div>
                             <div class="hidden-sm">${onlineDuration}</div>
+                            <div class="hidden-sm">
+                                <div style="font-size: 11px; color: #666;">当前用户版本: ${versionCode}</div>
+                                <div style="font-size: 11px; color: #666;">当前用户创建日期: ${createTime}</div>
+                            </div>
                             <div class="user-actions">
                                 <button class="action-btn btn-info" onclick="showUserDetails('${userId}')">详情</button>
                                 <button class="action-btn btn-success" onclick="unblockUser('${fingerprint}', '${displayUsername}')">解除拉黑</button>
                             </div>
                         `;
                     } else {
-                        // 日志开关关闭时 - 隐藏在线状态和在线时长
+                        // 日志开关关闭时 - 隐藏在线状态和在线时长，但仍显示版本信息
                         listItem.innerHTML = `
                             <div>${displayUsername} <span class="badge bg-danger">已拉黑</span> <span class="badge bg-secondary ms-1">索引: ${index + 1}</span></div>
                             <div>${user.getid || '未知'}</div>
                             <div class="hidden-sm">${scriptName}</div>
                             <div class="hidden-sm">${phase}</div>
                             <div class="hidden-sm">${lastActiveTime}</div>
-                            <div></div>
+                            <div class="hidden-sm">
+                                <div style="font-size: 11px; color: #666;">版本: ${versionCode}</div>
+                                <div style="font-size: 11px; color: #666;">创建: ${createTime}</div>
+                            </div>
                             <div class="user-actions">
                                 <button class="action-btn btn-info" onclick="showUserDetails('${userId}')">详情</button>
                                 <button class="action-btn btn-success" onclick="unblockUser('${fingerprint}', '${displayUsername}')">解除拉黑</button>
@@ -2416,7 +2471,7 @@ async function fetchOnlineData() {
                 progressText.textContent = '数据获取成功，正在处理...';
                 
                 // 处理数据
-                const { currentOnlineUsers, todayTotalUsers, latestValidUser, blockedOnlineUsers } = processData(logData);
+                const { currentOnlineUsers, todayTotalUsers, latestValidUser, blockedOnlineUsers, versionInfo } = processData(logData);
                 progressBar.style.width = '50%';
                 progressText.textContent = '数据处理完成，正在渲染用户列表...';
                 
@@ -2424,6 +2479,8 @@ async function fetchOnlineData() {
                 renderUserList(currentOnlineUsers, blockedOnlineUsers);
                 progressBar.style.width = '70%';
                 progressText.textContent = '用户列表渲染完成，正在计算今日数据...';
+                
+
                 
                 // 计算今日数据
                 const todayAllUsers = computeTodayAllUsers(logData);
@@ -3280,7 +3337,24 @@ async function fetchOnlineData() {
         // 暴露全局函数
         // 显示用户详情
         function showUserDetails(userId) {
-            const user = window.userDetails[userId];
+            // 从最新的数据源获取用户信息，而不是缓存
+            let user = null;
+            
+            // 首先尝试从userIdStats中获取最新数据
+            if (window.userIdStats) {
+                for (let [fingerprint, userStats] of window.userIdStats) {
+                    if (userStats.latestData && (userStats.latestData.fingerprint === userId || userStats.latestData.username === userId)) {
+                        user = userStats.latestData;
+                        break;
+                    }
+                }
+            }
+            
+            // 如果没找到，尝试从缓存中获取
+            if (!user && window.userDetails && window.userDetails[userId]) {
+                user = window.userDetails[userId];
+            }
+            
             if (!user) {
                 notificationSystem.error('用户详情不存在', '错误');
                 return;
@@ -3332,6 +3406,8 @@ async function fetchOnlineData() {
             const detailOnlineTimeEl = document.getElementById('detailOnlineTime');
             const detailStatusEl = document.getElementById('detailStatus');
             const detailRawDataEl = document.getElementById('detailRawData');
+            const detailVersionEl = document.getElementById('detailVersion');
+            const detailCreateTimeEl = document.getElementById('detailCreateTime');
             
             if (detailUsernameEl) detailUsernameEl.textContent = displayUsername;
             if (detailUserIdEl) detailUserIdEl.textContent = user.getid || '未知';
@@ -3350,6 +3426,11 @@ async function fetchOnlineData() {
                     ? '<span class="status-indicator status-online"></span>在线'
                     : '<span class="status-indicator status-offline"></span>离线';
             }
+
+            // 显示版本信息 - 使用extractVersionInfo函数获取版本信息
+            const versionInfo = extractVersionInfo([user]);
+            if (detailVersionEl) detailVersionEl.textContent = versionInfo.version;
+            if (detailCreateTimeEl) detailCreateTimeEl.textContent = versionInfo.createTime;
 
             // 显示原始数据
             if (detailRawDataEl) detailRawDataEl.textContent = JSON.stringify(user, null, 2);
@@ -4419,6 +4500,17 @@ ${JSON.stringify(record, null, 2)}
                                 <label class="form-label"><strong>用户指纹:</strong></label>
                                 <p id="detailFingerprint" class="form-control-plaintext" style="word-break: break-all;">-</p>
                             </div>
+                            <!-- 版本信息单独一行 -->
+                            <div class="row mt-3">
+                             <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label"><strong>当前用户脚本版本:</strong></label>
+                                <p id="detailVersion" class="form-control-plaintext">-</p>
+                            </div>
+                        </div>
+
+
+                    </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
@@ -4435,8 +4527,16 @@ ${JSON.stringify(record, null, 2)}
                                     <span class="status-indicator status-online"></span>在线
                                 </p>
                             </div>
+                            <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label"><strong>当前用户脚本创建日期:</strong></label>
+                                <p id="detailCreateTime" class="form-control-plaintext">-</p>
+                            </div>
+                        </div>
                         </div>
                     </div>
+                    
+
                     <div class="row mt-3" id="detailsSection" style="display: none;">
                         <div class="col-12">
                             <h6><strong>详细信息:</strong></h6>
