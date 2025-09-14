@@ -1,6 +1,6 @@
 {
-  "version": "2025.9.11",
-  "version_code": 16,
-  "update_info": "优化左下角的字典显示 根据不同的问题来显示不同的状态",
+  "version": "2025.9.14",
+  "version_code": 17,
+  "update_info": "优化了点场崩溃的可能性 修复了崩溃后无限卡死的问题",
   "download_url": "https://kosto179cn.github.io/cloudversion.script.user.js"
 }
