@@ -1,6 +1,6 @@
 {
   "version": "2025.9.14",
   "version_code": 17,
-  "update_info": "优化了点场崩溃的可能性 修复了崩溃后无限卡死的问题",
+  "update_info": "优化了点场崩溃的可能性 修复了游戏崩溃后无限卡死的问题",
   "download_url": "https://kosto179cn.github.io/cloudversion.script.user.js"
 }
