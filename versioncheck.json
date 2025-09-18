@@ -1,6 +1,6 @@
 {
-  "version": "2025.9.14",
-  "version_code": 17,
-  "update_info": "优化了点场崩溃的可能性 修复了游戏崩溃后无限卡死的问题",
+  "version": "2025.9.18",
+  "version_code": 18,
+  "update_info": "优化了大厅中发布战场链接会被屏蔽词功能替换的问题",
   "download_url": "https://kosto179cn.github.io/cloudversion.script.user.js"
 }
