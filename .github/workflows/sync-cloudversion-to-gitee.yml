@@ -1,0 +1,56 @@
+name: Sync CloudVersion Script to Gitee
+
+on:
+  push:
+    paths:
+      - 'cloudversion.script.user.js'
+  workflow_dispatch:
+
+jobs:
+  sync-to-gitee:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Configure Git
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+
+    - name: Clone Gitee repository
+      run: |
+        echo "Cloning Gitee repository..."
+        git clone https://${{ secrets.GITEE_USERNAME }}:${{ secrets.GITEE_TOKEN }}@gitee.com/Kosto179/kosto.git gitee-repo || exit 1
+        echo "Clone successful"
+
+    - name: Update cloudversion script in Gitee repo
+      run: |
+        cd gitee-repo
+        echo "Current directory: $(pwd)"
+        # Create js directory if it doesn't exist
+        mkdir -p js
+        # Copy the cloudversion.script.user.js file directly
+        cp ../cloudversion.script.user.js js/cloudversion.script.user.js
+        echo "File copied: js/cloudversion.script.user.js"
+        echo "File size: $(wc -c < js/cloudversion.script.user.js) bytes"
+
+    - name: Commit and push to Gitee
+      run: |
+        cd gitee-repo
+        echo "Configuring git..."
+        git config --local user.name "GitHub Actions"
+        git config --local user.email "actions@github.com"
+        
+        echo "Adding file..."
+        git add js/cloudversion.script.user.js
+        
+        echo "Committing changes..."
+        git commit -m "Auto-update cloudversion script from GitHub: ${{ github.sha }}" || echo "No changes to commit"
+        
+        echo "Pushing to Gitee..."
+        git push origin master
+        echo "Push completed successfully"

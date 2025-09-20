@@ -1,0 +1,56 @@
+name: Sync VersionCheck to Gitee
+
+on:
+  push:
+    paths:
+      - 'versioncheck.json'
+  workflow_dispatch:
+
+jobs:
+  sync-to-gitee:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Configure Git
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+
+    - name: Clone Gitee repository
+      run: |
+        echo "Cloning Gitee repository..."
+        git clone https://${{ secrets.GITEE_USERNAME }}:${{ secrets.GITEE_TOKEN }}@gitee.com/Kosto179/kosto.git gitee-repo || exit 1
+        echo "Clone successful"
+
+    - name: Update versioncheck in Gitee repo
+      run: |
+        cd gitee-repo
+        echo "Current directory: $(pwd)"
+        # Create json directory if it doesn't exist
+        mkdir -p json
+        # Copy the versioncheck.json file directly without encoding
+        cp ../versioncheck.json json/versioncheck.json
+        echo "File copied: json/versioncheck.json"
+        echo "File size: $(wc -c < json/versioncheck.json) bytes"
+
+    - name: Commit and push to Gitee
+      run: |
+        cd gitee-repo
+        echo "Configuring git..."
+        git config --local user.name "GitHub Actions"
+        git config --local user.email "actions@github.com"
+        
+        echo "Adding file..."
+        git add json/versioncheck.json
+        
+        echo "Committing changes..."
+        git commit -m "Auto-update versioncheck from GitHub: ${{ github.sha }}" || echo "No changes to commit"
+        
+        echo "Pushing to Gitee..."
+        git push origin master
+        echo "Push completed successfully"
