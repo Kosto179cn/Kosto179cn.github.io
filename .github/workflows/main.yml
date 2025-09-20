@@ -1,4 +1,4 @@
-name: Push dictionary.json to Gitee on update
+name: Sync dictionary.json to Gitee on update
 
 on:
   push:
@@ -12,29 +12,40 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
-        with:
-          repository: ${{ secrets.GITEE_REPO }}
-          path: gitee-repo
-          ref: ${{ secrets.GITEE_BRANCH }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+      # 1. 检出源仓库（拿最新 dictionary.json）
+      - name: Checkout source repo
+        uses: actions/checkout@v4
 
-      - run: |
-          python3 -c "
-          import urllib.parse
+      # 2. 检出 Gitee 目标仓库（用 Gitee 令牌）
+      - name: Checkout Gitee repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.GITEE_REPO }}   # 例：Kosto179/kosto
+          token: ${{ secrets.GITEE_TOKEN }}       # 私人令牌
+          path: gitee-repo
+          ref: ${{ secrets.GITEE_BRANCH }}        # 例：master
+
+      # 3. URL 编码并覆盖文件
+      - name: URL-encode dictionary.json
+        run: |
+          python3 <<EOF
+          import urllib.parse, os
           with open('dictionary.json', encoding='utf-8') as f:
               raw = f.read()
           encoded = urllib.parse.quote(raw, safe='')
+          os.makedirs('gitee-repo/json', exist_ok=True)
           with open('gitee-repo/json/dictionary.json', 'w', encoding='utf-8') as f:
               f.write(encoded)
-          "
+          EOF
 
-      - working-directory: gitee-repo
+      # 4. 提交并推送
+      - name: Commit & push to Gitee
+        working-directory: gitee-repo
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add json/dictionary.json
           git diff --cached --quiet && exit 0
           git commit -m "chore: auto sync & urlencode dictionary.json"
-          git push https://${{ secrets.GITEE_USER }}:${{ secrets.GITEE_PASSWORD }}@gitee.com/${{ secrets.GITEE_REPO }}.git ${{ secrets.GITEE_BRANCH }}
+          # 用令牌推送（用户名仍必填，令牌当密码）
+          git push https://${{ secrets.GITEE_USER }}:${{ secrets.GITEE_TOKEN }}@gitee.com/${{ secrets.GITEE_REPO }}.git ${{ secrets.GITEE_BRANCH }}
