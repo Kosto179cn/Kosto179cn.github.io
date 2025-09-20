@@ -12,40 +12,45 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      # 1. 拿源文件（GitHub 公有仓，用默认 token 即可）
       - name: Checkout source repo
         uses: actions/checkout@v4
 
-      # 2. 手动拉 Gitee 仓库（用 Gitee 令牌，避免终端提问）
       - name: Fetch Gitee repo
         run: |
           git clone \
             https://${{ secrets.GITEE_TOKEN }}@gitee.com/${{ secrets.GITEE_REPO }}.git \
             gitee-repo -b ${{ secrets.GITEE_BRANCH }}
 
-      # 3. URL 编码并覆盖
       - name: URL-encode dictionary.json
         run: |
           python3 <<'EOF'
-          import urllib.parse, os
-          with open('dictionary.json', encoding='utf-8') as f:
+          import urllib.parse, os, sys
+          infile  = 'dictionary.json'
+          outfile = 'gitee-repo/json/dictionary.json'
+          if not os.path.exists(infile):
+              sys.exit(f'❌ 源文件 {infile} 不存在')
+          with open(infile, encoding='utf-8') as f:
               raw = f.read()
           encoded = urllib.parse.quote(raw, safe='')
-          os.makedirs('gitee-repo/json', exist_ok=True)
-          with open('gitee-repo/json/dictionary.json', 'w', encoding='utf-8') as f:
+          os.makedirs(os.path.dirname(outfile), exist_ok=True)
+          with open(outfile, 'w', encoding='utf-8') as f:
               f.write(encoded)
+          print(f'✅ 已生成 {outfile}')
           EOF
 
-      # 4. 提交并推送
       - name: Commit & push to Gitee
         working-directory: gitee-repo
         run: |
+          set -x          # 打开调试，看每一步返回值
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add json/dictionary.json
-          git diff --cached --quiet && exit 0
+          # 显式判断：没变化就正常退出（返回 0）
+          if git diff --cached --quiet; then
+            echo "==> 文件无变化，跳过提交"
+            exit 0
+          fi
           git commit -m "chore: auto sync & urlencode dictionary.json"
-          # 同样一次性带令牌，不会再问用户名
           git push \
             https://${{ secrets.GITEE_TOKEN }}@gitee.com/${{ secrets.GITEE_REPO }}.git \
             ${{ secrets.GITEE_BRANCH }}
