@@ -2,27 +2,30 @@ name: Push dictionary.json to Gitee on update
 
 on:
   push:
-分支:
-      - main
+    branches: [ main ]   # 哪条分支更新就触发，按需改
     paths:
-      - 'dictionary.json'
-  workflow_dispatch:
+      - 'dictionary.json'   # 只在这个文件变化时才运行，省 Actions 时间
+  workflow_dispatch:       # 保留手动按钮，方便调试
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
-        with:
-          repository: ${{ secrets.GITEE_REPO }}
-          path: gitee-repo
-          ref: ${{ secrets.GITEE_BRANCH }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: 1. 检出当前仓库
+        uses: actions/checkout@v4
 
-      - run: |
+      - name: 2. 检出 Gitee 目标仓
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.GITEE_REPO }}   # 形如 Kosto179/kosto
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: gitee-repo
+          ref: ${{ secrets.GITEE_BRANCH }}        # 一般为 master
+
+      - name: 3. URL 编码并覆盖
+        run: |
           python3 -c "
-          import urllib.parse
+          import urllib.parse, json
           with open('dictionary.json', encoding='utf-8') as f:
               raw = f.read()
           encoded = urllib.parse.quote(raw, safe='')
@@ -30,11 +33,12 @@ jobs:
               f.write(encoded)
           "
 
-      - working-directory: gitee-repo
+      - name: 4. 推送到 Gitee
+        working-directory: gitee-repo
         run: |
-          git config user.name "github-actions[bot]"
+          git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add json/dictionary.json
-          git diff --cached --quiet && exit 0
+          git diff --cached --quiet && exit 0   # 没变化直接退出
           git commit -m "chore: auto sync & urlencode dictionary.json"
           git push https://${{ secrets.GITEE_USER }}:${{ secrets.GITEE_PASSWORD }}@gitee.com/${{ secrets.GITEE_REPO }}.git ${{ secrets.GITEE_BRANCH }}
