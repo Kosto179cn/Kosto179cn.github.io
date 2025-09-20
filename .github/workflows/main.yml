@@ -12,18 +12,16 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      # 1. 检出源仓库（GitHub）
+      # 1. 拿源文件（GitHub 公有仓，用默认 token 即可）
       - name: Checkout source repo
         uses: actions/checkout@v4
 
-      # 2. 检出 Gitee 目标仓库（用令牌避免终端提示）
-      - name: Checkout Gitee repo
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ secrets.GITEE_REPO }}   # 填 owner/repo 即可
-          token: ${{ secrets.GITEE_TOKEN }}       # Gitee 私人令牌
-          path: gitee-repo
-          ref: ${{ secrets.GITEE_BRANCH }}        # 如 master
+      # 2. 手动拉 Gitee 仓库（用 Gitee 令牌，避免终端提问）
+      - name: Fetch Gitee repo
+        run: |
+          git clone \
+            https://${{ secrets.GITEE_TOKEN }}@gitee.com/${{ secrets.GITEE_REPO }}.git \
+            gitee-repo -b ${{ secrets.GITEE_BRANCH }}
 
       # 3. URL 编码并覆盖
       - name: URL-encode dictionary.json
@@ -38,7 +36,7 @@ jobs:
               f.write(encoded)
           EOF
 
-      # 4. 提交并推送（令牌直接嵌在 URL，禁用终端也不会再问）
+      # 4. 提交并推送
       - name: Commit & push to Gitee
         working-directory: gitee-repo
         run: |
@@ -47,7 +45,7 @@ jobs:
           git add json/dictionary.json
           git diff --cached --quiet && exit 0
           git commit -m "chore: auto sync & urlencode dictionary.json"
-          # 下面一行已带令牌，无需交互
+          # 同样一次性带令牌，不会再问用户名
           git push \
             https://${{ secrets.GITEE_TOKEN }}@gitee.com/${{ secrets.GITEE_REPO }}.git \
             ${{ secrets.GITEE_BRANCH }}
