@@ -1,6 +1,6 @@
 {
-  "version": "2025.9.20",
-  "version_code": 19,
-  "update_info": "我优化了屏蔽词在替换某些词时会发生光标在词语中间的情况 现在只需要尽情的打字即可 同时我也在国服和外服中各自添加了字典 外服词典的词语需要我后续整理 菜单内添加新功能-`战场内防封挂机`，功能实现为随机挑选一个方向乱跑/转动炮塔 界面上会显示自动挂机中 该功能很实用 有效防止2.5规则",
+  "version": "2025.9.21",
+  "version_code": 20,
+  "update_info": "喵",
   "download_url": "https://gitee.com/Kosto179/kosto/raw/master/js/cloudversion.script.user.js"
 }
