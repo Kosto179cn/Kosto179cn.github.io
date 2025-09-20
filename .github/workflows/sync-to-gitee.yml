@@ -26,9 +26,11 @@ jobs:
       run: |
         # Read the dictionary.json file
         CONTENT=$(cat chinese_words_replacer/dictionary.json)
-        # URL encode the content
-        ENCODED_CONTENT=$(node -e "console.log(encodeURIComponent('$CONTENT'))")
+        # URL encode the content using Node.js
+        ENCODED_CONTENT=$(node -e "console.log(encodeURIComponent(process.argv[1]))" "$CONTENT")
         echo "encoded_content=$ENCODED_CONTENT" >> $GITHUB_OUTPUT
+        echo "Content length: ${#CONTENT} characters"
+        echo "Encoded length: ${#ENCODED_CONTENT} characters"
 
     - name: Configure Git
       run: |
@@ -37,19 +39,36 @@ jobs:
 
     - name: Clone Gitee repository
       run: |
-        git clone https://${{ secrets.GITEE_USERNAME }}:${{ secrets.GITEE_TOKEN }}@gitee.com/Kosto179/kosto.git gitee-repo
+        echo "Cloning Gitee repository..."
+        git clone https://${{ secrets.GITEE_USERNAME }}:${{ secrets.GITEE_TOKEN }}@gitee.com/Kosto179/kosto.git gitee-repo || exit 1
+        echo "Clone successful"
 
     - name: Update dictionary in Gitee repo
       run: |
         cd gitee-repo
+        echo "Current directory: $(pwd)"
+        echo "Repository contents:"
+        ls -la
         # Create json directory if it doesn't exist
         mkdir -p json
         # Write the URL encoded content to file
         echo '${{ steps.encode.outputs.encoded_content }}' > json/dictionary.json
+        echo "File created: json/dictionary.json"
+        echo "File size: $(wc -c < json/dictionary.json) bytes"
 
     - name: Commit and push to Gitee
       run: |
         cd gitee-repo
+        echo "Configuring git..."
+        git config --local user.name "GitHub Actions"
+        git config --local user.email "actions@github.com"
+        
+        echo "Adding file..."
         git add json/dictionary.json
-        git commit -m "Auto-update dictionary from GitHub: ${{ github.sha }}"
+        
+        echo "Committing changes..."
+        git commit -m "Auto-update dictionary from GitHub: ${{ github.sha }}" || echo "No changes to commit"
+        
+        echo "Pushing to Gitee..."
         git push origin master
+        echo "Push completed successfully"
