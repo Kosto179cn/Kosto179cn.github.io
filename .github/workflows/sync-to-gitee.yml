@@ -1,0 +1,55 @@
+name: Sync Dictionary to Gitee
+
+on:
+  push:
+    paths:
+      - 'chinese_words_replacer/dictionary.json'
+  workflow_dispatch:
+
+jobs:
+  sync-to-gitee:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Get file content and URL encode
+      id: encode
+      run: |
+        # Read the dictionary.json file
+        CONTENT=$(cat chinese_words_replacer/dictionary.json)
+        # URL encode the content
+        ENCODED_CONTENT=$(node -e "console.log(encodeURIComponent('$CONTENT'))")
+        echo "encoded_content=$ENCODED_CONTENT" >> $GITHUB_OUTPUT
+
+    - name: Configure Git
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+
+    - name: Clone Gitee repository
+      run: |
+        git clone https://${{ secrets.GITEE_USERNAME }}:${{ secrets.GITEE_TOKEN }}@gitee.com/Kosto179/kosto.git gitee-repo
+
+    - name: Update dictionary in Gitee repo
+      run: |
+        cd gitee-repo
+        # Create json directory if it doesn't exist
+        mkdir -p json
+        # Write the URL encoded content to file
+        echo '${{ steps.encode.outputs.encoded_content }}' > json/dictionary.json
+
+    - name: Commit and push to Gitee
+      run: |
+        cd gitee-repo
+        git add json/dictionary.json
+        git commit -m "Auto-update dictionary from GitHub: ${{ github.sha }}"
+        git push origin master
