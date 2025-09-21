@@ -1,6 +1,6 @@
 {
   "version": "2025.9.21",
-  "version_code": 20,
-  "update_info": "优化",
+  "version_code": 21,
+  "update_info": "优化了敌军显示的问题",
   "download_url": "https://gitee.com/Kosto179/kosto/raw/master/js/cloudversion.script.user.js"
 }
