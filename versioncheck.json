@@ -1,6 +1,6 @@
 {
-  "version": "2025.9.22",
-  "version_code": 22,
-  "update_info": "我修改了自动开炮的逻辑，当左键点击按钮时，是快速按空格，适用于蝎子，电磁，镭射，火箭等炮塔，当右键点击按钮时，是长按空格，适用于火焰，磁力，离子，火龙，轰天等炮塔，当程序识别到输入框时会自动暂停子程序，等到输入框消失后会自动重启该子程序",
+  "version": "2025.9.24",
+  "version_code": 23,
+  "update_info": "重新修复脚本自动开炮(长按的问题)，新增了外服的白名单军团显示和适配",
   "download_url": "https://gitee.com/Kosto179/kosto/raw/master/js/cloudversion.script.user.js"
 }
