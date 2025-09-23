@@ -1,6 +1,6 @@
 {
   "version": "2025.9.24",
-  "version_code": 23,
+  "version_code": 24,
   "update_info": "重新修复脚本自动开炮(长按的问题)，新增了外服的白名单军团显示和适配",
   "download_url": "https://gitee.com/Kosto179/kosto/raw/master/js/cloudversion.script.user.js"
 }
