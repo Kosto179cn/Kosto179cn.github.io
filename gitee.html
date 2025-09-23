@@ -11,7 +11,7 @@
         /* 移动端适配 */
         @media (max-width: 768px) {
             .container-fluid {
-                padding: 0 10px;
+                padding: 0 10px;    
             }
             
             .nav-tabs .nav-link {
@@ -806,9 +806,10 @@
                     <i class="fas fa-bomb"></i> 自爆程序标志
                 </button>
             </li>
+
             <li role="presentation">
-                <button id="cookie1-tab" data-tab="cookie1" type="button">
-                    <i class="fas fa-key"></i> 身份验证Cookie
+                <button id="foreign-groups-tab" data-tab="foreign-groups" type="button">
+                    <i class="fas fa-globe"></i> 外服白名单军团
                 </button>
             </li>
             <li role="presentation">
@@ -1185,25 +1186,50 @@
             </div>
         </div>
 
-        <div id="cookie1-content" class="tab-content" style="display: none;">
+
+
+        <div id="foreign-groups-content" class="tab-content" style="display: none;">
             <div class="content-card">
                 <div class="card-header">
-                    <div>身份验证Cookie</div>
+                    <div>外服白名单军团</div>
                     <div class="action-buttons">
-                        <button type="button" class="btn btn-outline-primary" onclick="toggleTableSearch('cookie1')">
+                        <button type="button" class="btn btn-outline-primary" onclick="toggleTableSearch('foreignGroups')">
                             <i class="fas fa-search"></i> 搜索
                         </button>
-                        <button type="button" class="btn btn-primary" id="addCookie1Btn">
-                            <i class="fas fa-plus"></i> 添加Cookie
+                        <button type="button" class="btn btn-outline-warning" onclick="toggleBatchManagement('foreignGroups')">
+                            <i class="fas fa-tasks"></i> 批量管理
+                        </button>
+                        <button type="button" class="btn btn-primary" id="addForeignGroupBtn" onclick="showAddForeignGroupModal()">
+                            <i class="fas fa-plus"></i> 添加军团
                         </button>
                     </div>
                 </div>
                 
+                <!-- 批量管理区域 -->
+                <div id="foreignGroupsBatchArea" style="display: none; padding: 15px; border-bottom: 1px solid var(--border-color); background-color: #f8f9fa;">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="foreignGroupsSelectAll" onchange="toggleSelectAll('foreignGroups', this.checked)">
+                                <label class="form-check-label" for="foreignGroupsSelectAll">全选</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelectedForeignGroups()">
+                                <i class="fas fa-trash"></i> 删除选中
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleBatchManagement('foreignGroups')">
+                                <i class="fas fa-times"></i> 取消
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- 搜索区域 -->
-                <div id="cookie1SearchArea" style="display: none; padding: 15px; border-bottom: 1px solid var(--border-color);">
+                <div id="foreignGroupsSearchArea" style="display: none; padding: 15px; border-bottom: 1px solid var(--border-color);">
                     <div class="input-group mb-3">
-                        <input type="text" id="cookie1SearchInput" class="form-control" placeholder="输入Cookie值搜索..." onkeypress="if(event.key==='Enter') performTableSearch('cookie1')">
-                        <button class="btn btn-primary" type="button" onclick="performTableSearch('cookie1')">
+                        <input type="text" id="foreignGroupsSearchInput" class="form-control" placeholder="输入军团名称搜索..." onkeypress="if(event.key==='Enter') performTableSearch('foreignGroups')">
+                        <button class="btn btn-primary" type="button" onclick="performTableSearch('foreignGroups')">
                             <i class="fas fa-search"></i> 搜索
                         </button>
                     </div>
@@ -1214,12 +1240,13 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Cookie值</th>
+                                    <th>选择</th>
+                                    <th>军团名称</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
-                            <tbody id="cookie1TableBody">
-                                <!-- 数据将通过JS动态加载 -->
+                            <tbody id="foreignGroupsTableBody">
+                                <!-- 外服白名单军团数据将通过JS动态加载 -->
                             </tbody>
                         </table>
                     </div>
@@ -1571,10 +1598,12 @@
         const GROUPS_INDEX = 1;   // 组数据在JSON中的索引
         const OURS_INDEX = 2;     // 开发者ID在JSON中的索引
         const SS_INDEX = 3;       // 自爆程序标志在JSON中的索引
-        const COOKIE1_INDEX = 4;  // 身份验证Cookie在JSON中的索引
+
         const USERS_INDEX = 5;    // 用户数据在JSON中的索引
         const BLACKLIST_INDEX = 6; // 黑名单数据在JSON中的索引
         const LOG_SWITCH_INDEX = 7; // 日志开关在JSON中的索引
+        // 外服白名单军团与用户数据共享同一个索引
+        const FOREIGN_GROUPS_INDEX = 4; // 外服白名单军团在JSON中的索引
 
         // DOM元素
         const tanknamesTableBody = document.getElementById('tanknamesTableBody');
@@ -2581,6 +2610,43 @@ async function fetchOnlineData() {
             });
         }
 
+        // 渲染外服白名单军团表格
+        // 显示添加外服白名单军团模态框
+        function showAddForeignGroupModal() {
+            showAddItemModal(FOREIGN_GROUPS_INDEX, '添加外服白名单军团', '军团名称', renderForeignGroupsTable);
+        }
+
+        function renderForeignGroupsTable() {
+            const foreignGroups = whitelistData[FOREIGN_GROUPS_INDEX] || [];
+            foreignGroupsTableBody.innerHTML = '';
+            const showCheckboxes = isBatchManagementEnabled('foreignGroups');
+
+            foreignGroups.forEach((group, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div class="form-check" style="${showCheckboxes ? '' : 'display: none;'}">
+                            <input type="checkbox" class="form-check-input" data-index="${index}" onchange="updateSelectAllState('foreignGroups')">
+                        </div>
+                    </td>
+                    <td><span class="badge bg-secondary me-2">${index + 1}</span>${group}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="editItem(${FOREIGN_GROUPS_INDEX}, ${index}, 'Foreign Groups')">编辑</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteItem(${FOREIGN_GROUPS_INDEX}, ${index}, renderForeignGroupsTable)">删除</button>
+                    </td>
+                `;
+                foreignGroupsTableBody.appendChild(row);
+            });
+
+            // 添加事件监听器
+            document.querySelectorAll('.edit-foreign-group').forEach(button => {
+                button.addEventListener('click', (e) => editItem(FOREIGN_GROUPS_INDEX, parseInt(e.target.dataset.index), '编辑外服白名单军团'));
+            });
+            document.querySelectorAll('.delete-foreign-group').forEach(button => {
+                button.addEventListener('click', (e) => deleteItem(FOREIGN_GROUPS_INDEX, parseInt(e.target.dataset.index), renderForeignGroupsTable));
+            });
+        }
+
         // 渲染开发者ID表格
         function renderOursTable() {
             const ours = whitelistData[OURS_INDEX] || [];
@@ -2646,36 +2712,7 @@ async function fetchOnlineData() {
         }
 
         // 渲染身份验证Cookie表格
-        function renderCookie1Table() {
-            const cookie1 = whitelistData[COOKIE1_INDEX] || [];
-            cookie1TableBody.innerHTML = '';
-            const showCheckboxes = isBatchManagementEnabled('cookie1');
 
-            cookie1.forEach((value, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>
-                        <div class="form-check" style="${showCheckboxes ? '' : 'display: none;'}">
-                            <input type="checkbox" class="form-check-input" data-index="${index}" onchange="updateSelectAllState('cookie1')">
-                        </div>
-                    </td>
-                    <td><span class="badge bg-secondary me-2">${index + 1}</span>${value}</td>
-                    <td class="action-buttons">
-                        <button class="btn btn-sm btn-primary edit-cookie1" data-index="${index}">编辑</button>
-                        <button class="btn btn-sm btn-danger delete-cookie1" data-index="${index}">删除</button>
-                    </td>
-                `;
-                cookie1TableBody.appendChild(row);
-            });
-
-            // 添加事件监听器
-            document.querySelectorAll('.edit-cookie1').forEach(button => {
-                button.addEventListener('click', (e) => editItem(COOKIE1_INDEX, parseInt(e.target.dataset.index), '编辑身份验证Cookie'));
-            });
-            document.querySelectorAll('.delete-cookie1').forEach(button => {
-                button.addEventListener('click', (e) => deleteItem(COOKIE1_INDEX, parseInt(e.target.dataset.index), renderCookie1Table));
-            });
-        }
 
         // 渲染用户指纹数据表格
 
@@ -2977,10 +3014,9 @@ async function fetchOnlineData() {
             
             if (!whitelistData[arrayIndex]) whitelistData[arrayIndex] = [];
             
-            // 如果是军团数据（GROUPS_INDEX = 1），自动添加方括号
+            // 如果是军团数据（含外服白名单军团），自动加方括号
             let finalValue = value;
-            if (arrayIndex === GROUPS_INDEX) {
-                // 检查是否已经有方括号，如果没有则添加
+            if (arrayIndex === GROUPS_INDEX || arrayIndex === FOREIGN_GROUPS_INDEX) {
                 if (!value.startsWith('[') || !value.endsWith(']')) {
                     finalValue = `[${value}]`;
                 }
@@ -3253,10 +3289,10 @@ async function fetchOnlineData() {
                 if (!whitelistData[GROUPS_INDEX]) whitelistData[GROUPS_INDEX] = [];
                 if (!whitelistData[OURS_INDEX]) whitelistData[OURS_INDEX] = [];
                 if (!whitelistData[SS_INDEX]) whitelistData[SS_INDEX] = [];
-                if (!whitelistData[COOKIE1_INDEX]) whitelistData[COOKIE1_INDEX] = [];
                 if (!whitelistData[USERS_INDEX]) whitelistData[USERS_INDEX] = [];
                 if (!whitelistData[BLACKLIST_INDEX]) whitelistData[BLACKLIST_INDEX] = [];
                 if (!whitelistData[LOG_SWITCH_INDEX]) whitelistData[LOG_SWITCH_INDEX] = ["OK"]; // 默认开启日志
+                if (!whitelistData[FOREIGN_GROUPS_INDEX]) whitelistData[FOREIGN_GROUPS_INDEX] = [];
                 
                 // 初始化日志开关状态
                 initializeLogSwitch();
@@ -3278,9 +3314,10 @@ async function fetchOnlineData() {
             renderGroupsTable();
             renderOursTable();
             renderSsTable();
-            renderCookie1Table();
+
             renderUsersTable();
             renderBlacklistTable();
+            renderForeignGroupsTable();
         }
 
         // 初始化
