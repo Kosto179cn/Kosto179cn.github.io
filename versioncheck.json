@@ -1,6 +1,6 @@
 {
-  "version": "2025.9.27",
-  "version_code": 28,
-  "update_info": "优化一点小问题",
+  "version": "2025.9.28",
+  "version_code": 29,
+  "update_info": "修复了自动过速功能无法使用的问题，添加了国服登录状态清除功能",
   "download_url": "https://gitee.com/Kosto179/kosto/raw/master/js/cloudversion.script.user.js"
 }
