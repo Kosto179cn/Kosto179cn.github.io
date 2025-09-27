@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kosto云端用户版本
 // @namespace    http://tampermonkey.net/
-// @version      28
+// @version      29
 // @author       CN@Kosto1797867628
 // @match        https://*.3dtank.com/play/*
 // @match        https://*.tankionline.com/play/*
