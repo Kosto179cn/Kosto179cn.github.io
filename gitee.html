@@ -763,6 +763,10 @@
             <div class="header-content">
                 <div class="title">Kosto管理系统</div>
                 <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div class="form-check form-switch mb-0 me-3">
+                        <input class="form-check-input" type="checkbox" id="selfDestructSwitch">
+                        <label class="form-check-label" for="selfDestructSwitch">用户端是否自毁</label>
+                    </div>
                     <div class="input-group" style="width: 250px; min-width: 200px;">
                         <input type="password" id="giteeToken" class="form-control" placeholder="GitHub Token">
                         <button class="btn btn-secondary" type="button" id="saveTokenBtn">保存</button>
@@ -821,6 +825,16 @@
             <li role="presentation">
                 <button id="blacklist-tab" data-tab="blacklist" type="button">
                     <i class="fas fa-ban"></i> 黑名单用户
+                </button>
+            </li>
+            <li role="presentation">
+                <button id="foreign-blacklist-tab" data-tab="foreign-blacklist" type="button">
+                    <i class="fas fa-globe-americas"></i> 外服黑名单
+                </button>
+            </li>
+            <li role="presentation">
+                <button id="foreign-tanknames-tab" data-tab="foreign-tanknames" type="button">
+                    <i class="fas fa-id-card"></i> 外服白名单ID
                 </button>
             </li>
             <li role="presentation">
@@ -1097,7 +1111,7 @@
                 </div>
                 
                 <!-- 批量管理区域 -->
-                <div id="oursBatchArea" style="display: none; padding: 15px; border-bottom: 1px solid var(--border-color); background-color: #f8f9fa;">
+                <div id="oursBatchArea" style="display: none; padding: 15px; border-bottom: 1px solid var(--border-color); background-color: #f8f9fa; margin-bottom: 10px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
                     <div class="row align-items-center">
                         <div class="col-md-6">
                             <div class="form-check">
@@ -1131,9 +1145,13 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>选择</th>
-                                <th>开发者ID</th>
-                                <th>操作</th>
+                                    <th>
+                                        <div class="form-check" style="display: none; margin: 0 auto;" id="oursHeaderSelectAll">
+                                            <input type="checkbox" class="form-check-input" id="oursHeaderSelectAllInput" onchange="toggleSelectAll('ours', this.checked)" style="width: 18px; height: 18px;">
+                                        </div>
+                                    </th>
+                                    <th>开发者ID</th>
+                                    <th>操作</th>
                                 </tr>
                             </thead>
                             <tbody id="oursTableBody">
@@ -1380,6 +1398,148 @@
             </div>
         </div>
 
+        <!-- 外服黑名单管理内容 -->
+        <div id="foreign-blacklist-content" class="tab-content" style="display: none;">
+            <div class="content-card">
+                <div class="card-header">
+                    <div>外服黑名单用户</div>
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-outline-primary" onclick="toggleTableSearch('foreign-blacklist')">
+                            <i class="fas fa-search"></i> 搜索
+                        </button>
+                        <button type="button" class="btn btn-outline-warning" onclick="toggleBatchManagement('foreign-blacklist')">
+                            <i class="fas fa-tasks"></i> 批量管理
+                        </button>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addForeignBlacklistModal">
+                            <i class="fas fa-plus"></i> 添加外服黑名单
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 批量管理区域 -->
+                <div id="foreign-blacklistBatchArea" style="display: none; padding: 15px; border-bottom: 1px solid var(--border-color); background-color: #f8f9fa;">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="foreign-blacklistSelectAll" onchange="toggleSelectAll('foreign-blacklist', this.checked)">
+                                <label class="form-check-label" for="foreign-blacklistSelectAll">全选</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelectedForeignBlacklist()">
+                                <i class="fas fa-trash"></i> 删除选中
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleBatchManagement('foreign-blacklist')">
+                                <i class="fas fa-times"></i> 取消
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 搜索区域 -->
+                <div id="foreign-blacklistSearchArea" style="display: none; padding: 15px; border-bottom: 1px solid var(--border-color);">
+                    <div class="input-group mb-3">
+                        <input type="text" id="foreign-blacklistSearchInput" class="form-control" placeholder="输入用户ID、名称或军团搜索..." onkeypress="if(event.key==='Enter') performTableSearch('foreign-blacklist')">
+                        <button class="btn btn-primary" type="button" onclick="performTableSearch('foreign-blacklist')">
+                            <i class="fas fa-search"></i> 搜索
+                        </button>
+                        <button class="btn btn-secondary" type="button" onclick="resetTableSearch('foreign-blacklist')">
+                            <i class="fas fa-redo"></i> 重置
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 外服黑名单表格 -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;">选择</th>
+                                <th>用户ID</th>
+                                <th>用户名称</th>
+                                <th>军团</th>
+                                <th>指纹</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="foreign-blacklistTableBody">
+                            <!-- 外服黑名单数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 外服白名单ID内容 -->
+        <div id="foreign-tanknames-content" class="tab-content" style="display: none;">
+            <div class="content-card">
+                <div class="card-header">
+                    <div>外服白名单ID</div>
+                    <div class="action-buttons">
+                        <button type="button" class="btn btn-outline-primary" onclick="toggleTableSearch('foreign-tanknames')">
+                            <i class="fas fa-search"></i> 搜索
+                        </button>
+                        <button type="button" class="btn btn-outline-warning" onclick="toggleBatchManagement('foreign-tanknames')">
+                            <i class="fas fa-tasks"></i> 批量管理
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="showAddItemModal(FOREIGN_TANKNAMES_INDEX, '添加外服白名单ID', '外服白名单ID', renderForeignTanknamesTable)">
+                            <i class="fas fa-plus"></i> 添加外服白名单ID
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 批量管理区域 -->
+                <div id="foreign-tanknamesBatchArea" style="display: none; padding: 15px; border-bottom: 1px solid var(--border-color); background-color: #f8f9fa;">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="foreign-tanknamesSelectAll" onchange="toggleSelectAll('foreign-tanknames', this.checked)">
+                                <label class="form-check-label" for="foreign-tanknamesSelectAll">全选</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelectedForeignTanknames()">
+                                <i class="fas fa-trash"></i> 删除选中
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleBatchManagement('foreign-tanknames')">
+                                <i class="fas fa-times"></i> 取消
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 搜索区域 -->
+                <div id="foreign-tanknamesSearchArea" style="display: none; padding: 15px; border-bottom: 1px solid var(--border-color);">
+                    <div class="input-group mb-3">
+                        <input type="text" id="foreign-tanknamesSearchInput" class="form-control" placeholder="输入外服白名单ID搜索..." onkeypress="if(event.key==='Enter') performTableSearch('foreign-tanknames')">
+                        <button class="btn btn-primary" type="button" onclick="performTableSearch('foreign-tanknames')">
+                            <i class="fas fa-search"></i> 搜索
+                        </button>
+                        <button class="btn btn-secondary" type="button" onclick="resetTableSearch('foreign-tanknames')">
+                            <i class="fas fa-redo"></i> 重置
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 外服白名单ID表格 -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;">选择</th>
+                                <th>外服白名单ID</th>
+                                <th>索引</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="foreign-tanknamesTableBody">
+                            <!-- 外服白名单ID数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <!-- GitHub文件编辑内容 -->
         <div id="github-content" class="tab-content" style="display: none;">
             <div class="content-card">
@@ -1605,6 +1765,9 @@
         const LOG_SWITCH_INDEX = 7; // 日志开关在JSON中的索引
         // 外服白名单军团与用户数据共享同一个索引
         const FOREIGN_GROUPS_INDEX = 4; // 外服白名单军团在JSON中的索引
+        const FOREIGN_BLACKLIST_INDEX = 8; // 外服黑名单数据在JSON中的索引
+        const FOREIGN_TANKNAMES_INDEX = 9; // 外服白名单在JSON中的索引
+        const SELF_DESTRUCT_INDEX = 10; // 用户端是否自毁在JSON中的索引
 
         // DOM元素
         const tanknamesTableBody = document.getElementById('tanknamesTableBody');
@@ -1614,6 +1777,8 @@
         const cookie1TableBody = document.getElementById('cookie1TableBody');
         const usersTableBody = document.getElementById('usersTableBody');
         const blacklistTableBody = document.getElementById('blacklistTableBody');
+        const foreignBlacklistTableBody = document.getElementById('foreign-blacklistTableBody');
+        const foreignTanknamesTableBody = document.getElementById('foreign-tanknamesTableBody');
         const saveChangesBtn = document.getElementById('saveChangesBtn');
         const permissionError = document.getElementById('permissionError');
 
@@ -1654,6 +1819,21 @@
                 // 切换到测试标签时，显示提示信息
                 setTimeout(() => {
                     showValidationMessage('测试功能已加载，您可以运行各种验证测试', 'success');
+                }, 100);
+            } else if (tabId === 'blacklist') {
+                // 切换到黑名单标签时，刷新黑名单显示
+                setTimeout(() => {
+                    renderBlacklistTable();
+                }, 100);
+            } else if (tabId === 'foreign-blacklist') {
+                // 切换到外服黑名单标签时，刷新外服黑名单显示
+                setTimeout(() => {
+                    renderForeignBlacklistTable();
+                }, 100);
+            } else if (tabId === 'foreign-tanknames') {
+                // 切换到外服白名单ID标签时，刷新外服白名单ID显示
+                setTimeout(() => {
+                    renderForeignTanknamesTable();
                 }, 100);
             }
         }
@@ -1933,7 +2113,7 @@
 
             // 转换为数组并排序(按最后活动时间降序)
             const currentOnlineUsers = Array.from(userGroups.values()).sort((a, b) => {
-                return new Date(b.timestamp) - new Date(a.timestamp);
+                return new Date(b.time || b.timestamp) - new Date(a.time || a.timestamp);
             });
             
             // 处理被拉黑的用户
@@ -1947,7 +2127,7 @@
             
             // 转换为数组并排序
             const blockedOnlineUsers = Array.from(blockedUserGroups.values()).sort((a, b) => {
-                return new Date(b.timestamp) - new Date(a.timestamp);
+                return new Date(b.time || b.timestamp) - new Date(a.time || a.timestamp);
             });
 
             // 查找最新的有效用户（getid不等于unknown，不考虑是否在线）
@@ -1959,7 +2139,7 @@
             if (validUsers.length > 0) {
                 // 按时间排序，取最新的
                 latestValidUser = validUsers.sort((a, b) => 
-                    new Date(b.timestamp) - new Date(a.timestamp)
+                    new Date(b.time || b.timestamp) - new Date(a.time || a.timestamp)
                 )[0];
             }
 
@@ -1986,7 +2166,7 @@
             if (versionRecords.length > 0) {
                 // 按时间排序，取最新的版本记录
                 const latestRecord = versionRecords.sort((a, b) => 
-                    new Date(b.timestamp) - new Date(a.timestamp)
+                    new Date(b.time || b.timestamp) - new Date(a.time || a.timestamp)
                 )[0];
                 
                 latestVersion = latestRecord.Code || '未知版本';
@@ -2386,7 +2566,7 @@
                     });
                 });
                 
-                return result.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                return result.sort((a, b) => new Date(b.time || b.timestamp) - new Date(a.time || a.timestamp));
             } catch (e) {
                 console.error('computeTodayAllUsers error', e);
                 return [];
@@ -2489,7 +2669,7 @@ async function fetchOnlineData() {
                 const progressText = document.getElementById('progress-text');
                 
                 progressContainer.style.display = 'block';
-                progressBar.style.width = '10%';
+                progressBar.style.width = '0%';
                 progressText.textContent = '正在获取数据...';
                 
                 // 获取数据
@@ -2527,10 +2707,8 @@ async function fetchOnlineData() {
                 progressText.textContent = '数据加载完成';
                 console.log('在线数据获取成功');
                 
-                // 3秒后隐藏进度条
-                setTimeout(() => {
-                    progressContainer.style.display = 'none';
-                }, 3000);
+                // 保持进度条满状态，直到下一次加载开始
+                // 不自动隐藏进度条，也不后退
             } catch (error) {
                 // 出错时隐藏进度条
                 document.getElementById('progress-container').style.display = 'none';
@@ -2650,15 +2828,21 @@ async function fetchOnlineData() {
 
         // 渲染开发者ID表格
         function renderOursTable() {
+            console.log('renderOursTable called');
             const ours = whitelistData[OURS_INDEX] || [];
+            console.log(`ours data length: ${ours.length}`);
             oursTableBody.innerHTML = '';
-            const showCheckboxes = isBatchManagementEnabled('ours');
+            const batchArea = document.getElementById('oursBatchArea');
+            console.log(`batchArea found: ${batchArea !== null}, display: ${batchArea ? batchArea.style.display : 'null'}`);
+            const showCheckboxes = batchArea && batchArea.style.display === 'block';
+            console.log(`showCheckboxes: ${showCheckboxes}`);
 
             ours.forEach((id, index) => {
                 const row = document.createElement('tr');
+                const checkboxStyle = showCheckboxes ? '' : 'display: none;';
                 row.innerHTML = `
                     <td>
-                        <div class="form-check" style="${showCheckboxes ? '' : 'display: none;'}">
+                        <div class="form-check" style="${checkboxStyle}">
                             <input type="checkbox" class="form-check-input" data-index="${index}" onchange="updateSelectAllState('ours')">
                         </div>
                     </td>
@@ -2772,6 +2956,61 @@ async function fetchOnlineData() {
             // 事件监听器已经在页面初始化时绑定到表格容器
         }
 
+        // 渲染外服黑名单表格
+        function renderForeignBlacklistTable() {
+            const foreignBlacklist = whitelistData[FOREIGN_BLACKLIST_INDEX] || [];
+            foreignBlacklistTableBody.innerHTML = '';
+            const showCheckboxes = isBatchManagementEnabled('foreign-blacklist');
+
+            // 添加默认的已拉黑用户示例
+            const defaultRow = document.createElement('tr');
+            defaultRow.id = 'default-foreign-blacklist-user';
+            defaultRow.innerHTML = `
+                <td>
+                    <div class="form-check" style="${showCheckboxes ? '' : 'display: none;'}">
+                        <input type="checkbox" class="form-check-input" data-index="default" onchange="updateSelectAllState('foreign-blacklist')">
+                    </div>
+                </td>
+                <td>FOREIGN_BLOCKED_USER_123</td>
+                <td>已拉黑外服用户</td>
+                <td>[外服黑名单军团]</td>
+                <td>无指纹数据</td>
+                <td class="action-buttons">
+                    <button class="btn btn-sm btn-primary edit-foreign-blacklist" data-index="default">编辑</button>
+                    <button class="btn btn-sm btn-danger delete-foreign-blacklist" data-index="default">删除</button>
+                </td>
+            `;
+            foreignBlacklistTableBody.appendChild(defaultRow);
+
+            // 如果有外服黑名单数据，隐藏默认示例
+            if (foreignBlacklist.length > 0) {
+                defaultRow.style.display = 'none';
+            }
+
+            foreignBlacklist.forEach((user, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div class="form-check" style="${showCheckboxes ? '' : 'display: none;'}">
+                            <input type="checkbox" class="form-check-input" data-index="${index}" onchange="updateSelectAllState('foreign-blacklist')">
+                        </div>
+                    </td>
+                    <td>${user.id || ''}</td>
+                    <td>${user.name || ''}</td>
+                    <td>${user.corp || ''}</td>
+                    <td>${user.fingerprint || '无'}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-primary edit-foreign-blacklist" data-index="${index}">编辑</button>
+                        <button class="btn btn-sm btn-danger delete-foreign-blacklist" data-index="${index}">删除</button>
+                    </td>
+                `;
+                foreignBlacklistTableBody.appendChild(row);
+            });
+
+            // 使用事件委托来处理动态生成的按钮
+            // 事件监听器已经在页面初始化时绑定到表格容器
+        }
+
         // 处理添加黑名单用户
         function handleAddBlacklist() {
             const userId = document.getElementById('blacklistUserId').value.trim();
@@ -2819,6 +3058,96 @@ async function fetchOnlineData() {
             document.getElementById('blacklistUserName').value = '';
             document.getElementById('blacklistUserCorp').value = '';
             document.getElementById('blacklistUserFingerprint').value = '';
+        }
+
+        // 渲染外服白名单ID表格
+        function renderForeignTanknamesTable() {
+            const foreignTanknames = whitelistData[FOREIGN_TANKNAMES_INDEX] || [];
+            foreignTanknamesTableBody.innerHTML = '';
+            const showCheckboxes = isBatchManagementEnabled('foreign-tanknames');
+
+            foreignTanknames.forEach((id, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" data-index="${index}" onchange="updateSelectAllState('foreign-tanknames')" ${showCheckboxes ? '' : 'style="display:none;"'}>
+                        </div>
+                    </td>
+                    <td><span class="badge bg-secondary me-2">${index + 1}</span>${id}</td>
+                    <td>${index + 1}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary edit-foreign-tankname" data-index="${index}">编辑</button>
+                        <button class="btn btn-sm btn-danger delete-foreign-tankname" data-index="${index}">删除</button>
+                    </td>
+                `;
+                foreignTanknamesTableBody.appendChild(row);
+            });
+
+            // 添加事件监听器
+            document.querySelectorAll('.edit-foreign-tankname').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    editItem(FOREIGN_TANKNAMES_INDEX, index, '编辑外服白名单ID');
+                });
+            });
+            document.querySelectorAll('.delete-foreign-tankname').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    if (confirm('确定要删除这个外服白名单ID吗？')) {
+                        deleteItemWithAutoSave(FOREIGN_TANKNAMES_INDEX, index, renderForeignTanknamesTable);
+                    }
+                });
+            });
+        }
+
+        // 处理添加外服黑名单用户
+        function handleAddForeignBlacklist() {
+            const userId = document.getElementById('foreignBlacklistUserId').value.trim();
+            const userName = document.getElementById('foreignBlacklistUserName').value.trim();
+            let userCorp = document.getElementById('foreignBlacklistUserCorp').value.trim();
+            const userFingerprint = document.getElementById('foreignBlacklistUserFingerprint').value.trim();
+
+            // 验证至少填写一项内容
+            if (!userId && !userName && !userCorp && !userFingerprint) {
+                notificationSystem.warning('请至少填写一项内容（用户ID、用户名、军团或指纹）', '警告');
+                return;
+            }
+
+            // 如果填写了军团名称，自动加上方括号
+            if (userCorp && !userCorp.startsWith('[') && !userCorp.endsWith(']')) {
+                userCorp = `[${userCorp}]`;
+            }
+
+            if (!whitelistData[FOREIGN_BLACKLIST_INDEX]) {
+                whitelistData[FOREIGN_BLACKLIST_INDEX] = [];
+            }
+            addItemWithAutoSave(FOREIGN_BLACKLIST_INDEX, {
+                'id': userId,
+                'name': userName,
+                'corp': userCorp,
+                'fingerprint': userFingerprint
+            }, renderForeignBlacklistTable);
+
+            // 关闭模态框并重置表单
+            const modalElement = document.getElementById('addForeignBlacklistModal');
+            if (modalElement) {
+                const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                modal.hide();
+
+                // 手动清理残留的背景层（如果Bootstrap没有自动清理）
+                setTimeout(() => {
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(backdrop => backdrop.remove());
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                }, 300);
+            }
+            document.getElementById('foreignBlacklistUserId').value = '';
+            document.getElementById('foreignBlacklistUserName').value = '';
+            document.getElementById('foreignBlacklistUserCorp').value = '';
+            document.getElementById('foreignBlacklistUserFingerprint').value = '';
         }
 
         // 处理编辑黑名单用户
@@ -2870,12 +3199,68 @@ async function fetchOnlineData() {
             }
         }
 
+        // 确认编辑外服黑名单用户
+        function handleConfirmEditForeignBlacklist() {
+            const index = parseInt(document.getElementById('editForeignBlacklistIndex').value);
+            const newUserId = document.getElementById('editForeignBlacklistUserId').value.trim();
+            const newUserName = document.getElementById('editForeignBlacklistUserName').value.trim();
+            const newUserCorp = document.getElementById('editForeignBlacklistUserCorp').value.trim();
+            const newUserFingerprint = document.getElementById('editForeignBlacklistUserFingerprint').value.trim();
+
+
+            editItemWithAutoSave(FOREIGN_BLACKLIST_INDEX, index, {
+                'id': newUserId,
+                'name': newUserName,
+                'corp': newUserCorp,
+                'fingerprint': newUserFingerprint
+            }, renderForeignBlacklistTable);
+
+            // 关闭模态框
+            const modalElement = document.getElementById('editForeignBlacklistModal');
+            if (modalElement) {
+                const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                modal.hide();
+
+                // 手动清理残留的背景层（如果Bootstrap没有自动清理）
+                setTimeout(() => {
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(backdrop => backdrop.remove());
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                }, 300);
+            }
+        }
+
         // 处理删除黑名单用户
         function handleDeleteBlacklist(event) {
             const index = parseInt(event.target.dataset.index);
             if (confirm('确定要删除这个黑名单用户吗？')) {
                 deleteItemWithAutoSave(BLACKLIST_INDEX, index, renderBlacklistTable);
             }
+        }
+
+        // 处理删除外服黑名单用户
+        function handleDeleteForeignBlacklist(event) {
+            const index = parseInt(event.target.dataset.index);
+            if (confirm('确定要删除这个外服黑名单用户吗？')) {
+                deleteItemWithAutoSave(FOREIGN_BLACKLIST_INDEX, index, renderForeignBlacklistTable);
+            }
+        }
+
+        // 处理编辑外服黑名单用户
+        function handleEditForeignBlacklist(event) {
+            const index = parseInt(event.target.dataset.index);
+            const foreignBlacklist = whitelistData[FOREIGN_BLACKLIST_INDEX] || [];
+            const user = foreignBlacklist[index];
+
+            document.getElementById('editForeignBlacklistUserId').value = user.id || '';
+            document.getElementById('editForeignBlacklistUserName').value = user.name || '';
+            document.getElementById('editForeignBlacklistUserCorp').value = user.corp || '';
+            document.getElementById('editForeignBlacklistUserFingerprint').value = user.fingerprint || '';
+            document.getElementById('editForeignBlacklistIndex').value = index;
+            const modal = new bootstrap.Modal(document.getElementById('editForeignBlacklistModal'));
+            modal.show();
         }
 
         // 通用编辑函数（用于简单字符串值）- 使用模态框
@@ -3311,14 +3696,18 @@ async function fetchOnlineData() {
 
         // 渲染所有表格的辅助函数
         function renderAllTables() {
+            console.log('renderAllTables called');
             renderTanknamesTable();
             renderGroupsTable();
+            console.log('About to call renderOursTable');
             renderOursTable();
             renderSsTable();
 
             renderUsersTable();
             renderBlacklistTable();
             renderForeignGroupsTable();
+            renderForeignBlacklistTable();
+            renderForeignTanknamesTable();
         }
 
         // 初始化
@@ -3628,7 +4017,7 @@ async function fetchOnlineData() {
             }
             
             // 按时间排序，最新的在前
-            matchedRecords.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            matchedRecords.sort((a, b) => new Date(b.time || b.timestamp) - new Date(a.time || a.timestamp));
             
             // 去重处理：只保留每个用户ID的最新记录
             const uniqueRecordsMap = new Map();
@@ -3787,7 +4176,7 @@ ${JSON.stringify(record, null, 2)}
             }
             
             // 按时间排序，最新的在前
-            matchedRecords.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            matchedRecords.sort((a, b) => new Date(b.time || b.timestamp) - new Date(a.time || a.timestamp));
             
             let resultText = `找到 ${matchedRecords.length} 条匹配记录:\n\n`;
             matchedRecords.forEach((item, index) => {
@@ -4211,6 +4600,54 @@ ${JSON.stringify(record, null, 2)}
             if (saveTokenBtn) {
                 saveTokenBtn.addEventListener('click', saveToken);
             }
+            
+            // 自毁开关事件监听
+            const selfDestructSwitch = document.getElementById('selfDestructSwitch');
+            if (selfDestructSwitch) {
+                selfDestructSwitch.addEventListener('change', function() {
+                    const isSelfDestruct = this.checked;
+                    
+                    // 更新白名单数据中的自毁状态
+                    if (!whitelistData[SELF_DESTRUCT_INDEX]) {
+                        whitelistData[SELF_DESTRUCT_INDEX] = [];
+                    }
+                    
+                    if (isSelfDestruct) {
+                        whitelistData[SELF_DESTRUCT_INDEX] = ["YES"];
+                        notificationSystem.warning('自毁模式已开启', '警告');
+                    } else {
+                        whitelistData[SELF_DESTRUCT_INDEX] = ["NO"];
+                        notificationSystem.success('自毁模式已关闭', '提示');
+                    }
+                    
+                    // 自动保存到服务器
+                    try {
+                        const jsonContent = JSON.stringify(whitelistData, null, 2);
+                        const success = updateGitHubFile(jsonContent);
+                        if (success) {
+                            console.log('自毁状态已保存到服务器');
+                        }
+                    } catch (error) {
+                        console.error('保存自毁状态失败:', error);
+                    }
+                });
+            }
+            
+            // 加载保存的自毁设置
+            function loadSelfDestructSetting() {
+                if (whitelistData[SELF_DESTRUCT_INDEX] && whitelistData[SELF_DESTRUCT_INDEX][0] === "YES") {
+                    if (selfDestructSwitch) {
+                        selfDestructSwitch.checked = true;
+                    }
+                } else {
+                    if (selfDestructSwitch) {
+                        selfDestructSwitch.checked = false;
+                    }
+                }
+            }
+            
+            // 在页面加载时调用
+            loadSelfDestructSetting();
 
             // 保存更改按钮事件监听
             const saveChangesBtn = document.getElementById('saveChangesBtn');
@@ -4247,6 +4684,17 @@ ${JSON.stringify(record, null, 2)}
             const confirmEditBlacklistBtn = document.getElementById('confirmEditBlacklist');
             if (confirmEditBlacklistBtn) {
                 confirmEditBlacklistBtn.addEventListener('click', handleConfirmEditBlacklist);
+            }
+
+            // 外服黑名单相关事件监听
+            const confirmAddForeignBlacklistBtn = document.getElementById('confirmAddForeignBlacklist');
+            if (confirmAddForeignBlacklistBtn) {
+                confirmAddForeignBlacklistBtn.addEventListener('click', handleAddForeignBlacklist);
+            }
+
+            const confirmEditForeignBlacklistBtn = document.getElementById('confirmEditForeignBlacklist');
+            if (confirmEditForeignBlacklistBtn) {
+                confirmEditForeignBlacklistBtn.addEventListener('click', handleConfirmEditForeignBlacklist);
             }
 
             // 通用编辑确认按钮事件监听
@@ -4287,6 +4735,42 @@ ${JSON.stringify(record, null, 2)}
                     // 处理删除按钮点击
                     if (target.classList.contains('delete-blacklist')) {
                         handleDeleteBlacklist(event);
+                    }
+                });
+            }
+
+            // 外服黑名单表格事件委托（处理动态生成的编辑和删除按钮）
+            const foreignBlacklistTableBody = document.getElementById('foreign-blacklistTableBody');
+            if (foreignBlacklistTableBody) {
+                foreignBlacklistTableBody.addEventListener('click', function(event) {
+                    const target = event.target;
+
+                    // 处理编辑按钮点击
+                    if (target.classList.contains('edit-foreign-blacklist')) {
+                        handleEditForeignBlacklist(event);
+                    }
+
+                    // 处理删除按钮点击
+                    if (target.classList.contains('delete-foreign-blacklist')) {
+                        handleDeleteForeignBlacklist(event);
+                    }
+                });
+            }
+
+            // 外服白名单ID表格事件委托（处理动态生成的编辑和删除按钮）
+            const foreignTanknamesTableBody = document.getElementById('foreign-tanknamesTableBody');
+            if (foreignTanknamesTableBody) {
+                foreignTanknamesTableBody.addEventListener('click', function(event) {
+                    const target = event.target;
+
+                    // 处理编辑按钮点击
+                    if (target.classList.contains('edit-foreign-tankname')) {
+                        // 编辑逻辑已经在renderForeignTanknamesTable函数中绑定
+                    }
+
+                    // 处理删除按钮点击
+                    if (target.classList.contains('delete-foreign-tankname')) {
+                        // 删除逻辑已经在renderForeignTanknamesTable函数中绑定
                     }
                 });
             }
@@ -4377,6 +4861,40 @@ ${JSON.stringify(record, null, 2)}
         </div>
     </div>
 
+    <!-- 添加外服黑名单用户模态框 -->
+    <div class="modal fade" id="addForeignBlacklistModal" tabindex="-1" aria-labelledby="addForeignBlacklistModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addForeignBlacklistModalLabel">添加外服黑名单用户</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="foreignBlacklistUserId" class="form-label">用户ID</label>
+                        <input type="text" class="form-control" id="foreignBlacklistUserId">
+                    </div>
+                    <div class="form-group">
+                        <label for="foreignBlacklistUserName" class="form-label">用户名称</label>
+                        <input type="text" class="form-control" id="foreignBlacklistUserName">
+                    </div>
+                    <div class="form-group">
+                        <label for="foreignBlacklistUserCorp" class="form-label">用户军团</label>
+                        <input type="text" class="form-control" id="foreignBlacklistUserCorp">
+                    </div>
+                    <div class="form-group">
+                        <label for="foreignBlacklistUserFingerprint" class="form-label">用户指纹</label>
+                        <input type="text" class="form-control" id="foreignBlacklistUserFingerprint">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="confirmAddForeignBlacklist">添加</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 通用添加项目模态框 -->
     <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -4456,6 +4974,41 @@ ${JSON.stringify(record, null, 2)}
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
                     <button type="button" class="btn btn-primary" id="confirmEditBlacklist">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑外服黑名单用户模态框 -->
+    <div class="modal fade" id="editForeignBlacklistModal" tabindex="-1" aria-labelledby="editForeignBlacklistModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editForeignBlacklistModalLabel">编辑外服黑名单用户</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="editForeignBlacklistUserId" class="form-label">用户ID</label>
+                        <input type="text" class="form-control" id="editForeignBlacklistUserId">
+                    </div>
+                    <div class="form-group">
+                        <label for="editForeignBlacklistUserName" class="form-label">用户名称</label>
+                        <input type="text" class="form-control" id="editForeignBlacklistUserName">
+                    </div>
+                    <div class="form-group">
+                        <label for="editForeignBlacklistUserCorp" class="form-label">用户军团</label>
+                        <input type="text" class="form-control" id="editForeignBlacklistUserCorp">
+                    </div>
+                    <div class="form-group">
+                        <label for="editForeignBlacklistUserFingerprint" class="form-label">用户指纹</label>
+                        <input type="text" class="form-control" id="editForeignBlacklistUserFingerprint">
+                    </div>
+                    <input type="hidden" id="editForeignBlacklistIndex">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="confirmEditForeignBlacklist">保存</button>
                 </div>
             </div>
         </div>
@@ -4683,18 +5236,25 @@ ${JSON.stringify(record, null, 2)}
 
         // 批量管理功能
         function toggleBatchManagement(tableType) {
+            console.log(`toggleBatchManagement called with tableType: ${tableType}`);
             const batchArea = document.getElementById(`${tableType}BatchArea`);
+            console.log(`batchArea found: ${batchArea !== null}, current display: ${batchArea ? batchArea.style.display : 'null'}`);
             const selectAllCheckbox = document.getElementById(`${tableType}SelectAll`);
             const headerSelectAll = document.getElementById(`${tableType}HeaderSelectAll`);
+            console.log(`selectAllCheckbox found: ${selectAllCheckbox !== null}`);
+            console.log(`headerSelectAll found: ${headerSelectAll !== null}`);
             
             if (batchArea.style.display === 'none' || batchArea.style.display === '') {
+                console.log('Setting batchArea display to block');
                 batchArea.style.display = 'block';
                 // 显示表头全选复选框
                 if (headerSelectAll) {
-                    headerSelectAll.style.display = 'inline-block';
+                    headerSelectAll.style.display = 'block';
                 }
                 // 初始化选择状态
-                selectAllCheckbox.checked = false;
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.checked = false;
+                }
                 updateSelectAllState(tableType);
                 // 重新渲染表格以显示复选框
                 renderAllTables();
@@ -4945,6 +5505,94 @@ ${JSON.stringify(record, null, 2)}
                 
                 // 关闭批量管理模式
                 toggleBatchManagement('blacklist');
+            }
+        }
+
+        async function deleteSelectedForeignBlacklist() {
+            const checkboxes = document.querySelectorAll('#foreign-blacklistTableBody input[type="checkbox"]:checked');
+            if (checkboxes.length === 0) {
+                notificationSystem.warning('请先选择要删除的外服黑名单用户', '警告');
+                return;
+            }
+
+            if (confirm(`确定要删除选中的 ${checkboxes.length} 个外服黑名单用户吗？`)) {
+                const indices = [];
+                checkboxes.forEach(checkbox => {
+                    // 跳过默认的外服黑名单示例
+                    if (checkbox.getAttribute('data-index') === 'default') return;
+                    const index = checkbox.getAttribute('data-index');
+                    if (index) indices.push(parseInt(index));
+                });
+
+                // 从白名单数据中删除选中的外服黑名单用户
+                indices.sort((a, b) => b - a).forEach(index => {
+                    if (whitelistData[FOREIGN_BLACKLIST_INDEX] && whitelistData[FOREIGN_BLACKLIST_INDEX][index]) {
+                        whitelistData[FOREIGN_BLACKLIST_INDEX].splice(index, 1);
+                    }
+                });
+
+                // 重新渲染表格
+                renderForeignBlacklistTable();
+                notificationSystem.success(`成功删除 ${indices.length} 个外服黑名单用户`, '删除成功');
+
+                // 自动保存到服务器
+                try {
+                    const jsonContent = JSON.stringify(whitelistData, null, 2);
+                    const success = await updateGitHubFile(jsonContent);
+                    if (success) {
+                        notificationSystem.success('自动保存成功', '成功');
+                        console.log('批量删除外服黑名单自动保存成功');
+                    }
+                } catch (error) {
+                    console.error('批量删除外服黑名单自动保存失败:', error);
+                    notificationSystem.error('批量删除外服黑名单自动保存失败: ' + error.message, '保存错误');
+                }
+
+                // 关闭批量管理模式
+                toggleBatchManagement('foreign-blacklist');
+            }
+        }
+
+        async function deleteSelectedForeignTanknames() {
+            const checkboxes = document.querySelectorAll('#foreign-tanknamesTableBody input[type="checkbox"]:checked');
+            if (checkboxes.length === 0) {
+                notificationSystem.warning('请先选择要删除的外服白名单ID', '警告');
+                return;
+            }
+
+            if (confirm(`确定要删除选中的 ${checkboxes.length} 个外服白名单ID吗？`)) {
+                const indices = [];
+                checkboxes.forEach(checkbox => {
+                    const index = checkbox.getAttribute('data-index');
+                    if (index) indices.push(parseInt(index));
+                });
+
+                // 从白名单数据中删除选中的外服白名单ID
+                indices.sort((a, b) => b - a).forEach(index => {
+                    if (whitelistData[FOREIGN_TANKNAMES_INDEX] && whitelistData[FOREIGN_TANKNAMES_INDEX][index]) {
+                        whitelistData[FOREIGN_TANKNAMES_INDEX].splice(index, 1);
+                    }
+                });
+
+                // 重新渲染表格
+                renderForeignTanknamesTable();
+                notificationSystem.success(`成功删除 ${indices.length} 个外服白名单ID`, '删除成功');
+
+                // 自动保存到服务器
+                try {
+                    const jsonContent = JSON.stringify(whitelistData, null, 2);
+                    const success = await updateGitHubFile(jsonContent);
+                    if (success) {
+                        notificationSystem.success('自动保存成功', '成功');
+                        console.log('批量删除外服白名单ID自动保存成功');
+                    }
+                } catch (error) {
+                    console.error('批量删除外服白名单ID自动保存失败:', error);
+                    notificationSystem.error('批量删除外服白名单ID自动保存失败: ' + error.message, '保存错误');
+                }
+
+                // 关闭批量管理模式
+                toggleBatchManagement('foreign-tanknames');
             }
         }
 
