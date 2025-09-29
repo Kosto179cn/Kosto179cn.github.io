@@ -1,6 +1,6 @@
 {
   "version": "2025.9.29",
-  "version_code": 30,
+  "version_code": 31,
   "update_info": "增加外服黑白名单，去除外服免费使用的，目前仅测试服可无需验证使用",
   "download_url": "https://gitee.com/Kosto179/kosto/raw/master/js/cloudversion.script.user.js"
 }
