@@ -1,6 +1,6 @@
 {
   "version": "2025.10.1",
   "version_code": 32,
-  "update_info": "增加外服黑白名单，去除外服免费使用的，目前仅测试服可无需验证使用",
+  "update_info": "首先开发者先在此祝大家国庆假期愉快！本次更新内容有：初始欢迎页面的国庆节日特别效果，其次，我增加了地雷的调整速度框，在菜单的地雷按钮右键即可查看，大家可以截屏欢迎页面发朋友圈了，嘻嘻，开发者在此祝大家国庆愉快",
   "download_url": "https://gitee.com/Kosto179/kosto/raw/master/js/cloudversion.script.user.js"
 }
