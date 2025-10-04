@@ -1,6 +1,6 @@
 {
   "version": "2025.10.5",
-  "version_code": 33,
+  "version_code": 35,
   "update_info": "修改通知样式 更加美观 修复外服玩家无法接收更新的问题",
   "download_url": "https://gitee.com/Kosto179/kosto/raw/master/js/cloudversion.script.user.js"
 }
