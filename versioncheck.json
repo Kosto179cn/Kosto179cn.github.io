@@ -1,6 +1,6 @@
 {
-  "version": "2025.10.3",
-  "version_code": 33,
-  "update_info": "新版本已经推送，本次更新内容如下\n1.优化了测试服失效的功能\n2.重构地雷功能，现在自定义速度可以1毫秒-10000毫秒，且在规定时间内会完成投放多少个的功能\nps 1000毫秒等于1秒\n外服方面添加了人机验证延迟两秒自动点击，还有针对有些可能无法显示人机验证的问题，添加了替换了cdn的功能\n还有，现在开箱子除了最后一波箱子会自动跳过，其他时候不会自动跳过了",
+  "version": "2025.10.5",
+  "version_code": 34,
+  "update_info": "修改通知样式 更加美观 修复外服玩家无法接收更新的问题",
   "download_url": "https://gitee.com/Kosto179/kosto/raw/master/js/cloudversion.script.user.js"
 }
