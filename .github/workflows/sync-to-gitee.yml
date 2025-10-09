@@ -5,6 +5,8 @@ on:
     paths:
       - 'chinese_words_replacer/dictionary.json'
   workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'  # 每小时执行一次（每小时的第0分钟）
 
 jobs:
   sync-to-gitee:
