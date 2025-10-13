@@ -14,7 +14,7 @@
 // @connect      github.io
 // @connect      api.github.com
 // @updateURL    https://gitee.com/Kosto179/kosto/raw/master/js/cloudversion.script.user.js
-// @downloadURL https://gitee.com/Kosto179/kosto/raw/master/js/cloudversion.script.user.js
+// @downloadURL  https://gitee.com/Kosto179/kosto/raw/master/js/cloudversion.script.user.js
 // ==/UserScript==
 
 
