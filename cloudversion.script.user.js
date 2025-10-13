@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Kosto云端用户版本
 // @namespace    http://tampermonkey.net/
-// @version      43
+// @version      44
 // @author       CN@Kosto1797867628
 // @match        https://*.3dtank.com/play/*
 // @match        https://*.tankionline.com/play/*
@@ -9,6 +9,7 @@
 // @icon         https://kosto179cn.github.io/icon/KostoIcon.jpg
 // @run-at       document-start
 // @grant        GM_xmlhttpRequest 
+// @grant        unsafeWindow
 // @connect      gitee.com
 // @connect      github.io
 // @connect      api.github.com
