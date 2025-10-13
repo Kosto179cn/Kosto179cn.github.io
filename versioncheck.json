@@ -1,6 +1,6 @@
 {
-  "version": "2025.10.10",
-  "version_code": 43,
-  "update_info": "修复问题",
+  "version": "2025.10.14",
+  "version_code": 44,
+  "update_info": "修复小问题",
   "download_url": "https://gitee.com/Kosto179/kosto/raw/master/js/cloudversion.script.user.js"
 }
