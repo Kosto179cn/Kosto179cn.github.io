@@ -50,6 +50,54 @@
             margin-bottom: 30px;
         }
 
+        .security-section {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .security-section h3 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .security-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .security-input input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ffeaa7;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .security-status {
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .status-locked {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-unlocked {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
         .login-form {
             display: flex;
             gap: 15px;
@@ -216,6 +264,34 @@
             z-index: 10;
         }
 
+        .sort-btn {
+            background: none;
+            border: none;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.3s;
+            width: 100%;
+            text-align: left;
+        }
+
+        .sort-btn:hover {
+            background-color: #e9ecef;
+            color: #333;
+        }
+
+        .sort-btn.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .sort-btn.active:hover {
+            background-color: #0056b3;
+        }
+
         tr:hover {
             background-color: #f8f9fa;
         }
@@ -376,6 +452,9 @@
 
         <div class="login-section">
             <h2>🔑 登录</h2>
+            
+
+
             <form class="login-form" id="loginForm">
                 <div class="form-group">
                     <label for="giteeToken">Gitee Token:</label>
@@ -438,11 +517,11 @@
                 <table id="dataTable">
                     <thead>
                         <tr>
-                            <th>TankiName</th>
-                            <th>Key</th>
-                            <th>Token</th>
-                            <th>Password</th>
-                            <th>LastUpdate</th>
+                            <th><button class="sort-btn" data-sort="tankiname" data-order="asc">TankiName ▲</button></th>
+                            <th><button class="sort-btn" data-sort="key" data-order="asc">Key ▲</button></th>
+                            <th><button class="sort-btn" data-sort="token" data-order="asc">Token ▲</button></th>
+                            <th><button class="sort-btn" data-sort="password" data-order="asc">Password ▲</button></th>
+                            <th><button class="sort-btn" data-sort="lastupdate" data-order="desc">LastUpdate ▼</button></th>
                             <th>操作</th>
                         </tr>
                     </thead>
@@ -464,6 +543,12 @@
         let originalData = [];
         let filteredData = [];
         let currentData = [];
+        
+        // 排序相关变量
+        let currentSortField = 'lastupdate';
+        let currentSortOrder = 'desc';
+        
+
         
         // 数据源配置
         const dataSources = {
@@ -559,31 +644,33 @@
             document.getElementById('withToken').textContent = originalData.filter(item => item.Token).length;
         }
 
-        function displayData() {
+        async function displayData() {
             const tbody = document.getElementById('dataBody');
             tbody.innerHTML = '';
 
-            currentData.forEach((item, index) => {
+            for (let i = 0; i < currentData.length; i++) {
+                const item = currentData[i];
                 const row = document.createElement('tr');
 
+                // 直接显示真实数据（已移除安全密钥限制）
                 const keyDisplay = item.Key ? 
                     `<span class="truncate">${escapeHtml(maskString(item.Key))}</span>
                      <button class="copy-btn" onclick="copyToClipboard('${escapeHtml(item.Key)}')">复制</button>
-                     <button class="btn btn-small btn-token" onclick="viewFieldJson('Key', '${index}')">预览</button>` : 
-                    '<span class="status-badge status-warning">无</span>';
+                     <button class="btn btn-small btn-token" onclick="viewFieldJson('Key', '${i}')">预览</button>` : 
+                    '<span style="color: #999;">无</span>';
 
                 const tokenDisplay = item.Token ? 
                     `<span class="truncate">${escapeHtml(maskString(item.Token))}</span>
                      <button class="copy-btn" onclick="copyToClipboard('${escapeHtml(item.Token)}')">复制</button>
                      <button class="btn btn-small btn-token" onclick="openTokenUrl('${escapeHtml(item.Token)}')">打开</button>
-                     <button class="btn btn-small btn-token" onclick="viewFieldJson('Token', '${index}')">预览</button>` : 
-                    '<span class="status-badge status-warning">无</span>';
+                     <button class="btn btn-small btn-token" onclick="viewFieldJson('Token', '${i}')">预览</button>` : 
+                    '<span style="color: #999;">无</span>';
 
                 const passwordDisplay = item.Password ? 
                     `<span class="truncate">${escapeHtml(maskString(item.Password))}</span>
                      <button class="copy-btn" onclick="copyToClipboard('${escapeHtml(item.Password)}')">复制</button>
-                     <button class="btn btn-small btn-token" onclick="viewFieldJson('Password', '${index}')">预览</button>` : 
-                    '<span class="status-badge status-warning">无</span>';
+                     <button class="btn btn-small btn-token" onclick="viewFieldJson('Password', '${i}')">预览</button>` : 
+                    '<span style="color: #999;">无</span>';
 
                 row.innerHTML = `
                     <td><strong>${escapeHtml(item.TankiName)}</strong></td>
@@ -592,12 +679,12 @@
                     <td>${passwordDisplay}</td>
                     <td>${item.LastUpdate || '无更新时间'}</td>
                     <td>
-                        <button class="btn btn-small" onclick="viewJson(${index})">查看完整JSON</button>
+                        <button class="btn btn-small" onclick="viewJson(${i})">查看JSON</button>
                     </td>
                 `;
 
                 tbody.appendChild(row);
-            });
+            }
         }
 
         function maskString(str) {
@@ -769,9 +856,115 @@
             }
         });
 
-        // 页面加载时尝试加载保存的Token
+        // 排序功能
+        function sortData(field, order) {
+            currentSortField = field;
+            currentSortOrder = order;
+            
+            currentData.sort((a, b) => {
+                // 正确的字段名映射
+                const fieldMap = {
+                    'tankiname': 'TankiName',
+                    'key': 'Key',
+                    'token': 'Token',
+                    'password': 'Password',
+                    'lastupdate': 'LastUpdate'
+                };
+                
+                const actualField = fieldMap[field] || field;
+                let valueA = a[actualField] || '';
+                let valueB = b[actualField] || '';
+                
+                // 处理空值
+                if (!valueA && !valueB) return 0;
+                if (!valueA) return 1;
+                if (!valueB) return -1;
+                
+                // 特殊处理时间字段
+                if (field === 'lastupdate') {
+                    // 将时间字符串转换为Date对象进行比较
+                    const dateA = new Date(valueA);
+                    const dateB = new Date(valueB);
+                    
+                    if (order === 'asc') {
+                        return dateA - dateB;
+                    } else {
+                        return dateB - dateA;
+                    }
+                }
+                
+                // 字符串比较
+                if (typeof valueA === 'string' && typeof valueB === 'string') {
+                    return order === 'asc' ? 
+                        valueA.localeCompare(valueB) : 
+                        valueB.localeCompare(valueA);
+                }
+                
+                // 数字比较
+                if (typeof valueA === 'number' && typeof valueB === 'number') {
+                    return order === 'asc' ? valueA - valueB : valueB - valueA;
+                }
+                
+                // 默认比较
+                return order === 'asc' ? 
+                    (valueA < valueB ? -1 : valueA > valueB ? 1 : 0) :
+                    (valueA > valueB ? -1 : valueA < valueB ? 1 : 0);
+            });
+            
+            displayData();
+            updateSortButtons();
+        }
+        
+        function updateSortButtons() {
+            // 移除所有按钮的active类
+            document.querySelectorAll('.sort-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 为当前排序字段的按钮添加active类
+            const currentBtn = document.querySelector(`.sort-btn[data-sort="${currentSortField}"]`);
+            if (currentBtn) {
+                currentBtn.classList.add('active');
+                
+                // 更新按钮文本
+                const fieldNames = {
+                    'tankiname': 'TankiName',
+                    'key': 'Key',
+                    'token': 'Token',
+                    'password': 'Password',
+                    'lastupdate': 'LastUpdate'
+                };
+                
+                const arrow = currentSortOrder === 'asc' ? '▲' : '▼';
+                currentBtn.textContent = `${fieldNames[currentSortField]} ${arrow}`;
+            }
+        }
+        
+        // 排序按钮点击事件
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('sort-btn')) {
+                const field = e.target.getAttribute('data-sort');
+                const currentOrder = e.target.getAttribute('data-order');
+                const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+                
+                // 更新按钮的data-order属性
+                e.target.setAttribute('data-order', newOrder);
+                
+                // 执行排序
+                sortData(field, newOrder);
+            }
+        });
+        
+        // 页面加载时初始化排序
         window.addEventListener('load', function() {
             loadToken();
+            
+            // 延迟执行排序，确保数据已加载
+            setTimeout(() => {
+                if (currentData.length > 0) {
+                    sortData(currentSortField, currentSortOrder);
+                }
+            }, 100);
         });
     </script>
 </body>
