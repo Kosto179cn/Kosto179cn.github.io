@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kosto投诉信息审批系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+            
+            .container {
+                border-radius: 8px;
+                margin: 5px;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* 移动端容器调整 */
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 8px;
+                margin: 5px;
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        /* 移动端标题 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+                margin-bottom: 8px;
+            }
+            
+            .header p {
+                font-size: 1em;
+            }
+        }
+
+        /* 超小屏幕标题 */
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.6em;
+                margin-bottom: 5px;
+            }
+            
+            .header p {
+                font-size: 0.9em;
+            }
+        }
+
+        .login-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .login-form {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* 移动端登录表单 */
+        @media (max-width: 768px) {
+            .login-form {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .login-form input {
+                min-width: 100%;
+                width: 100%;
+            }
+            
+            .login-form button {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+
+        .login-form input {
+            flex: 1;
+            min-width: 300px;
+            padding: 12px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .login-form input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+        }
+
+        .login-form button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-form button:hover {
+            transform: translateY(-2px);
+        }
+
+        .login-status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .login-status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .login-status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .content-section {
+            padding: 30px;
+        }
+
+        /* 移动端内容区域 */
+        @media (max-width: 768px) {
+            .content-section {
+                padding: 15px;
+            }
+        }
+
+        /* 超小屏幕内容区域 */
+        @media (max-width: 480px) {
+            .content-section {
+                padding: 10px;
+            }
+        }
+
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        /* 移动端统计卡片 */
+        @media (max-width: 768px) {
+            .stats-section {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+            
+            .stat-card {
+                padding: 15px;
+            }
+            
+            .stat-number {
+                font-size: 2em;
+            }
+            
+            .stat-label {
+                font-size: 0.9em;
+            }
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .complaints-section h2 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.8em;
+        }
+
+        /* 移动端标题 */
+        @media (max-width: 768px) {
+            .complaints-section h2 {
+                font-size: 1.5em;
+                margin-bottom: 15px;
+                text-align: center;
+            }
+        }
+
+        /* 超小屏幕标题 */
+        @media (max-width: 480px) {
+            .complaints-section h2 {
+                font-size: 1.3em;
+                margin-bottom: 12px;
+            }
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* 移动端筛选控件 */
+        @media (max-width: 768px) {
+            .filter-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .filter-controls select,
+            .filter-controls input {
+                width: 100%;
+                padding: 12px;
+                font-size: 16px; /* 防止iOS缩放 */
+            }
+        }
+
+        .filter-controls select, .filter-controls input {
+            padding: 8px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .complaints-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        }
+
+        /* 移动端投诉网格 */
+        @media (max-width: 768px) {
+            .complaints-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding: 0 5px;
+            }
+        }
+
+        /* 超小屏幕网格优化 */
+        @media (max-width: 480px) {
+            .complaints-grid {
+                gap: 8px;
+                padding: 0 2px;
+            }
+        }
+
+        .complaint-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        /* 移动端投诉卡片 */
+        @media (max-width: 768px) {
+            .complaint-card {
+                padding: 12px;
+                border-radius: 8px;
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+                overflow: hidden;
+            }
+            
+            .complaint-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                margin-bottom: 8px;
+                padding-bottom: 8px;
+                width: 100%;
+            }
+            
+            .player-name {
+                font-size: 1em;
+                font-weight: bold;
+                word-break: break-word;
+                line-height: 1.2;
+                max-width: 100%;
+            }
+            
+            .server-badge,
+            .status-badge {
+                font-size: 0.7em;
+                padding: 2px 8px;
+                margin: 2px 0;
+            }
+            
+            .complaint-reason {
+                padding: 10px;
+                font-size: 13px;
+                line-height: 1.4;
+                word-break: break-word;
+                max-width: 100%;
+                overflow-wrap: break-word;
+            }
+            
+            .complaint-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+                font-size: 0.75em;
+                line-height: 1.3;
+            }
+            
+            .complaint-time,
+            .complaint-id {
+                display: block;
+                margin-bottom: 2px;
+                word-break: break-all;
+                font-size: 0.7em;
+            }
+            
+            .complaint-reason {
+                overflow-x: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+
+        /* 超小屏幕适配 */
+        @media (max-width: 480px) {
+            .complaint-card {
+                padding: 8px;
+            }
+            
+            .complaint-header {
+                gap: 6px;
+                margin-bottom: 6px;
+            }
+            
+            .player-name {
+                font-size: 0.9em;
+            }
+            
+            .complaint-reason {
+                padding: 8px;
+                font-size: 12px;
+            }
+            
+            .complaint-meta {
+                font-size: 0.7em;
+            }
+            
+            .server-badge,
+            .status-badge {
+                font-size: 0.65em;
+                padding: 1px 6px;
+            }
+        }
+
+        .complaint-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .complaint-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .player-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+
+        .server-badge {
+            background: #28a745;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .server-badge.测试服 {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .server-badge.外服 {
+            background: #007bff;
+            color: white;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .status-badge.pending {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .status-badge.approved {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-badge.rejected {
+            background: #dc3545;
+            color: white;
+        }
+
+        .complaint-content {
+            margin-bottom: 15px;
+        }
+
+        .complaint-reason {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ff6b6b;
+            font-style: italic;
+        }
+
+        .complaint-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .complaint-time {
+            font-family: monospace;
+        }
+
+        .complaint-id {
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        /* 移动端操作按钮 */
+        @media (max-width: 768px) {
+            .action-buttons {
+                flex-direction: column;
+                gap: 6px;
+                margin-top: 10px;
+            }
+            
+            .btn {
+                width: 100%;
+                padding: 10px;
+                font-size: 14px;
+                text-align: center;
+                min-height: 40px;
+                box-sizing: border-box;
+            }
+        }
+
+        /* 超小屏幕按钮优化 */
+        @media (max-width: 480px) {
+            .btn {
+                padding: 8px;
+                font-size: 13px;
+                min-height: 36px;
+            }
+            
+            .action-buttons {
+                gap: 4px;
+                margin-top: 8px;
+            }
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* 页面切换样式 */
+        .page-switcher {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(30, 30, 30, 0.8);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* 移动端页面切换 */
+        @media (max-width: 768px) {
+            .page-switcher {
+                flex-direction: column;
+                gap: 8px;
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+            
+            .switch-btn {
+                width: 100%;
+                padding: 15px;
+                font-size: 16px;
+            }
+        }
+
+        .switch-btn {
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .switch-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .switch-btn.active {
+            background: rgba(30, 144, 255, 0.3);
+            border-color: rgba(30, 144, 255, 0.5);
+            box-shadow: 0 0 20px rgba(30, 144, 255, 0.3);
+        }
+
+        .switch-btn.active:hover {
+            background: rgba(30, 144, 255, 0.4);
+        }
+
+        .btn-approve {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-reject {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-edit {
+            background: #007bff;
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+            font-size: 1.2em;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+            font-size: 1.2em;
+        }
+
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+        }
+
+        /* 移动端刷新按钮 */
+        @media (max-width: 768px) {
+            .refresh-btn {
+                width: 50px;
+                height: 50px;
+                bottom: 20px;
+                right: 20px;
+                font-size: 18px;
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            }
+        }
+
+        /* 移动端横屏优化 */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .page-switcher {
+                flex-direction: row;
+            }
+            
+            .filter-controls {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            
+            .filter-controls select,
+            .filter-controls input {
+                min-width: 150px;
+                width: auto;
+            }
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Kosto投诉信息审批系统</h1>
+            <p>管理和审批玩家投诉记录</p>
+        </header>
+
+        <section class="login-section" id="loginSection" style="display: block;">
+            <div class="login-form">
+                <input type="password" id="giteeToken" placeholder="请输入Gitee Token" />
+                <button onclick="login()">登录</button>
+                <button onclick="clearSavedToken()" style="background: #6c757d;">清除配置</button>
+            </div>
+            <div id="loginStatus" class="login-status"></div>
+        </section>
+
+        <section class="content-section" id="contentSection" style="display: none;">
+            <!-- 页面切换按钮 -->
+            <div class="page-switcher">
+                <button class="switch-btn active" id="pendingTab" onclick="switchToPage('pending')">待审批投诉</button>
+                <button class="switch-btn" id="archivedTab" onclick="switchToPage('archived')">已审批记录</button>
+            </div>
+
+            <!-- 待审批页面 -->
+            <div id="pendingPage">
+                <div class="stats-section" id="statsSection">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalCount">0</div>
+                        <div class="stat-label">总投诉数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="pendingCount">0</div>
+                        <div class="stat-label">待审批</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="approvedCount">0</div>
+                        <div class="stat-label">已通过</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="rejectedCount">0</div>
+                        <div class="stat-label">已拒绝</div>
+                    </div>
+                </div>
+
+                <div class="complaints-section">
+                    <h2>待审批投诉列表</h2>
+                    <div class="filter-controls">
+                        <select id="serverFilter" onchange="filterComplaints()">
+                            <option value="">所有服务器</option>
+                            <option value="国服">国服</option>
+                            <option value="测试服">测试服</option>
+                            <option value="外服">外服</option>
+                        </select>
+                        <select id="statusFilter" onchange="filterComplaints()">
+                            <option value="">所有状态</option>
+                            <option value="pending">待审批</option>
+                            <option value="approved">已通过</option>
+                            <option value="rejected">已拒绝</option>
+                        </select>
+                        <input type="text" id="playerFilter" placeholder="搜索玩家名称" oninput="filterComplaints()" />
+                    </div>
+                    <div id="complaintsGrid" class="complaints-grid"></div>
+                </div>
+            </div>
+
+            <!-- 已审批页面 -->
+            <div id="archivedPage" style="display: none;">
+                <div class="stats-section" id="archivedStatsSection">
+                    <div class="stat-card">
+                        <div class="stat-number" id="archivedTotal">0</div>
+                        <div class="stat-label">总已审批数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="archivedApproved">0</div>
+                        <div class="stat-label">已通过</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="archivedRejected">0</div>
+                        <div class="stat-label">已拒绝</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="todayProcessed">0</div>
+                        <div class="stat-label">今日处理</div>
+                    </div>
+                </div>
+
+                <div class="complaints-section">
+                    <h2>已审批投诉记录</h2>
+                    <div class="filter-controls">
+                        <select id="archivedServerFilter" onchange="filterArchivedComplaints()">
+                            <option value="">所有服务器</option>
+                            <option value="国服">国服</option>
+                            <option value="测试服">测试服</option>
+                            <option value="外服">外服</option>
+                        </select>
+                        <select id="archivedStatusFilter" onchange="filterArchivedComplaints()">
+                            <option value="">所有状态</option>
+                            <option value="approved">已通过</option>
+                            <option value="rejected">已拒绝</option>
+                        </select>
+                        <input type="text" id="archivedPlayerFilter" placeholder="搜索玩家名称" oninput="filterArchivedComplaints()" />
+                        <select id="dateFilter" onchange="filterArchivedComplaints()">
+                            <option value="">所有时间</option>
+                            <option value="today">今天</option>
+                            <option value="week">本周</option>
+                            <option value="month">本月</option>
+                        </select>
+                    </div>
+                    <div id="archivedComplaintsGrid" class="complaints-grid"></div>
+                </div>
+            </div>
+        </section>
+
+        <div id="loadingDiv" class="loading">加载中...</div>
+        <div id="errorDiv" class="error" style="display: none;"></div>
+    </div>
+
+    <button class="refresh-btn" onclick="refreshData()" style="display: none;" id="refreshBtn">🔄</button>
+
+    <script>
+        let giteeToken = '';
+        let complaints = [];
+        let filteredComplaints = [];
+        let archivedComplaints = [];
+        let filteredArchivedComplaints = [];
+        let currentPage = 'pending';
+
+        // 页面加载时检查是否有保存的token
+        window.onload = function() {
+            loadSavedToken();
+        };
+
+        function loadSavedToken() {
+            try {
+                const savedToken = localStorage.getItem('giteeToken');
+                if (savedToken) {
+                    console.log('已加载保存的Gitee Token');
+                    document.getElementById('giteeToken').value = savedToken;
+                    showLoginStatus('已加载保存的Token，正在登录...', 'success');
+                    setTimeout(() => login(), 1000);
+                } else {
+                    // 没有保存的token，显示登录区域
+                    document.getElementById('loginSection').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('加载保存的Token失败:', error);
+                localStorage.removeItem('giteeToken'); // 清除损坏的数据
+                // 显示登录区域
+                document.getElementById('loginSection').style.display = 'block';
+            }
+        }
+
+        function saveTokenToConfig(token) {
+            try {
+                // 保存到localStorage
+                localStorage.setItem('giteeToken', token);
+                console.log('Gitee Token已保存到本地配置');
+                
+                // 可选：同时保存到配置对象中，方便扩展
+                const config = {
+                    giteeToken: token,
+                    saveTime: new Date().toISOString(),
+                    version: '1.0'
+                };
+                localStorage.setItem('kostoApprovalConfig', JSON.stringify(config));
+            } catch (error) {
+                console.error('保存Token到本地配置失败:', error);
+                showLoginStatus('保存Token失败: ' + error.message, 'error');
+            }
+        }
+
+        function login() {
+            const tokenInput = document.getElementById('giteeToken');
+            const token = tokenInput.value.trim();
+            
+            if (!token) {
+                showLoginStatus('请输入Gitee Token', 'error');
+                return;
+            }
+
+            // 简单验证token格式
+            if (!token.startsWith('gitee-') && !token.length >= 20) {
+                showLoginStatus('Token格式可能不正确', 'error');
+                return;
+            }
+
+            giteeToken = token;
+            
+            // 保存token到本地配置
+            saveTokenToConfig(token);
+            
+            // 测试token是否有效（通过读取公开数据）
+            testTokenAndLoadData();
+        }
+
+        function showLoginStatus(message, type) {
+            const statusDiv = document.getElementById('loginStatus');
+            statusDiv.textContent = message;
+            statusDiv.className = `login-status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showLoading(show) {
+            const loadingDiv = document.getElementById('loadingDiv');
+            if (show) {
+                loadingDiv.style.display = 'block';
+            } else {
+                loadingDiv.style.display = 'none';
+            }
+        }
+
+        async function testTokenAndLoadData() {
+            showLoading(true);
+            showLoginStatus('正在验证Token并加载数据...', 'loading');
+
+            try {
+                // 同时加载两个文件的数据
+                const [bgrzData, gdrzData] = await Promise.all([
+                    loadBgrzData(),
+                    loadGdrzData().catch(() => []) // 归档数据加载失败时返回空数组
+                ]);
+                
+                complaints = bgrzData;
+                archivedComplaints = gdrzData;
+                filteredComplaints = complaints;
+                
+                showLoginStatus('登录成功，数据加载完成', 'success');
+                
+                // 隐藏登录区域
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('contentSection').style.display = 'block';
+                document.getElementById('refreshBtn').style.display = 'inline-block';
+                document.getElementById('loadingDiv').style.display = 'none';
+                
+                // 更新统计信息（包含归档数据）
+                await updateAllStats();
+                renderComplaints();
+
+            } catch (error) {
+                console.error('加载失败:', error);
+                let errorMessage = '登录失败：';
+                
+                if (error.message.includes('401')) {
+                    errorMessage += 'Token无效或已过期，请重新输入';
+                } else if (error.message.includes('404')) {
+                    errorMessage += '文件不存在或仓库路径错误';
+                } else if (error.message.includes('403')) {
+                    errorMessage += 'Token权限不足，请确保有读取权限';
+                } else if (error.message.includes('CORS') || error.message.includes('fetch')) {
+                    errorMessage += '网络连接失败，请检查网络或使用代理';
+                } else if (error.message.includes('JSON')) {
+                    errorMessage += '数据解析失败，文件格式可能不正确';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                showLoginStatus(errorMessage, 'error');
+                
+                // 显示登录区域（token失效时）
+                document.getElementById('loginSection').style.display = 'block';
+                document.getElementById('contentSection').style.display = 'none';
+                document.getElementById('refreshBtn').style.display = 'none';
+                
+                // 清除无效的token
+                if (error.message.includes('401') || error.message.includes('403')) {
+                    localStorage.removeItem('giteeToken');
+                    localStorage.removeItem('kostoApprovalConfig');
+                    document.getElementById('giteeToken').value = '';
+                    giteeToken = '';
+                }
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 加载bgrz数据
+        async function loadBgrzData() {
+            const apiUrl = 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/bgrz.json';
+            const response = await fetch(`${apiUrl}?access_token=${giteeToken}&ref=master`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const fileInfo = await response.json();
+            
+            // 安全解码文件内容
+            let decodedContent;
+            try {
+                const binaryString = atob(fileInfo.content);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                decodedContent = new TextDecoder('utf-8').decode(bytes);
+            } catch (decodeError) {
+                try {
+                    decodedContent = unescape(encodeURIComponent(atob(fileInfo.content)));
+                } catch (decodeError2) {
+                    try {
+                        decodedContent = decodeURIComponent(escape(atob(fileInfo.content)));
+                    } catch (decodeError3) {
+                        throw new Error('文件内容解码失败，可能是编码问题');
+                    }
+                }
+            }
+            
+            const complaintsData = JSON.parse(decodedContent);
+            
+            if (!Array.isArray(complaintsData)) {
+                throw new Error('bgrz.json数据格式错误：不是数组格式');
+            }
+            
+            return complaintsData;
+        }
+
+        // 加载gdrz数据
+        async function loadGdrzData() {
+            try {
+                const apiUrl = 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/gdrz.json';
+                const response = await fetch(`${apiUrl}?access_token=${giteeToken}&ref=master`);
+                
+                if (response.status === 404) {
+                    // 文件不存在，返回空数组
+                    return [];
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const fileInfo = await response.json();
+                
+                // 安全解码文件内容
+                let decodedContent;
+                try {
+                    const binaryString = atob(fileInfo.content);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    decodedContent = new TextDecoder('utf-8').decode(bytes);
+                } catch (decodeError) {
+                    try {
+                        decodedContent = unescape(encodeURIComponent(atob(fileInfo.content)));
+                    } catch (decodeError2) {
+                        try {
+                            decodedContent = decodeURIComponent(escape(atob(fileInfo.content)));
+                        } catch (decodeError3) {
+                            throw new Error('归档文件内容解码失败');
+                        }
+                    }
+                }
+                
+                const archivedData = JSON.parse(decodedContent);
+                
+                if (!Array.isArray(archivedData)) {
+                    throw new Error('gdrz.json数据格式错误：不是数组格式');
+                }
+                
+                return archivedData;
+                
+            } catch (error) {
+                console.error('加载归档数据失败:', error);
+                return []; // 返回空数组，允许继续操作
+            }
+        }
+
+        // 更新所有统计信息（包含归档数据）
+        async function updateAllStats() {
+            // 从归档数据中统计已处理的数据
+            const approved = archivedComplaints.filter(c => c.status === 'approved').length;
+            const rejected = archivedComplaints.filter(c => c.status === 'rejected').length;
+            const pending = complaints.filter(c => c.status === 'pending').length;
+            
+            // 总数 = 当前数据 + 已归档数据
+            const total = complaints.length + archivedComplaints.length;
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('approvedCount').textContent = approved;
+            document.getElementById('rejectedCount').textContent = rejected;
+        }
+
+        function updateStats() {
+            // 调用完整的统计更新
+            updateAllStats();
+        }
+
+        // 刷新数据并检测token状态
+        async function refreshData() {
+            showLoading(true);
+            
+            try {
+                // 检测token是否仍然有效
+                const [bgrzData, gdrzData] = await Promise.all([
+                    loadBgrzData(),
+                    loadGdrzData().catch(() => [])
+                ]);
+                
+                complaints = bgrzData;
+                archivedComplaints = gdrzData;
+                filteredComplaints = complaints;
+                
+                await updateAllStats();
+                renderComplaints();
+                
+                showLoginStatus('数据刷新成功', 'success');
+                
+            } catch (error) {
+                console.error('刷新数据失败:', error);
+                let errorMessage = 'Token失效：';
+                
+                if (error.message.includes('401')) {
+                    errorMessage += 'Token无效或已过期，请重新输入';
+                } else if (error.message.includes('403')) {
+                    errorMessage += 'Token权限不足，请确保有读取权限';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                // Token失效，显示登录区域
+                showLoginStatus(errorMessage, 'error');
+                document.getElementById('loginSection').style.display = 'block';
+                document.getElementById('contentSection').style.display = 'none';
+                document.getElementById('refreshBtn').style.display = 'none';
+                
+                // 清除无效的token
+                if (error.message.includes('401') || error.message.includes('403')) {
+                    localStorage.removeItem('giteeToken');
+                    localStorage.removeItem('kostoApprovalConfig');
+                    document.getElementById('giteeToken').value = '';
+                    giteeToken = '';
+                }
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 兼容性函数，调用refreshData
+        async function loadComplaints() {
+            return await refreshData();
+        }
+
+        function filterComplaints() {
+            const serverFilter = document.getElementById('serverFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const playerFilter = document.getElementById('playerFilter').value.toLowerCase();
+
+            filteredComplaints = complaints.filter(complaint => {
+                if (serverFilter && complaint.server !== serverFilter) return false;
+                if (statusFilter && complaint.status !== statusFilter) return false;
+                if (playerFilter && !complaint.playerName.toLowerCase().includes(playerFilter)) return false;
+                return true;
+            });
+
+            renderComplaints();
+        }
+
+        function renderComplaints() {
+            const grid = document.getElementById('complaintsGrid');
+            
+            if (filteredComplaints.length === 0) {
+                grid.innerHTML = '<div style="text-align: center; color: #6c757d; padding: 40px;">没有找到符合条件的投诉记录</div>';
+                return;
+            }
+
+            grid.innerHTML = filteredComplaints.map(complaint => {
+                const timestamp = new Date(complaint.timestamp).toLocaleString('zh-CN');
+                const serverClass = complaint.server === '测试服' ? '测试服' : complaint.server === '外服' ? '外服' : '';
+                const statusClass = complaint.status === 'approved' ? 'approved' : complaint.status === 'rejected' ? 'rejected' : 'pending';
+                const statusText = complaint.status === 'approved' ? '已通过' : complaint.status === 'rejected' ? '已拒绝' : '待审批';
+
+                return `
+                    <div class="complaint-card">
+                        <div class="complaint-header">
+                            <div class="player-name">${complaint.playerName}</div>
+                            <div>
+                                <span class="server-badge ${serverClass}">${complaint.server}</span>
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                            </div>
+                        </div>
+                        <div class="complaint-content">
+                            <div class="complaint-reason">${complaint.reason}</div>
+                        </div>
+                        <div class="complaint-meta">
+                            <span class="complaint-time">${timestamp}</span>
+                            <span class="complaint-id">投诉人: ${complaint.complaintId}</span>
+                        </div>
+                        <div class="action-buttons">
+                            ${complaint.status === 'pending' ? `
+                                <button class="btn btn-approve" onclick="updateStatus('${complaint.timestamp}', 'approved')">通过</button>
+                                <button class="btn btn-reject" onclick="updateStatus('${complaint.timestamp}', 'rejected')">拒绝</button>
+                            ` : ''}
+                            <button class="btn btn-edit" onclick="editComplaint('${complaint.timestamp}')">编辑</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function updateStatus(timestamp, newStatus) {
+            if (!giteeToken) {
+                alert('请先登录');
+                return;
+            }
+
+            // 查找对应的投诉
+            const complaintIndex = complaints.findIndex(c => c.timestamp === timestamp);
+            if (complaintIndex === -1) {
+                alert('找不到对应的投诉记录');
+                return;
+            }
+
+            const complaint = complaints[complaintIndex];
+            
+            try {
+                // 无论通过还是拒绝，都进行归档
+                const archivedComplaint = {
+                    ...complaint,
+                    status: newStatus, // 使用英文状态：approved 或 rejected
+                    processedTime: new Date().toISOString()
+                };
+                
+                await archiveComplaint(archivedComplaint);
+                
+                // 从当前投诉列表中移除
+                complaints.splice(complaintIndex, 1);
+                
+                // 显示相应的成功消息
+                if (newStatus === 'approved') {
+                    showLoginStatus('投诉已通过并归档', 'success');
+                } else if (newStatus === 'rejected') {
+                    showLoginStatus('投诉已拒绝并归档', 'success');
+                }
+                
+                // 更新显示
+                filterComplaints();
+                await updateAllStats(); // 重新加载并更新统计信息
+                
+                // 保存更改到原文件
+                await saveComplaintsToGitee();
+                
+            } catch (error) {
+                console.error('更新状态失败:', error);
+                alert('操作失败: ' + error.message);
+            }
+        }
+
+        async function editComplaint(timestamp) {
+            if (!giteeToken) {
+                alert('请先登录');
+                return;
+            }
+
+            const complaint = complaints.find(c => c.timestamp === timestamp);
+            if (!complaint) {
+                alert('找不到对应的投诉记录');
+                return;
+            }
+
+            const newReason = prompt('编辑投诉原因:', complaint.reason);
+            if (newReason && newReason.trim()) {
+                try {
+                    complaint.reason = newReason.trim();
+                    await saveComplaintsToGitee();
+                    filterComplaints(); // 刷新显示
+                    showLoginStatus('投诉内容已更新', 'success');
+                } catch (error) {
+                    console.error('编辑投诉失败:', error);
+                    alert('编辑失败: ' + error.message);
+                }
+            }
+        }
+
+        // 归档投诉到gdrz.json
+        async function archiveComplaint(complaint) {
+            try {
+                // 获取当前归档数据
+                const archiveData = await loadArchivedComplaints();
+                
+                // 添加到归档数据，保持原有状态
+                archiveData.push({
+                    ...complaint,
+                    archivedTime: new Date().toISOString()
+                });
+                
+                // 保存归档数据
+                await saveArchivedComplaints(archiveData);
+                
+            } catch (error) {
+                console.error('归档投诉失败:', error);
+                throw error;
+            }
+        }
+
+        // 加载归档数据
+        async function loadArchivedComplaints() {
+            try {
+                const apiUrl = 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/gdrz.json';
+                const response = await fetch(`${apiUrl}?access_token=${giteeToken}&ref=master`);
+                
+                if (response.status === 404) {
+                    // 文件不存在，返回空数组
+                    return [];
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`加载归档数据失败: ${response.status}`);
+                }
+                
+                const fileInfo = await response.json();
+                
+                // 解码文件内容
+                let decodedContent;
+                try {
+                    const binaryString = atob(fileInfo.content);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    decodedContent = new TextDecoder('utf-8').decode(bytes);
+                } catch (decodeError) {
+                    throw new Error('归档数据解码失败');
+                }
+                
+                return JSON.parse(decodedContent);
+                
+            } catch (error) {
+                console.error('加载归档数据失败:', error);
+                return []; // 返回空数组，允许继续操作
+            }
+        }
+
+        // 保存归档数据
+        async function saveArchivedComplaints(archiveData) {
+            try {
+                // 编码数据
+                const jsonString = JSON.stringify(archiveData, null, 2);
+                const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
+                
+                const apiUrl = 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/gdrz.json';
+                
+                // 获取文件SHA（如果文件存在）
+                let sha = null;
+                try {
+                    const getFileResponse = await fetch(`${apiUrl}?access_token=${giteeToken}&ref=master`);
+                    if (getFileResponse.ok) {
+                        const fileInfo = await getFileResponse.json();
+                        sha = fileInfo.sha;
+                    }
+                } catch (error) {
+                    // 文件不存在，继续创建新文件
+                }
+                
+                // 创建或更新文件
+                const requestData = {
+                    access_token: giteeToken,
+                    content: base64Content,
+                    message: `归档投诉记录 - ${new Date().toISOString()}`,
+                    branch: 'master'
+                };
+                
+                if (sha) {
+                    requestData.sha = sha;
+                }
+                
+                const response = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`保存归档失败: ${response.status} ${response.statusText}`);
+                }
+                
+            } catch (error) {
+                console.error('保存归档数据失败:', error);
+                throw error;
+            }
+        }
+
+        // 保存投诉数据到Gitee
+        async function saveComplaintsToGitee() {
+            try {
+                // 编码数据
+                const jsonString = JSON.stringify(complaints, null, 2);
+                const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
+                
+                const apiUrl = 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/bgrz.json';
+                
+                // 获取当前文件SHA
+                const getFileResponse = await fetch(`${apiUrl}?access_token=${giteeToken}&ref=master`);
+                if (!getFileResponse.ok) {
+                    throw new Error(`获取文件信息失败: ${getFileResponse.status}`);
+                }
+                
+                const fileInfo = await getFileResponse.json();
+                
+                // 更新文件
+                const requestData = {
+                    access_token: giteeToken,
+                    content: base64Content,
+                    message: `更新投诉状态 - ${new Date().toISOString()}`,
+                    sha: fileInfo.sha,
+                    branch: 'master'
+                };
+                
+                const response = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`保存投诉数据失败: ${response.status} ${response.statusText}`);
+                }
+                
+            } catch (error) {
+                console.error('保存投诉数据失败:', error);
+                throw error;
+            }
+        }
+
+        function clearSavedToken() {
+            if (confirm('确定要清除保存的Token配置吗？')) {
+                try {
+                    localStorage.removeItem('giteeToken');
+                    localStorage.removeItem('kostoApprovalConfig');
+                    document.getElementById('giteeToken').value = '';
+                    giteeToken = '';
+                    showLoginStatus('已清除本地配置', 'success');
+                    console.log('已清除保存的Gitee Token配置');
+                    
+                    // 显示登录区域，隐藏内容区域
+                    document.getElementById('loginSection').style.display = 'block';
+                    document.getElementById('contentSection').style.display = 'none';
+                    document.getElementById('refreshBtn').style.display = 'none';
+                    document.getElementById('loadingDiv').style.display = 'none';
+                } catch (error) {
+                    console.error('清除配置失败:', error);
+                    showLoginStatus('清除配置失败', 'error');
+                }
+            }
+        }
+
+        // 页面切换功能
+        async function switchToPage(page) {
+            currentPage = page;
+            
+            // 更新按钮状态
+            document.getElementById('pendingTab').classList.toggle('active', page === 'pending');
+            document.getElementById('archivedTab').classList.toggle('active', page === 'archived');
+            
+            // 切换页面显示
+            document.getElementById('pendingPage').style.display = page === 'pending' ? 'block' : 'none';
+            document.getElementById('archivedPage').style.display = page === 'archived' ? 'block' : 'none';
+            
+            // 如果切换到已审批页面，加载已审批数据
+            if (page === 'archived') {
+                await loadArchivedData();
+            }
+        }
+
+        // 加载已审批数据
+        async function loadArchivedData() {
+            try {
+                showLoading(true);
+                archivedComplaints = await loadGdrzData();
+                filteredArchivedComplaints = [...archivedComplaints];
+                updateArchivedStats();
+                renderArchivedComplaints();
+            } catch (error) {
+                console.error('加载已审批数据失败:', error);
+                showLoginStatus('加载已审批数据失败: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 更新已审批统计
+        function updateArchivedStats() {
+            const total = archivedComplaints.length;
+            const approved = archivedComplaints.filter(c => c.status === 'approved').length;
+            const rejected = archivedComplaints.filter(c => c.status === 'rejected').length;
+            
+            // 计算今日处理数量
+            const today = new Date().toDateString();
+            const todayProcessed = archivedComplaints.filter(c => {
+                const processDate = new Date(c.processedTime || c.archivedTime).toDateString();
+                return processDate === today;
+            }).length;
+
+            document.getElementById('archivedTotal').textContent = total;
+            document.getElementById('archivedApproved').textContent = approved;
+            document.getElementById('archivedRejected').textContent = rejected;
+            document.getElementById('todayProcessed').textContent = todayProcessed;
+        }
+
+        // 筛选已审批投诉
+        function filterArchivedComplaints() {
+            const serverFilter = document.getElementById('archivedServerFilter').value;
+            const statusFilter = document.getElementById('archivedStatusFilter').value;
+            const playerFilter = document.getElementById('archivedPlayerFilter').value.toLowerCase();
+            const dateFilter = document.getElementById('dateFilter').value;
+
+            filteredArchivedComplaints = archivedComplaints.filter(complaint => {
+                // 服务器筛选
+                if (serverFilter && complaint.server !== serverFilter) return false;
+                
+                // 状态筛选
+                if (statusFilter && complaint.status !== statusFilter) return false;
+                
+                // 玩家名称筛选
+                if (playerFilter && !complaint.playerName.toLowerCase().includes(playerFilter)) return false;
+                
+                // 时间筛选
+                if (dateFilter) {
+                    const complaintDate = new Date(complaint.processedTime || complaint.archivedTime);
+                    const now = new Date();
+                    
+                    switch (dateFilter) {
+                        case 'today':
+                            if (complaintDate.toDateString() !== now.toDateString()) return false;
+                            break;
+                        case 'week':
+                            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                            if (complaintDate < weekAgo) return false;
+                            break;
+                        case 'month':
+                            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                            if (complaintDate < monthAgo) return false;
+                            break;
+                    }
+                }
+                
+                return true;
+            });
+
+            renderArchivedComplaints();
+        }
+
+        // 渲染已审批投诉
+        function renderArchivedComplaints() {
+            const grid = document.getElementById('archivedComplaintsGrid');
+            
+            if (filteredArchivedComplaints.length === 0) {
+                grid.innerHTML = '<div style="text-align: center; color: #6c757d; padding: 40px;">没有找到符合条件的已审批记录</div>';
+                return;
+            }
+
+            grid.innerHTML = filteredArchivedComplaints.map(complaint => {
+                const timestamp = new Date(complaint.timestamp).toLocaleString('zh-CN');
+                const processedTime = new Date(complaint.processedTime || complaint.archivedTime).toLocaleString('zh-CN');
+                const serverClass = complaint.server === '测试服' ? '测试服' : complaint.server === '外服' ? '外服' : '';
+                const statusClass = complaint.status === 'approved' ? 'approved' : 'rejected';
+                const statusText = complaint.status === 'approved' ? '已通过' : '已拒绝';
+
+                return `
+                    <div class="complaint-card">
+                        <div class="complaint-header">
+                            <div class="player-name">${complaint.playerName}</div>
+                            <div>
+                                <span class="server-badge ${serverClass}">${complaint.server}</span>
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                            </div>
+                        </div>
+                        <div class="complaint-content">
+                            <div class="complaint-reason">${complaint.reason}</div>
+                        </div>
+                        <div class="complaint-meta">
+                            <span class="complaint-time">投诉时间: ${timestamp}</span>
+                            <span class="complaint-time">处理时间: ${processedTime}</span>
+                            <span class="complaint-id">投诉人: ${complaint.complaintId}</span>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-approve" onclick="updateArchivedStatus('${complaint.timestamp}', 'approved')">
+                                ${complaint.status === 'approved' ? '已通过' : '改为通过'}
+                            </button>
+                            <button class="btn btn-reject" onclick="updateArchivedStatus('${complaint.timestamp}', 'rejected')">
+                                ${complaint.status === 'rejected' ? '已拒绝' : '改为拒绝'}
+                            </button>
+                            <button class="btn btn-edit" onclick="editArchivedComplaint('${complaint.timestamp}')">编辑内容</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 更新已归档投诉的状态
+        async function updateArchivedStatus(timestamp, newStatus) {
+            if (!giteeToken) {
+                alert('请先登录');
+                return;
+            }
+
+            const complaintIndex = archivedComplaints.findIndex(c => c.timestamp === timestamp);
+            if (complaintIndex === -1) {
+                alert('找不到对应的已审批记录');
+                return;
+            }
+
+            const complaint = archivedComplaints[complaintIndex];
+            
+            if (confirm(`确定要将此投诉状态改为${newStatus === 'approved' ? '已通过' : '已拒绝'}吗？`)) {
+                try {
+                    // 更新状态
+                    archivedComplaints[complaintIndex].status = newStatus;
+                    archivedComplaints[complaintIndex].processedTime = new Date().toISOString();
+                    
+                    // 保存到Gitee
+                    await saveArchivedComplaints(archivedComplaints);
+                    
+                    // 更新显示
+                    filterArchivedComplaints();
+                    updateArchivedStats();
+                    await updateAllStats(); // 同时更新主页统计
+                    
+                    showLoginStatus(`投诉状态已更新为${newStatus === 'approved' ? '已通过' : '已拒绝'}`, 'success');
+                } catch (error) {
+                    console.error('更新状态失败:', error);
+                    alert('操作失败: ' + error.message);
+                }
+            }
+        }
+
+        // 编辑已归档投诉内容
+        async function editArchivedComplaint(timestamp) {
+            if (!giteeToken) {
+                alert('请先登录');
+                return;
+            }
+
+            const complaint = archivedComplaints.find(c => c.timestamp === timestamp);
+            if (!complaint) {
+                alert('找不到对应的已审批记录');
+                return;
+            }
+
+            const newReason = prompt('编辑投诉原因:', complaint.reason);
+            if (newReason && newReason.trim()) {
+                try {
+                    const complaintIndex = archivedComplaints.findIndex(c => c.timestamp === timestamp);
+                    archivedComplaints[complaintIndex].reason = newReason.trim();
+                    archivedComplaints[complaintIndex].processedTime = new Date().toISOString();
+                    
+                    // 保存到Gitee
+                    await saveArchivedComplaints(archivedComplaints);
+                    
+                    // 更新显示
+                    filterArchivedComplaints();
+                    
+                    showLoginStatus('已审批记录内容已更新', 'success');
+                } catch (error) {
+                    console.error('编辑已审批记录失败:', error);
+                    alert('编辑失败: ' + error.message);
+                }
+            }
+        }
+
+        function loadComplaints() {
+            if (!giteeToken) {
+                alert('请先登录');
+                return;
+            }
+            testTokenAndLoadData();
+        }
+    </script>
+</body>
+</html>
