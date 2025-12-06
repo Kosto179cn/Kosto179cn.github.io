@@ -185,7 +185,12 @@
         </button>
         <button id="addRow" class="btn btn-success modern-btn">
           <span class="btn-icon">➕</span>
-          添加新词条
+          单条添加
+        </button>
+        <!-- 新增：批量添加按钮 -->
+        <button id="batchAddBtn" class="btn modern-btn" style="background: linear-gradient(135deg, #8e44ad, #9b59b6); color: white;">
+          <span class="btn-icon">📜</span>
+          批量添加
         </button>
       </div>
       <div class="form-group">
@@ -213,6 +218,65 @@
       <button onclick="document.getElementById('addForm').style.display='none'" class="btn btn-secondary modern-btn">取消</button>
     </div>
     <div id="addMsg" class="status-message"></div>
+  </div>
+  
+  <!-- 批量添加面板 (新版：分栏式) -->
+  <div id="batchForm" class="add-form" style="display:none; border-color: #9b59b6; background: #fbfaff;">
+    <h3 style="margin-bottom: 10px; color: #8e44ad;">批量导入工作台</h3>
+    
+    <!-- 区域1：原始输入 -->
+    <div class="form-group">
+      <label class="modern-label" style="color:#666">1. 粘贴原始文本 (格式：原词=替换词)</label>
+      <textarea id="batchSource" class="form-control modern-input" rows="4" 
+        placeholder="在这里粘贴...&#10;比如：&#10;测试=Test&#10;敏感=屏蔽" 
+        style="height: 100px; font-family: monospace; border-style: dashed;"></textarea>
+    </div>
+
+    <!-- 中间操作栏 -->
+    <div style="display:flex; justify-content:center; gap:10px; margin: 10px 0;">
+      <button id="parseBtn" type="button" class="modern-btn" style="background:#8e44ad; color:white; padding: 8px 15px; font-size: 13px;">
+        ⬇️ 解析到等待区
+      </button>
+    </div>
+
+    <!-- 区域2：等待区 -->
+    <div class="form-group">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <label class="modern-label" style="color:#666">2. 等待导入列表 (<span id="previewCount">0</span>)</label>
+        
+        <!-- 你的核心需求：一键加符按钮 -->
+        <button id="batchMagicBtn" type="button" class="editbtn" style="font-size: 12px; padding: 4px 10px; margin-bottom: 6px; background: #f39c12;">
+           🪄 给替换词插入防屏蔽符
+        </button>
+      </div>
+      
+      <!-- 预览列表容器 -->
+      <div id="batchPreview" style="
+          height: 200px; 
+          overflow-y: auto; 
+          background: #fff; 
+          border: 2px solid #e1e5e9; 
+          border-radius: 8px;
+          padding: 8px;
+      ">
+        <div style="text-align:center; color:#ccc; padding-top:80px;">暂无数据，请先在上方粘贴并解析</div>
+      </div>
+      
+      <!-- 草稿状态提示 -->
+      <div id="draftIndicator" style="display:none; margin-top:5px; padding:5px 8px; background:#f0f7ff; border-radius:4px; font-size:12px; color:#3498db; align-items:center; justify-content:space-between;">
+        <span>📝 草稿已保存</span>
+        <button id="clearDraftBtn" style="background:transparent; border:none; color:#e74c3c; cursor:pointer; font-size:12px;">清空</button>
+      </div>
+    </div>
+    
+    <div class="form-actions" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
+      <button id="confirmBatchBtn" class="btn modern-btn" style="background: linear-gradient(135deg, #8e44ad, #9b59b6); color: white; width: 100%;">
+        🚀 确认全部导入
+      </button>
+      <button onclick="document.getElementById('batchForm').style.display='none'" class="btn btn-secondary modern-btn" style="margin-top:8px; width: 100%;">
+        取消
+      </button>
+    </div>
   </div>
   <table id="dictTable"></table>
   <button id="saveBtn" class="save-button">
@@ -348,6 +412,73 @@
         opacity: 1;
         transform: translateY(-50%) scale(1.05);
         box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+    }
+    
+    /* 批量添加等待区样式 */
+    .batch-item {
+        display: flex;
+        align-items: center;
+        padding: 8px 12px;
+        margin-bottom: 5px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        transition: background 0.2s ease;
+        border-left: 3px solid #3498db;
+    }
+    
+    .batch-item:hover {
+        background: #e9ecef;
+    }
+    
+    .batch-item.has-magic {
+        border-left-color: #f39c12;
+        background: #fef8e7;
+    }
+    
+    .batch-item.has-magic:hover {
+        background: #fdeaa7;
+    }
+    
+    .batch-item-index {
+        flex: 0 0 25px;
+        color: #666;
+        font-size: 12px;
+        text-align: center;
+        font-weight: 600;
+    }
+    
+    .batch-item-key {
+        flex: 0 0 35%;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding-right: 8px;
+    }
+    
+    .batch-item-value {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #555;
+    }
+    
+    .batch-item-magic-indicator {
+        flex: 0 0 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: #f39c12;
+        display: none;
+        margin-left: 8px;
+        font-size: 8px;
+        color: white;
+        text-align: center;
+        line-height: 15px;
+    }
+    
+    .batch-item.has-magic .batch-item-magic-indicator {
+        display: block;
     }
   </style>
   <script>
@@ -532,36 +663,251 @@ window.addEventListener('DOMContentLoaded', () => {
     // 添加词条弹窗
     document.getElementById('addRow').onclick = () => {
       document.getElementById('addForm').style.display = 'block';
+      document.getElementById('batchForm').style.display = 'none'; // 关闭批量面板
       document.getElementById('addMsg').textContent = '';
       document.getElementById('newKey').value = '';
       document.getElementById('newVal').value = '';
       document.getElementById('newKey').focus();
     };
 
+    // 打开批量添加面板
+    document.getElementById('batchAddBtn').onclick = () => {
+      document.getElementById('addForm').style.display = 'none'; // 关闭单条
+      document.getElementById('batchForm').style.display = 'block';
+      
+      // 从本地存储恢复草稿内容
+      const savedDraft = localStorage.getItem('batchSourceDraft');
+      if (savedDraft && !document.getElementById('batchSource').value) {
+        document.getElementById('batchSource').value = savedDraft;
+        showToast('草稿恢复', '已恢复上次未完成的输入内容', 'blue');
+      }
+      
+      document.getElementById('batchSource').focus();
+    };
+
+    // 临时存储待处理词条的数组
+    let batchItems = [];
+    
+    // 监听批量输入框内容变化，自动保存草稿
+    document.getElementById('batchSource').addEventListener('input', () => {
+      const content = document.getElementById('batchSource').value;
+      const draftIndicator = document.getElementById('draftIndicator');
+      
+      if (content.trim()) {
+        localStorage.setItem('batchSourceDraft', content);
+        // 显示草稿保存提示
+        draftIndicator.style.display = 'flex';
+      } else {
+        localStorage.removeItem('batchSourceDraft');
+        // 隐藏草稿保存提示
+        draftIndicator.style.display = 'none';
+      }
+    });
+    
+    // 清空草稿按钮
+    document.getElementById('clearDraftBtn').onclick = () => {
+      if (confirm('确定要清空草稿内容吗？')) {
+        document.getElementById('batchSource').value = '';
+        localStorage.removeItem('batchSourceDraft');
+        document.getElementById('draftIndicator').style.display = 'none';
+        showToast('草稿已清空', '草稿内容已被删除', 'blue');
+      }
+    };
+    
+    // 解析按钮：将原始文本解析到待处理列表
+    document.getElementById('parseBtn').onclick = () => {
+      const rawText = document.getElementById('batchSource').value;
+      if (!rawText.trim()) {
+        showMsg("请先输入内容", "orange");
+        return;
+      }
+
+      const lines = rawText.split(/\n/);
+      batchItems = [];
+
+      lines.forEach((line, index) => {
+        line = line.trim();
+        if (!line) return; // 跳过空行
+
+        // 支持用 等号(=)、中文冒号(：)、英文冒号(:) 或 制表符 分隔
+        let separatorIndex = -1;
+        // 优先找等号
+        if (line.includes('=')) separatorIndex = line.indexOf('=');
+        // 其次找制表符
+        else if (line.includes('\t')) separatorIndex = line.indexOf('\t');
+        // 再次找冒号
+        else if (line.includes(':')) separatorIndex = line.indexOf(':');
+        
+        if (separatorIndex === -1) {
+          // 尝试用空格分隔（只取第一个空格作为分隔符）
+          separatorIndex = line.indexOf(' ');
+        }
+
+        if (separatorIndex > -1) {
+          const key = line.substring(0, separatorIndex).trim();
+          const val = line.substring(separatorIndex + 1).trim();
+
+          if (key && val) {
+            // 检查是否已存在或已在待处理列表中
+            if (dict[key]) {
+              // 已存在于字典中，跳过
+              return;
+            }
+            
+            // 添加到待处理列表
+            batchItems.push({
+              key: key,
+              value: val,
+              hasMagic: false // 标记是否已添加防屏蔽符
+            });
+          }
+        }
+      });
+
+      // 渲染预览列表
+      renderBatchPreview();
+      showMsg(`已解析出 ${batchItems.length} 条待处理词条`, "green");
+    };
+
+    // 渲染批量预览列表
+    function renderBatchPreview() {
+      const preview = document.getElementById('batchPreview');
+      const count = document.getElementById('previewCount');
+      count.textContent = batchItems.length;
+
+      if (batchItems.length === 0) {
+        preview.innerHTML = '<div style="text-align:center; color:#ccc; padding-top:80px;">暂无数据，请先在上方粘贴并解析</div>';
+        return;
+      }
+
+      let html = '';
+      batchItems.forEach((item, index) => {
+        html += `
+          <div class="batch-item ${item.hasMagic ? 'has-magic' : ''}" data-index="${index}">
+            <div class="batch-item-index">${index + 1}</div>
+            <div class="batch-item-key">${item.key}</div>
+            <div class="batch-item-value">${item.value}</div>
+            <div class="batch-item-magic-indicator">✓</div>
+          </div>
+        `;
+      });
+
+      preview.innerHTML = html;
+    }
+
+    // 一键加符按钮：给所有替换词插入防屏蔽符
+    document.getElementById('batchMagicBtn').onclick = () => {
+      if (batchItems.length === 0) {
+        showMsg("请先解析内容", "orange");
+        return;
+      }
+
+      let changedCount = 0;
+      batchItems.forEach(item => {
+        if (!item.hasMagic && item.value.length > 1) {
+          // 如果词条长度大于3个字符，在每个字符后插入防屏蔽符
+          if (item.value.length > 3) {
+            // 将字符串拆分为字符数组，每个字符后添加防屏蔽符
+            let newValue = '';
+            for (let i = 0; i < item.value.length; i++) {
+              newValue += item.value[i] + '\u200E';
+            }
+            item.value = newValue;
+          } else {
+            // 对于3个字符及以下的词条，在字符串中间插入防屏蔽符
+            const mid = Math.floor(item.value.length / 2);
+            item.value = item.value.slice(0, mid) + '\u200E' + item.value.slice(mid);
+          }
+          item.hasMagic = true;
+          changedCount++;
+        }
+      });
+
+      // 重新渲染预览
+      renderBatchPreview();
+      showToast('防屏蔽符添加', `已为 ${changedCount} 个词条添加防屏蔽符`, '#f39c12');
+    };
+
+    // 确认批量导入按钮：将待处理列表中的词条添加到字典
+    document.getElementById('confirmBatchBtn').onclick = () => {
+      if (batchItems.length === 0) {
+        showMsg("没有可导入的词条", "orange");
+        return;
+      }
+
+      let successCount = 0;
+      let skipCount = 0;
+
+      batchItems.forEach(item => {
+        // 再次检查是否已存在（双重保险）
+        if (dict[item.key]) {
+          skipCount++;
+          return;
+        }
+        
+        // 添加到字典
+        dict[item.key] = item.value;
+        successCount++;
+      });
+
+      // 更新界面
+      document.getElementById('batchForm').style.display = 'none';
+      document.getElementById('batchSource').value = ''; // 清空输入框
+      localStorage.removeItem('batchSourceDraft'); // 清除草稿
+      batchItems = []; // 清空待处理列表
+      renderBatchPreview(); // 清空等待区显示
+      renderTable();
+      
+      // 显示结果通知
+      let msg = `成功导入 ${successCount} 条`;
+      if (skipCount > 0) msg += `，跳过重复 ${skipCount} 条`;
+      
+      showToast('批量导入完成', msg, successCount > 0 ? 'green' : 'orange');
+
+      // 只有真正添加了词才触发保存
+      if (successCount > 0) {
+        triggerAutoSave();
+      }
+    };
+
     // 新增：插入隐形字符 U+200E 的功能
     document.getElementById('insertCharBtn').onclick = (e) => {
       e.preventDefault(); // 防止触发表单默认行为
       const input = document.getElementById('newVal');
-      const invisibleChar = '\u200E'; // U+200E 字符
+      const currentText = input.value;
       
-      // 获取当前光标位置，以便在光标处插入而不是末尾
-      const startPos = input.selectionStart;
-      const endPos = input.selectionEnd;
-      
-      // 插入字符
-      input.value = input.value.substring(0, startPos)
-        + invisibleChar
-        + input.value.substring(endPos, input.value.length);
-      
-      // 重新定位光标到插入字符之后
-      input.selectionStart = startPos + invisibleChar.length;
-      input.selectionEnd = startPos + invisibleChar.length;
-      
-      // 让输入框重新获得焦点
-      input.focus();
-      
-      // 提示用户（利用你代码里现有的 showToast 函数）
-      showToast('小工具', '已在光标处插入隐形字符 U+200E', '#f39c12');
+      // 检查当前文本长度
+      if (currentText.length > 3) {
+        // 对于长度大于3的文本，在每个字符后插入防屏蔽符
+        let newText = '';
+        for (let i = 0; i < currentText.length; i++) {
+          newText += currentText[i] + '\u200E';
+        }
+        input.value = newText;
+        showToast('小工具', '已为所有字符后插入防屏蔽符 U+200E', '#f39c12');
+      } else {
+        // 对于长度3及以下的文本，在中间插入一个防屏蔽符
+        const invisibleChar = '\u200E'; // U+200E 字符
+        
+        // 获取当前光标位置，以便在光标处插入而不是末尾
+        const startPos = input.selectionStart;
+        const endPos = input.selectionEnd;
+        
+        // 插入字符
+        input.value = input.value.substring(0, startPos)
+          + invisibleChar
+          + input.value.substring(endPos, input.value.length);
+        
+        // 重新定位光标到插入字符之后
+        input.selectionStart = startPos + invisibleChar.length;
+        input.selectionEnd = startPos + invisibleChar.length;
+        
+        // 让输入框重新获得焦点
+        input.focus();
+        
+        // 提示用户
+        showToast('小工具', '已在光标处插入隐形字符 U+200E', '#f39c12');
+      }
     };
 
     // 确认添加词条
