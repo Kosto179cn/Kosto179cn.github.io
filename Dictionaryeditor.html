@@ -2,8 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>管理国服屏蔽词 25.9.10</title>
-  <link rel="icon" href="icon/KostoIcon.jpg" type="image/x-icon">
+  <title>管理国服屏蔽词 25.12.6</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     @keyframes spin {
@@ -200,7 +199,13 @@
       <input id="newKey" type="text" class="form-control modern-input" placeholder="输入要屏蔽的词语" autocomplete="off">
     </div>
     <div class="form-group">
-      <label for="newVal" class="modern-label">替换词</label>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <label for="newVal" class="modern-label">替换词</label>
+        <!-- 新增的插入按钮 -->
+        <button type="button" id="insertCharBtn" class="editbtn" style="font-size: 12px; padding: 4px 10px; margin-bottom: 6px;">
+           🪄 插入防屏蔽符 (U+200E)
+        </button>
+      </div>
       <input id="newVal" type="text" class="form-control modern-input" placeholder="输入替换后的词语" autocomplete="off">
     </div>
     <div class="form-actions">
@@ -531,6 +536,32 @@ window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('newKey').value = '';
       document.getElementById('newVal').value = '';
       document.getElementById('newKey').focus();
+    };
+
+    // 新增：插入隐形字符 U+200E 的功能
+    document.getElementById('insertCharBtn').onclick = (e) => {
+      e.preventDefault(); // 防止触发表单默认行为
+      const input = document.getElementById('newVal');
+      const invisibleChar = '\u200E'; // U+200E 字符
+      
+      // 获取当前光标位置，以便在光标处插入而不是末尾
+      const startPos = input.selectionStart;
+      const endPos = input.selectionEnd;
+      
+      // 插入字符
+      input.value = input.value.substring(0, startPos)
+        + invisibleChar
+        + input.value.substring(endPos, input.value.length);
+      
+      // 重新定位光标到插入字符之后
+      input.selectionStart = startPos + invisibleChar.length;
+      input.selectionEnd = startPos + invisibleChar.length;
+      
+      // 让输入框重新获得焦点
+      input.focus();
+      
+      // 提示用户（利用你代码里现有的 showToast 函数）
+      showToast('小工具', '已在光标处插入隐形字符 U+200E', '#f39c12');
     };
 
     // 确认添加词条
