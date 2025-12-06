@@ -56,25 +56,41 @@
       overflow: hidden;
     }
 
+    .table-container {
+      max-height: 70vh;
+      overflow-y: auto;
+      position: relative;
+      margin: 25px 0;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      animation: fadeIn 0.5s ease;
+    }
+    
     table {
       width: 100%;
       border-collapse: separate;
       border-spacing: 0;
-      margin: 25px 0;
       background: white;
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      animation: fadeIn 0.5s ease;
     }
-
-    th {
+    
+    thead th {
       background: var(--primary-color);
       color: white;
       padding: 16px;
       font-weight: 500;
       text-align: left;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
+    
+    tbody {
+      width: 100%;
+    }
+
+
 
     td {
       padding: 16px;
@@ -204,14 +220,13 @@
       <input id="newKey" type="text" class="form-control modern-input" placeholder="输入要屏蔽的词语" autocomplete="off">
     </div>
     <div class="form-group">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <label for="newVal" class="modern-label">替换词</label>
-        <!-- 新增的插入按钮 -->
-        <button type="button" id="insertCharBtn" class="editbtn" style="font-size: 12px; padding: 4px 10px; margin-bottom: 6px;">
-           🪄 插入防屏蔽符 (U+200E)
+      <label for="newVal" class="modern-label">替换词</label>
+      <div style="position: relative; display: flex; align-items: stretch;">
+        <input id="newVal" type="text" class="form-control modern-input" placeholder="输入替换后的词语" autocomplete="off" style="flex: 1; padding-right: 120px;">
+        <button type="button" id="insertCharBtn" class="editbtn" style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); font-size: 12px; padding: 6px 10px; white-space: nowrap; z-index: 1;">
+           🪄 插入防屏蔽符
         </button>
       </div>
-      <input id="newVal" type="text" class="form-control modern-input" placeholder="输入替换后的词语" autocomplete="off">
     </div>
     <div class="form-actions">
       <button id="confirmAddBtn" class="btn btn-primary modern-btn">确认添加</button>
@@ -226,14 +241,24 @@
     
     <!-- 区域1：原始输入 -->
     <div class="form-group">
-      <label class="modern-label" style="color:#666">1. 粘贴原始文本 (格式：原词=替换词)</label>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <label class="modern-label" style="color:#666">1. 粘贴原始数据 (支持多种格式)</label>
+        <select id="formatSelector" class="modern-input" style="width:auto; padding:6px 12px; font-size:13px;">
+          <option value="auto">自动识别格式</option>
+          <option value="keyvalue">键值对格式 (原词=替换词)</option>
+          <option value="json">JSON格式</option>
+        </select>
+      </div>
       <textarea id="batchSource" class="form-control modern-input" rows="4" 
-        placeholder="在这里粘贴...&#10;比如：&#10;测试=Test&#10;敏感=屏蔽" 
-        style="height: 100px; font-family: monospace; border-style: dashed;"></textarea>
+        placeholder="在这里粘贴...&#10;支持格式：&#10;1) 原词=替换词&#10;2) {\"原词\":\"替换词\"}" 
+        style="height: 120px; font-family: monospace; border-style: dashed;"></textarea>
     </div>
 
     <!-- 中间操作栏 -->
     <div style="display:flex; justify-content:center; gap:10px; margin: 10px 0;">
+      <button id="detectFormatBtn" type="button" class="modern-btn" style="background:#27ae60; color:white; padding: 8px 15px; font-size: 13px;">
+        🔍 检测格式
+      </button>
       <button id="parseBtn" type="button" class="modern-btn" style="background:#8e44ad; color:white; padding: 8px 15px; font-size: 13px;">
         ⬇️ 解析到等待区
       </button>
@@ -241,13 +266,21 @@
 
     <!-- 区域2：等待区 -->
     <div class="form-group">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
         <label class="modern-label" style="color:#666">2. 等待导入列表 (<span id="previewCount">0</span>)</label>
         
         <!-- 你的核心需求：一键加符按钮 -->
         <button id="batchMagicBtn" type="button" class="editbtn" style="font-size: 12px; padding: 4px 10px; margin-bottom: 6px; background: #f39c12;">
            🪄 给替换词插入防屏蔽符
         </button>
+      </div>
+      
+      <!-- 导入选项 -->
+      <div style="display:flex; align-items:center; margin-bottom:8px; padding:8px; background:#f8f9fa; border-radius:6px;">
+        <input type="checkbox" id="replaceExisting" style="margin-right:8px;">
+        <label for="replaceExisting" style="font-size:13px; color:#555; cursor:pointer;">
+          覆盖已存在的词条（默认跳过重复词条）
+        </label>
       </div>
       
       <!-- 预览列表容器 -->
@@ -260,6 +293,27 @@
           padding: 8px;
       ">
         <div style="text-align:center; color:#ccc; padding-top:80px;">暂无数据，请先在上方粘贴并解析</div>
+      </div>
+      
+      <!-- 批量操作按钮 -->
+      <div id="batchActions" style="display:none; margin-top:10px; padding:8px; background:#f8f9fa; border-radius:6px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:13px; color:#666; font-weight:500;">批量操作：</span>
+          <div style="display:flex; gap:8px;">
+            <button id="selectAllBtn" type="button" class="modern-btn" style="background:#3498db; color:white; padding: 6px 12px; font-size: 12px;">
+              全选
+            </button>
+            <button id="deselectAllBtn" type="button" class="modern-btn" style="background:#95a5a6; color:white; padding: 6px 12px; font-size: 12px;">
+              全不选
+            </button>
+            <button id="selectOnlyNewBtn" type="button" class="modern-btn" style="background:#2ecc71; color:white; padding: 6px 12px; font-size: 12px;">
+              仅选新增
+            </button>
+            <button id="selectOnlyReplaceBtn" type="button" class="modern-btn" style="background:#e74c3c; color:white; padding: 6px 12px; font-size: 12px;">
+              仅选替换
+            </button>
+          </div>
+        </div>
       </div>
       
       <!-- 草稿状态提示 -->
@@ -278,10 +332,10 @@
       </button>
     </div>
   </div>
-  <table id="dictTable"></table>
-  <button id="saveBtn" class="save-button">
-    💾 保存更改
-  </button>
+  <div class="table-container">
+    <table id="dictTable"></table>
+  </div>
+
   <!-- 右上角自动消失通知 -->
   <div id="notificationToast" style="display:none; position:fixed; top:20px; right:20px; max-width:300px; background:#fff; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000; overflow:hidden;">
     <div style="padding:12px 16px;">
@@ -439,6 +493,24 @@
         background: #fdeaa7;
     }
     
+    .batch-item.will-replace {
+        border-left-color: #e74c3c;
+        background: #fff0f0;
+    }
+    
+    .batch-item.will-replace:hover {
+        background: #ffdddd;
+    }
+    
+    .batch-item.has-magic.will-replace {
+        border-left-color: #e67e22;
+        background: #fffbf0;
+    }
+    
+    .batch-item.has-magic.will-replace:hover {
+        background: #fff5e6;
+    }
+    
     .batch-item-index {
         flex: 0 0 25px;
         color: #666;
@@ -447,8 +519,15 @@
         font-weight: 600;
     }
     
+    .batch-item-checkbox {
+        flex: 0 0 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
     .batch-item-key {
-        flex: 0 0 35%;
+        flex: 0 0 30%;
         font-weight: 500;
         white-space: nowrap;
         overflow: hidden;
@@ -462,6 +541,24 @@
         overflow: hidden;
         text-overflow: ellipsis;
         color: #555;
+    }
+    
+    .batch-item-old-value {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #999;
+        font-style: italic;
+        position: relative;
+        padding-left: 15px;
+    }
+    
+    .batch-item-old-value:before {
+        content: "→";
+        position: absolute;
+        left: 0;
+        color: #e74c3c;
     }
     
     .batch-item-magic-indicator {
@@ -478,6 +575,31 @@
     }
     
     .batch-item.has-magic .batch-item-magic-indicator {
+        display: block;
+    }
+    
+    .batch-item-status {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-left: 8px;
+    }
+    
+    .batch-item-replace-indicator {
+        flex: 0 0 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: #e74c3c;
+        display: none;
+        margin-left: 4px;
+        font-size: 10px;
+        color: white;
+        text-align: center;
+        line-height: 15px;
+        font-weight: bold;
+    }
+    
+    .batch-item.will-replace .batch-item-replace-indicator {
         display: block;
     }
   </style>
@@ -608,22 +730,41 @@ window.addEventListener('DOMContentLoaded', () => {
 
     function renderTable() {
       const table = document.getElementById('dictTable');
-      table.innerHTML = "<tr><th>原词</th><th>替换词</th><th>操作</th></tr>";
+      // 创建thead和tbody结构
+      table.innerHTML = `
+        <thead>
+          <tr><th>原词</th><th>替换词</th><th>操作</th></tr>
+        </thead>
+        <tbody></tbody>
+      `;
+      const tbody = table.querySelector('tbody');
+      
       const entries = Object.entries(dict)
         .filter(([key, val]) => key.includes(filter) || val.includes(filter));
+      
       if(entries.length===0){
-        table.innerHTML += "<tr><td colspan=3 style='text-align:center;color:#aaa'>无结果</td></tr>";
+        const noResultsRow = document.createElement('tr');
+        noResultsRow.innerHTML = `<td colspan=3 style='text-align:center;color:#aaa'>无结果</td>`;
+        tbody.appendChild(noResultsRow);
         return;
       }
+      
       entries.forEach(([key, value], i) => {
         const row = document.createElement('tr');
         row.innerHTML = `<td>${key}</td>
-                         <td><input type="text" value="${value}" onchange="updateValue('${key}', this.value)"></td>
+                         <td>
+                           <div style="display: flex; gap: 5px;">
+                             <input type="text" id="input-${i}" value="${value}" onchange="updateValue('${key}', this.value)" style="flex: 1;">
+                             <button class="editbtn" onclick="insertMagicCharAtCursor('input-${i}')" style="font-size: 12px; padding: 4px 8px; white-space: nowrap;">
+                                🪄 插入防屏蔽符
+                             </button>
+                           </div>
+                         </td>
                          <td class="action-buttons">
                             <button class="editbtn" onclick="editKey('${key}')">✏️ 编辑</button>
                             <button class="delbtn" onclick="deleteRow('${key}')">🗑️ 删除</button>
                          </td>`;
-        table.appendChild(row);
+        tbody.appendChild(row);
       });
     }
 
@@ -688,7 +829,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // 临时存储待处理词条的数组
     let batchItems = [];
     
-    // 监听批量输入框内容变化，自动保存草稿
+    // 监听批量输入框内容变化，自动保存草稿并检测格式
     document.getElementById('batchSource').addEventListener('input', () => {
       const content = document.getElementById('batchSource').value;
       const draftIndicator = document.getElementById('draftIndicator');
@@ -697,12 +838,52 @@ window.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('batchSourceDraft', content);
         // 显示草稿保存提示
         draftIndicator.style.display = 'flex';
+        
+        // 如果是自动识别模式，则自动检测格式
+        if (document.getElementById('formatSelector').value === 'auto') {
+          detectFormatSilently(content);
+        }
       } else {
         localStorage.removeItem('batchSourceDraft');
         // 隐藏草稿保存提示
         draftIndicator.style.display = 'none';
       }
     });
+    
+    // 静默检测格式（不显示提示，只更新选择器）
+    function detectFormatSilently(text) {
+      if (!text.trim()) return;
+      
+      try {
+        // 尝试解析为JSON对象
+        const jsonData = JSON.parse(text);
+        
+        // 检查是否为字典格式的JSON对象（键值对）
+        if (typeof jsonData === 'object' && jsonData !== null && !Array.isArray(jsonData)) {
+          // 进一步检查值是否为字符串
+          let stringValuedPairs = 0;
+          let totalPairs = 0;
+          
+          for (const [key, value] of Object.entries(jsonData)) {
+            totalPairs++;
+            if (typeof value === 'string') {
+              stringValuedPairs++;
+            }
+          }
+          
+          // 如果大部分值都是字符串，则认为是字典格式
+          if (totalPairs > 0 && stringValuedPairs / totalPairs >= 0.8) {
+            document.getElementById('formatSelector').value = 'json';
+            return;
+          }
+        }
+      } catch (e) {
+        // JSON解析失败，继续检测其他格式
+      }
+      
+      // 默认为键值对格式
+      document.getElementById('formatSelector').value = 'keyvalue';
+    }
     
     // 清空草稿按钮
     document.getElementById('clearDraftBtn').onclick = () => {
@@ -714,6 +895,98 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     };
     
+    // 格式检测按钮
+    document.getElementById('detectFormatBtn').onclick = () => {
+      const rawText = document.getElementById('batchSource').value.trim();
+      if (!rawText) {
+        showMsg("请先输入内容", "orange");
+        return;
+      }
+      
+      let detectedFormat = 'keyvalue'; // 默认为键值对格式
+      let confidence = 0; // 置信度
+      
+      // 检测是否为JSON格式
+      try {
+        // 尝试解析为JSON对象
+        const jsonData = JSON.parse(rawText);
+        
+        // 检查是否为字典格式的JSON对象（键值对）
+        if (typeof jsonData === 'object' && jsonData !== null && !Array.isArray(jsonData)) {
+          // 进一步检查值是否为字符串
+          let stringValuedPairs = 0;
+          let totalPairs = 0;
+          
+          for (const [key, value] of Object.entries(jsonData)) {
+            totalPairs++;
+            if (typeof value === 'string') {
+              stringValuedPairs++;
+            }
+          }
+          
+          // 如果大部分值都是字符串，则认为是字典格式
+          if (totalPairs > 0 && stringValuedPairs / totalPairs >= 0.8) {
+            detectedFormat = 'json';
+            confidence = stringValuedPairs / totalPairs;
+          }
+        }
+      } catch (e) {
+        // JSON解析失败，继续检测其他格式
+      }
+      
+      // 检测是否为键值对格式
+      if (detectedFormat === 'keyvalue') {
+        const lines = rawText.split(/\n/);
+        let keyValuePairs = 0;
+        let validLines = 0;
+        
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+          if (!trimmedLine) continue;
+          
+          validLines++;
+          
+          // 检查是否有分隔符（=、:、制表符等）
+          if (trimmedLine.includes('=') || trimmedLine.includes(':') || trimmedLine.includes('\t')) {
+            keyValuePairs++;
+          }
+        }
+        
+        if (validLines > 0) {
+          confidence = keyValuePairs / validLines;
+        }
+      }
+      
+      // 更新格式选择器
+      document.getElementById('formatSelector').value = detectedFormat;
+      
+      // 显示检测结果
+      let formatName = detectedFormat === 'json' ? 'JSON格式' : '键值对格式';
+      let message = `检测为${formatName}，置信度：${Math.round(confidence * 100)}%`;
+      
+      if (confidence >= 0.9) {
+        showMsg(message, "green");
+      } else if (confidence >= 0.6) {
+        showMsg(message, "orange");
+      } else {
+        showMsg(message + "，建议检查格式", "red");
+      }
+    };
+    
+    // 格式选择器变化时，更新提示文本
+    document.getElementById('formatSelector').onchange = (e) => {
+      const format = e.target.value;
+      const textarea = document.getElementById('batchSource');
+      
+      if (format === 'json') {
+        textarea.placeholder = '在这里粘贴JSON数据...&#10;格式示例：&#10;{\"测试\":\"Test\",\"敏感\":\"屏蔽\"}';
+      } else if (format === 'keyvalue') {
+        textarea.placeholder = '在这里粘贴键值对数据...&#10;格式示例：&#10;测试=Test&#10;敏感=屏蔽';
+      } else {
+        textarea.placeholder = '在这里粘贴...&#10;支持格式：&#10;1) 原词=替换词&#10;2) {\"原词\":\"替换词\"}';
+      }
+    };
+    
     // 解析按钮：将原始文本解析到待处理列表
     document.getElementById('parseBtn').onclick = () => {
       const rawText = document.getElementById('batchSource').value;
@@ -722,77 +995,324 @@ window.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const lines = rawText.split(/\n/);
+      const format = document.getElementById('formatSelector').value;
       batchItems = [];
+      let parseError = null;
+      let duplicateCount = 0; // 新增：记录完全相同的词条数量
 
-      lines.forEach((line, index) => {
-        line = line.trim();
-        if (!line) return; // 跳过空行
-
-        // 支持用 等号(=)、中文冒号(：)、英文冒号(:) 或 制表符 分隔
-        let separatorIndex = -1;
-        // 优先找等号
-        if (line.includes('=')) separatorIndex = line.indexOf('=');
-        // 其次找制表符
-        else if (line.includes('\t')) separatorIndex = line.indexOf('\t');
-        // 再次找冒号
-        else if (line.includes(':')) separatorIndex = line.indexOf(':');
-        
-        if (separatorIndex === -1) {
-          // 尝试用空格分隔（只取第一个空格作为分隔符）
-          separatorIndex = line.indexOf(' ');
-        }
-
-        if (separatorIndex > -1) {
-          const key = line.substring(0, separatorIndex).trim();
-          const val = line.substring(separatorIndex + 1).trim();
-
-          if (key && val) {
-            // 检查是否已存在或已在待处理列表中
-            if (dict[key]) {
-              // 已存在于字典中，跳过
-              return;
-            }
+      try {
+        if (format === 'json' || (format === 'auto' && isLikelyJson(rawText))) {
+          // JSON格式解析
+          try {
+            const jsonData = JSON.parse(rawText);
             
-            // 添加到待处理列表
-            batchItems.push({
-              key: key,
-              value: val,
-              hasMagic: false // 标记是否已添加防屏蔽符
-            });
+            if (typeof jsonData === 'object' && jsonData !== null && !Array.isArray(jsonData)) {
+              // 对象格式，遍历所有键值对
+              for (const [key, val] of Object.entries(jsonData)) {
+                if (!key || typeof val !== 'string') continue;
+                
+                // 检查替换词是否已包含防屏蔽符 U+200E
+                const { cleanValue, hasMagic } = checkAndRemoveMagicChar(val);
+                
+                // 新增：检查新旧词汇是否完全相同
+                let skipDuplicate = false;
+                if (dict[key]) {
+                  // 获取字典中的值，去除防屏蔽符进行比较
+                  const existingCleanValue = dict[key].replace(/\u200E/g, '');
+                  if (existingCleanValue === cleanValue) {
+                    duplicateCount++;
+                    skipDuplicate = true;
+                  }
+                }
+                
+                // 检查是否已存在
+                const isReplaceExisting = document.getElementById('replaceExisting').checked;
+                if (dict[key] && !isReplaceExisting && !skipDuplicate) {
+                  // 如果没有跳过重复项，且不允许替换已存在的词条，则跳过
+                  skipDuplicate = true;
+                }
+                
+                if (!skipDuplicate) {
+                  batchItems.push({
+                    key: key,
+                    value: cleanValue,
+                    hasMagic: hasMagic,
+                    willReplace: dict[key] && isReplaceExisting, // 标记是否将替换现有词条
+                    selected: true // 默认选中所有项
+                  });
+                }
+              }
+            } else if (Array.isArray(jsonData)) {
+              // 数组格式，检查是否为对象数组
+              jsonData.forEach(item => {
+                if (typeof item === 'object' && item !== null && !Array.isArray(item)) {
+                  // 尝试从对象中提取键值对
+                  const keys = Object.keys(item);
+                  if (keys.length >= 2) {
+                    const key = String(keys[0]);
+                    const val = String(item[keys[1]]);
+                    
+                    if (!key || !val) return;
+                    
+                    // 检查替换词是否已包含防屏蔽符 U+200E
+                    const { cleanValue, hasMagic } = checkAndRemoveMagicChar(val);
+                    
+                    // 新增：检查新旧词汇是否完全相同
+                    let skipDuplicate = false;
+                    if (dict[key]) {
+                      // 获取字典中的值，去除防屏蔽符进行比较
+                      const existingCleanValue = dict[key].replace(/\u200E/g, '');
+                      if (existingCleanValue === cleanValue) {
+                        duplicateCount++;
+                        skipDuplicate = true;
+                      }
+                    }
+                    
+                    const isReplaceExisting = document.getElementById('replaceExisting').checked;
+                    if (dict[key] && !isReplaceExisting && !skipDuplicate) {
+                      // 如果没有跳过重复项，且不允许替换已存在的词条，则跳过
+                      skipDuplicate = true;
+                    }
+                    
+                    if (!skipDuplicate) {
+                      batchItems.push({
+                        key: key,
+                        value: cleanValue,
+                        hasMagic: hasMagic,
+                        willReplace: dict[key] && isReplaceExisting, // 标记是否将替换现有词条
+                        selected: true // 默认选中所有项
+                      });
+                    }
+                  }
+                }
+              });
+            }
+          } catch (e) {
+            parseError = `JSON解析失败: ${e.message}`;
           }
+        } else {
+          // 键值对格式解析
+          const lines = rawText.split(/\n/);
+          
+          lines.forEach((line, index) => {
+            line = line.trim();
+            if (!line) return; // 跳过空行
+            
+            // 支持用 等号(=)、中文冒号(：)、英文冒号(:) 或 制表符 分隔
+            let separatorIndex = -1;
+            // 优先找等号
+            if (line.includes('=')) separatorIndex = line.indexOf('=');
+            // 其次找制表符
+            else if (line.includes('\t')) separatorIndex = line.indexOf('\t');
+            // 再次找冒号
+            else if (line.includes(':')) separatorIndex = line.indexOf(':');
+            
+            if (separatorIndex === -1) {
+              // 尝试用空格分隔（只取第一个空格作为分隔符）
+              separatorIndex = line.indexOf(' ');
+            }
+
+            if (separatorIndex > -1) {
+              const key = line.substring(0, separatorIndex).trim();
+              let val = line.substring(separatorIndex + 1).trim();
+
+              if (key && val) {
+                // 检查替换词是否已包含防屏蔽符 U+200E
+                const { cleanValue, hasMagic } = checkAndRemoveMagicChar(val);
+                
+                // 新增：检查新旧词汇是否完全相同
+                let skipDuplicate = false;
+                if (dict[key]) {
+                  // 获取字典中的值，去除防屏蔽符进行比较
+                  const existingCleanValue = dict[key].replace(/\u200E/g, '');
+                  if (existingCleanValue === cleanValue) {
+                    duplicateCount++;
+                    skipDuplicate = true;
+                  }
+                }
+                
+                // 检查是否已存在或已在待处理列表中
+                const isReplaceExisting = document.getElementById('replaceExisting').checked;
+                if (dict[key] && !isReplaceExisting && !skipDuplicate) {
+                  // 如果没有跳过重复项，且不允许替换已存在的词条，则跳过
+                  skipDuplicate = true;
+                }
+                
+                if (!skipDuplicate) {
+                  batchItems.push({
+                    key: key,
+                    value: cleanValue,
+                    hasMagic: hasMagic,
+                    willReplace: dict[key] && isReplaceExisting, // 标记是否将替换现有词条
+                    selected: true // 默认选中所有项
+                  });
+                }
+              }
+            }
+          });
         }
-      });
+      } catch (e) {
+        parseError = `解析失败: ${e.message}`;
+      }
+      
+      // 显示结果
+      if (parseError) {
+        showMsg(parseError, "red");
+        return;
+      }
 
       // 渲染预览列表
       renderBatchPreview();
-      showMsg(`已解析出 ${batchItems.length} 条待处理词条`, "green");
+      
+      // 统计已识别防屏蔽符和将替换的词条数量
+      const magicCount = batchItems.filter(item => item.hasMagic).length;
+      const replaceCount = batchItems.filter(item => item.willReplace).length;
+      let message = `已解析出 ${batchItems.length} 条待处理词条`;
+      if (duplicateCount > 0) {
+        message += `，已过滤 ${duplicateCount} 条相同词条`;
+      }
+      if (magicCount > 0) {
+        message += `，其中 ${magicCount} 条已包含防屏蔽符`;
+      }
+      if (replaceCount > 0) {
+        message += `，${replaceCount} 条将替换已存在的词条`;
+      }
+      showMsg(message, "green");
     };
+    
+    // 辅助函数：判断文本是否可能为JSON格式
+    function isLikelyJson(text) {
+      const trimmed = text.trim();
+      return (trimmed.startsWith('{') && trimmed.endsWith('}')) || 
+             (trimmed.startsWith('[') && trimmed.endsWith(']'));
+    }
+    
+    // 辅助函数：检查并移除防屏蔽符
+    function checkAndRemoveMagicChar(val) {
+      let hasMagicChar = false;
+      let cleanValue = val;
+      
+      // 方法1：检查是否每个字符后都有U+200E（针对长文本）
+      if (val.length > 3) {
+        const chars = val.split('').filter((c, i) => i % 2 === 0);
+        const charsWithMagic = val.split('').filter((c, i) => i % 2 === 1);
+        if (charsWithMagic.every(c => c === '\u200E') && charsWithMagic.length === chars.length) {
+          hasMagicChar = true;
+          // 去除防屏蔽符，保留原始文本用于显示
+          cleanValue = chars.join('');
+        }
+      }
+      
+      // 方法2：检查中间是否包含U+200E（针对短文本）
+      if (!hasMagicChar && val.includes('\u200E')) {
+        hasMagicChar = true;
+        // 去除所有防屏蔽符，保留原始文本
+        cleanValue = val.replace(/\u200E/g, '');
+      }
+      
+      return { cleanValue, hasMagic: hasMagicChar };
+    }
 
     // 渲染批量预览列表
     function renderBatchPreview() {
       const preview = document.getElementById('batchPreview');
       const count = document.getElementById('previewCount');
+      const batchActions = document.getElementById('batchActions');
+      
       count.textContent = batchItems.length;
 
       if (batchItems.length === 0) {
         preview.innerHTML = '<div style="text-align:center; color:#ccc; padding-top:80px;">暂无数据，请先在上方粘贴并解析</div>';
+        batchActions.style.display = 'none';
         return;
       }
 
+      // 显示批量操作按钮
+      batchActions.style.display = 'block';
+
       let html = '';
+      let hasReplacements = false;
+      
       batchItems.forEach((item, index) => {
-        html += `
-          <div class="batch-item ${item.hasMagic ? 'has-magic' : ''}" data-index="${index}">
-            <div class="batch-item-index">${index + 1}</div>
+        // 为已包含防屏蔽符的词条在显示时添加防屏蔽符，这样用户能看到实际效果
+        const displayValue = item.hasMagic ? 
+          (item.value.length > 3 ? 
+            item.value.split('').map(c => c + '\u200E').join('') : 
+            item.value.slice(0, Math.floor(item.value.length/2)) + '\u200E' + item.value.slice(Math.floor(item.value.length/2))
+          ) : 
+          item.value;
+          
+        // 添加样式类
+        let itemClasses = '';
+        if (item.hasMagic) itemClasses += ' has-magic';
+        if (item.willReplace) {
+          itemClasses += ' will-replace';
+          hasReplacements = true;
+        }
+        
+        // 创建状态指示器
+        let statusIndicators = `<div class="batch-item-magic-indicator" title="${item.hasMagic ? '已包含防屏蔽符' : '未包含防屏蔽符'}">✓</div>`;
+        if (item.willReplace) {
+          statusIndicators += `<div class="batch-item-replace-indicator" title="将替换已存在的词条">↻</div>`;
+        }
+        
+        // 创建内容区域
+        let contentArea = `
+          <div class="batch-item-key">${item.key}</div>
+          <div class="batch-item-value">${displayValue}</div>
+          <div class="batch-item-status">
+            ${statusIndicators}
+          </div>
+        `;
+        
+        // 如果是替换项，添加旧值显示
+        if (item.willReplace) {
+          const oldValue = dict[item.key];
+          const displayOldValue = oldValue.includes('\u200E') ? 
+            oldValue : // 如果旧值已有防屏蔽符，直接显示
+            (oldValue.length > 3 ? 
+              oldValue.split('').map(c => c + '\u200E').join('') : 
+              oldValue.slice(0, Math.floor(oldValue.length/2)) + '\u200E' + oldValue.slice(Math.floor(oldValue.length/2))
+            );
+          
+          contentArea = `
             <div class="batch-item-key">${item.key}</div>
-            <div class="batch-item-value">${item.value}</div>
-            <div class="batch-item-magic-indicator">✓</div>
+            <div class="batch-item-value">${displayValue}</div>
+            <div class="batch-item-old-value" title="当前值: ${oldValue}">${displayOldValue}</div>
+            <div class="batch-item-status">
+              ${statusIndicators}
+            </div>
+          `;
+        }
+        
+        // 确保选中状态
+        const checked = item.selected !== false ? 'checked' : '';
+        
+        html += `
+          <div class="batch-item${itemClasses}" data-index="${index}">
+            <div class="batch-item-checkbox">
+              <input type="checkbox" ${checked} data-index="${index}" class="item-checkbox">
+            </div>
+            <div class="batch-item-index">${index + 1}</div>
+            ${contentArea}
           </div>
         `;
       });
 
       preview.innerHTML = html;
+      
+      // 添加复选框事件监听
+      document.querySelectorAll('.item-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+          const index = parseInt(e.target.dataset.index);
+          batchItems[index].selected = e.target.checked;
+        });
+      });
+      
+      // 如果没有替换项，隐藏旧值列的提示
+      if (!hasReplacements) {
+        // 这里可以添加一些额外的UI逻辑
+      }
     }
 
     // 一键加符按钮：给所有替换词插入防屏蔽符
@@ -820,14 +1340,58 @@ window.addEventListener('DOMContentLoaded', () => {
           }
           item.hasMagic = true;
           changedCount++;
+        } else if (item.hasMagic) {
+          // 对于已经有防屏蔽符的词条，确保使用正确的格式
+          const cleanValue = item.value.replace(/\u200E/g, '');
+          
+          // 如果词条长度大于3个字符，在每个字符后插入防屏蔽符
+          if (cleanValue.length > 3) {
+            // 将字符串拆分为字符数组，每个字符后添加防屏蔽符
+            let newValue = '';
+            for (let i = 0; i < cleanValue.length; i++) {
+              newValue += cleanValue[i] + '\u200E';
+            }
+            item.value = newValue;
+          } else {
+            // 对于3个字符及以下的词条，在字符串中间插入防屏蔽符
+            const mid = Math.floor(cleanValue.length / 2);
+            item.value = cleanValue.slice(0, mid) + '\u200E' + cleanValue.slice(mid);
+          }
         }
       });
 
       // 重新渲染预览
       renderBatchPreview();
-      showToast('防屏蔽符添加', `已为 ${changedCount} 个词条添加防屏蔽符`, '#f39c12');
+      showToast('防屏蔽符处理', `已处理 ${batchItems.length} 个词条的防屏蔽符`, '#f39c12');
     };
 
+    // 批量操作按钮事件处理
+    document.getElementById('selectAllBtn').onclick = () => {
+      batchItems.forEach(item => item.selected = true);
+      document.querySelectorAll('.item-checkbox').forEach(cb => cb.checked = true);
+    };
+    
+    document.getElementById('deselectAllBtn').onclick = () => {
+      batchItems.forEach(item => item.selected = false);
+      document.querySelectorAll('.item-checkbox').forEach(cb => cb.checked = false);
+    };
+    
+    document.getElementById('selectOnlyNewBtn').onclick = () => {
+      batchItems.forEach((item, index) => {
+        const isSelected = !item.willReplace;
+        item.selected = isSelected;
+        document.querySelector(`.item-checkbox[data-index="${index}"]`).checked = isSelected;
+      });
+    };
+    
+    document.getElementById('selectOnlyReplaceBtn').onclick = () => {
+      batchItems.forEach((item, index) => {
+        const isSelected = item.willReplace;
+        item.selected = isSelected;
+        document.querySelector(`.item-checkbox[data-index="${index}"]`).checked = isSelected;
+      });
+    };
+    
     // 确认批量导入按钮：将待处理列表中的词条添加到字典
     document.getElementById('confirmBatchBtn').onclick = () => {
       if (batchItems.length === 0) {
@@ -836,18 +1400,35 @@ window.addEventListener('DOMContentLoaded', () => {
       }
 
       let successCount = 0;
+      let replaceCount = 0;
       let skipCount = 0;
 
       batchItems.forEach(item => {
-        // 再次检查是否已存在（双重保险）
-        if (dict[item.key]) {
+        // 检查用户是否选择了此项
+        if (item.selected === false) {
           skipCount++;
           return;
         }
         
-        // 添加到字典
-        dict[item.key] = item.value;
-        successCount++;
+        // 检查是否已存在
+        const isReplaceExisting = document.getElementById('replaceExisting').checked;
+        const existingValue = dict[item.key];
+        
+        if (existingValue) {
+          if (isReplaceExisting && item.willReplace) {
+            // 替换已存在的词条
+            dict[item.key] = item.value;
+            replaceCount++;
+          } else {
+            // 跳过已存在的词条
+            skipCount++;
+            return;
+          }
+        } else {
+          // 添加新词条
+          dict[item.key] = item.value;
+          successCount++;
+        }
       });
 
       // 更新界面
@@ -860,12 +1441,13 @@ window.addEventListener('DOMContentLoaded', () => {
       
       // 显示结果通知
       let msg = `成功导入 ${successCount} 条`;
-      if (skipCount > 0) msg += `，跳过重复 ${skipCount} 条`;
+      if (replaceCount > 0) msg += `，替换已存在 ${replaceCount} 条`;
+      if (skipCount > 0) msg += `，跳过 ${skipCount} 条`;
       
-      showToast('批量导入完成', msg, successCount > 0 ? 'green' : 'orange');
+      showToast('批量导入完成', msg, (successCount > 0 || replaceCount > 0) ? 'green' : 'orange');
 
       // 只有真正添加了词才触发保存
-      if (successCount > 0) {
+      if (successCount > 0 || replaceCount > 0) {
         triggerAutoSave();
       }
     };
@@ -874,41 +1456,60 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('insertCharBtn').onclick = (e) => {
       e.preventDefault(); // 防止触发表单默认行为
       const input = document.getElementById('newVal');
-      const currentText = input.value;
+      const invisibleChar = '\u200E'; // U+200E 字符
       
-      // 检查当前文本长度
-      if (currentText.length > 3) {
-        // 对于长度大于3的文本，在每个字符后插入防屏蔽符
-        let newText = '';
-        for (let i = 0; i < currentText.length; i++) {
-          newText += currentText[i] + '\u200E';
-        }
-        input.value = newText;
-        showToast('小工具', '已为所有字符后插入防屏蔽符 U+200E', '#f39c12');
-      } else {
-        // 对于长度3及以下的文本，在中间插入一个防屏蔽符
-        const invisibleChar = '\u200E'; // U+200E 字符
-        
-        // 获取当前光标位置，以便在光标处插入而不是末尾
-        const startPos = input.selectionStart;
-        const endPos = input.selectionEnd;
-        
-        // 插入字符
-        input.value = input.value.substring(0, startPos)
-          + invisibleChar
-          + input.value.substring(endPos, input.value.length);
-        
-        // 重新定位光标到插入字符之后
-        input.selectionStart = startPos + invisibleChar.length;
-        input.selectionEnd = startPos + invisibleChar.length;
-        
-        // 让输入框重新获得焦点
-        input.focus();
-        
-        // 提示用户
-        showToast('小工具', '已在光标处插入隐形字符 U+200E', '#f39c12');
-      }
+      // 获取当前光标位置，在光标处插入而不是末尾
+      const startPos = input.selectionStart;
+      const endPos = input.selectionEnd;
+      
+      // 插入字符
+      input.value = input.value.substring(0, startPos)
+        + invisibleChar
+        + input.value.substring(endPos, input.value.length);
+      
+      // 重新定位光标到插入字符之后
+      input.selectionStart = startPos + invisibleChar.length;
+      input.selectionEnd = startPos + invisibleChar.length;
+      
+      // 让输入框重新获得焦点
+      input.focus();
+      
+      // 触发更新事件
+      input.dispatchEvent(new Event('change'));
+      
+      // 提示用户
+      showToast('小工具', '已在光标处插入隐形字符 U+200E', '#f39c12');
     };
+
+    // 新增：在指定输入框的光标位置插入防屏蔽符
+    function insertMagicCharAtCursor(inputId) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      
+      const invisibleChar = '\u200E'; // U+200E 字符
+      
+      // 获取当前光标位置，在光标处插入而不是末尾
+      const startPos = input.selectionStart;
+      const endPos = input.selectionEnd;
+      
+      // 插入字符
+      input.value = input.value.substring(0, startPos)
+        + invisibleChar
+        + input.value.substring(endPos, input.value.length);
+      
+      // 重新定位光标到插入字符之后
+      input.selectionStart = startPos + invisibleChar.length;
+      input.selectionEnd = startPos + invisibleChar.length;
+      
+      // 让输入框重新获得焦点
+      input.focus();
+      
+      // 触发更新事件
+      input.dispatchEvent(new Event('change'));
+      
+      // 提示用户
+      showToast('小工具', '已在光标处插入隐形字符 U+200E', '#f39c12');
+    }
 
     // 确认添加词条
     document.getElementById('confirmAddBtn').onclick = () => {
@@ -1017,31 +1618,69 @@ window.addEventListener('DOMContentLoaded', () => {
         callback(true);
       };
     }
-
-    // 编辑词
-    window.editKey = (oldKey) => {
-      showCustomPrompt("请输入新词名", oldKey, (newKey) => {
-        if(newKey === null || newKey.trim() === oldKey) return;
-        newKey = newKey.trim();
-        if(!newKey) { 
-          showMsg("词不能为空", "red");
-          return;
+    
+    function showCustomPrompt(message, defaultValue, callback) {
+      const modal = document.createElement('div');
+      modal.style = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(0,0,0,0.5); display: flex; justify-content: center; 
+        align-items: center; z-index: 10000;
+      `;
+      
+      modal.innerHTML = `
+        <div style="background: white; padding: 20px; border-radius: 8px; width: 300px;">
+          <div style="margin-bottom: 15px;">${message}</div>
+          <input type="text" id="promptInput" value="${defaultValue}" style="width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;">
+          <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button id="cancelBtn" class="modern-btn btn-secondary">取消</button>
+            <button id="confirmBtn" class="modern-btn btn-primary">确定</button>
+          </div>
+        </div>
+      `;
+      modal.id = 'promptModal';
+      
+      document.body.appendChild(modal);
+      
+      // 添加事件监听器
+      document.getElementById('cancelBtn').onclick = function() {
+        modal.remove();
+        callback(null);
+      };
+      
+      document.getElementById('confirmBtn').onclick = function() {
+        const value = document.getElementById('promptInput').value.trim();
+        modal.remove();
+        callback(value);
+      };
+      
+      // 添加回车键提交功能
+      document.getElementById('promptInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          const value = document.getElementById('promptInput').value.trim();
+          modal.remove();
+          callback(value);
         }
-        if(dict[newKey]) { 
-          showMsg("该词已存在", "red");
-          return;
-        }
-        dict[newKey] = dict[oldKey];
-        delete dict[oldKey];
-        renderTable();
-        triggerAutoSave();
       });
-    };
+    }
+
+
 
     // 编辑替换词
     window.updateValue = (key, newValue) => {
       dict[key] = newValue;
       triggerAutoSave();
+    };
+
+    // 编辑原词
+    window.editKey = (oldKey) => {
+      const newValue = prompt('编辑原词:', oldKey);
+      if (newValue && newValue !== oldKey) {
+        const value = dict[oldKey];
+        delete dict[oldKey];
+        dict[newValue] = value;
+        renderTable();
+        triggerAutoSave();
+      }
     };
 
     function triggerAutoSave() {
@@ -1119,42 +1758,39 @@ window.addEventListener('DOMContentLoaded', () => {
       });
     };
 
-    // 保存上传
-    const saveBtn = document.getElementById('saveBtn');
-    saveBtn.addEventListener('mouseenter', () => saveBtn.style.opacity = '1');
-    saveBtn.addEventListener('mouseleave', () => saveBtn.style.opacity = '0.5');
-    
-    saveBtn.onclick = async () => {
-      const token = document.getElementById('token').value;
-      if (!token) { showMsg("请先输入 Token", "red"); return; }
-      if (!sha) { showMsg("请先加载文件", "red"); return; }
-      showMsg("正在上传...", "grey");
-      await saveToGithub();
-      try {
-        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
-          method: 'PUT',
-          headers: {
-            Authorization: 'token ' + token,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            message: "Update dictionary.json by web UI",
-            content: btoa(unescape(encodeURIComponent(JSON.stringify(dict, null, 2)))),
-            sha: sha,
-            branch: "main"
-          })
-        });
-        if (!res.ok) throw new Error("上传失败");
-        const data = await res.json();
-        sha = data.content.sha; // 更新新sha
-        showToast('上传成功', '字典文件已成功更新到GitHub仓库', 'green');
-      } catch(e) {
-        showMsg("上传失败，请检查Token和网络", "red");
-      }
-    };
   }
 });
 </script>
+  <script>
+    // 将insertMagicCharAtCursor函数移到全局作用域，以便在表格中的按钮可以调用
+    function insertMagicCharAtCursor(inputId) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      
+      const invisibleChar = '\u200E'; // U+200E 字符
+      
+      // 获取当前光标位置，在光标处插入而不是末尾
+      const startPos = input.selectionStart;
+      const endPos = input.selectionEnd;
+      
+      // 插入字符
+      input.value = input.value.substring(0, startPos)
+        + invisibleChar
+        + input.value.substring(endPos, input.value.length);
+      
+      // 重新定位光标到插入字符之后
+      input.selectionStart = startPos + invisibleChar.length;
+      input.selectionEnd = startPos + invisibleChar.length;
+      
+      // 让输入框重新获得焦点
+      input.focus();
+      
+      // 触发更新事件
+      input.dispatchEvent(new Event('change'));
+      
+      // 显示简单的提示，因为我们无法访问全局的showToast函数
+      console.log('已在光标处插入隐形字符 U+200E');
+    }
   </script>
 </body>
 </html>
