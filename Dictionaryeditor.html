@@ -189,11 +189,11 @@
       <p>安全地管理和编辑游戏屏蔽词库</p>
     </div>
     <div class="content">
-      <div class="form-group">
-        <label for="token">GitHub 访问密钥</label>
-        <input type="password" id="token" class="form-control" placeholder="输入 GitHub Personal Access Token" autocomplete="off">
-        <div class="form-help">需要 repo 权限来读写字典文件</div>
-      </div>
+  <div class="form-group">
+    <label for="token">GitHub 访问密钥</label>
+    <input type="password" id="token" class="form-control" placeholder="输入 GitHub Personal Access Token" autocomplete="off">
+    <div class="form-help">需要 repo 权限来读写字典文件<br>Token格式通常以 ghp_ 开头，长度为40字符</div>
+  </div>
       <div class="btn-group">
         <button id="loadBtn" class="btn btn-primary modern-btn">
           <span class="btn-icon">📥</span>
@@ -250,7 +250,7 @@
         </select>
       </div>
       <textarea id="batchSource" class="form-control modern-input" rows="4" 
-        placeholder="在这里粘贴...&#10;支持格式：&#10;1) 原词=替换词&#10;2) {\"原词\":\"替换词\"}" 
+        placeholder="在这里粘贴...&#10;支持格式：&#10;1) 原词=替换词&#10;2) {"原词":"替换词"}" 
         style="height: 120px; font-family: monospace; border-style: dashed;"></textarea>
     </div>
 
@@ -629,7 +629,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    const savedToken = decryptToken(localStorage.getItem('github-Token'));
+    const savedToken = decryptToken(localStorage.getItem('githubToken'));
     if (savedToken) {
       tokenInput.value = savedToken;
       // 验证token有效性
@@ -639,10 +639,15 @@ window.addEventListener('DOMContentLoaded', () => {
           setTimeout(() => document.getElementById('loadBtn').click(), 500);
         } else {
           // Token无效则清除
-          localStorage.removeItem('github-Token');
+          localStorage.removeItem('githubToken');
           tokenInput.value = '';
           showToast('Token验证', '保存的Token已失效，请重新输入', 'red');
         }
+      }).catch(err => {
+        console.error('Token验证出错:', err);
+        showToast('Token验证', 'Token验证出错，请重新输入', 'red');
+        localStorage.removeItem('githubToken');
+        tokenInput.value = '';
       });
     }
     tokenInput.addEventListener('input', () => {
@@ -652,23 +657,41 @@ window.addEventListener('DOMContentLoaded', () => {
           if (isValid) {
             const encrypted = encryptToken(token);
             if (encrypted) {
-              localStorage.setItem('github-Token', encrypted);
+              localStorage.setItem('githubToken', encrypted);
               showToast('Token验证', 'Token已保存', 'green');
             }
           } else {
             showToast('Token验证', 'Token格式可能不正确', 'orange');
           }
+        }).catch(err => {
+          console.error('Token验证出错:', err);
+          showToast('Token验证', 'Token验证出错', 'red');
         });
       } else {
         // 清空输入时移除保存的token
-        localStorage.removeItem('github-Token');
+        localStorage.removeItem('githubToken');
       }
     });
 
     // Token验证函数 - 基本格式检查
     async function validateToken(token) {
-      // GitHub token通常是40字符以上，放宽验证条件
-      return token && token.length >= 40;
+      try {
+        // GitHub token通常是40字符以上，以"ghp_"开头，放宽验证条件
+        if (!token) return false;
+        if (token.length < 20) return false;
+        
+        // 尝试使用GitHub API验证token
+        const response = await fetch('https://api.github.com/user', {
+          headers: { Authorization: 'token ' + token }
+        });
+        
+        // 如果返回200或401，说明token格式正确（401表示无效但格式正确）
+        return response.status === 200 || response.status === 401;
+      } catch (e) {
+        // 如果网络错误或其他问题，至少检查基本格式
+        console.warn('无法验证Token，使用基本格式检查:', e);
+        return token && (token.startsWith('ghp_') || token.startsWith('gho_') || token.startsWith('ghu_') || token.startsWith('ghs_') || token.startsWith('ghr_') || token.length >= 40);
+      }
     }
 
     // 添加自动保存开关
@@ -979,11 +1002,11 @@ window.addEventListener('DOMContentLoaded', () => {
       const textarea = document.getElementById('batchSource');
       
       if (format === 'json') {
-        textarea.placeholder = '在这里粘贴JSON数据...&#10;格式示例：&#10;{\"测试\":\"Test\",\"敏感\":\"屏蔽\"}';
+        textarea.placeholder = '在这里粘贴JSON数据...&#10;格式示例：&#10;{"测试":"Test","敏感":"屏蔽"}';
       } else if (format === 'keyvalue') {
         textarea.placeholder = '在这里粘贴键值对数据...&#10;格式示例：&#10;测试=Test&#10;敏感=屏蔽';
       } else {
-        textarea.placeholder = '在这里粘贴...&#10;支持格式：&#10;1) 原词=替换词&#10;2) {\"原词\":\"替换词\"}';
+        textarea.placeholder = '在这里粘贴...&#10;支持格式：&#10;1) 原词=替换词&#10;2) {"原词":"替换词"}';
       }
     };
     
