@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>屏蔽词测试工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        
+        h2 {
+            color: #3498db;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 150px;
+            font-family: inherit;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .result {
+            margin-top: 20px;
+        }
+        
+        .result h3 {
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+        
+        .result-box {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #d1ecf1;
+            min-height: 100px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        .dictionary-section {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #3498db;
+            color: #fff;
+            font-weight: bold;
+        }
+        
+        tr:hover {
+            background-color: #f0f8ff;
+        }
+        
+        .search-box {
+            margin-bottom: 15px;
+            padding: 10px;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .stats {
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+        }
+        
+        .error {
+            color: #e74c3c;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>屏蔽词测试工具</h1>
+        
+        <div class="section">
+            <h2>1. 测试文本替换</h2>
+            <div class="input-section">
+                <textarea id="testInput" placeholder="请输入要测试的文本..."></textarea>
+                <div class="button-group">
+                    <button id="replaceBtn">执行替换</button>
+                    <button id="clearBtn">清空</button>
+                    <button id="copyBtn">复制结果</button>
+                </div>
+                <div class="result">
+                    <h3>替换结果：</h3>
+                    <div id="replaceResult" class="result-box"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>2. 屏蔽词字典</h2>
+            <div class="stats">
+                <span id="dictionaryStats">正在加载字典...</span>
+            </div>
+            <input type="text" id="searchInput" class="search-box" placeholder="搜索屏蔽词...">
+            <div class="dictionary-section">
+                <table id="dictionaryTable">
+                    <thead>
+                        <tr>
+                            <th>原始词</th>
+                            <th>替换词</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dictionaryBody">
+                        <tr>
+                            <td colspan="2" class="loading">正在加载字典...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 全局变量存储字典
+        let dictionary = {};
+        
+        // 获取字典数据
+        async function fetchDictionary() {
+            const url = 'https://kosto179cn.github.io/chinese_words_replacer/dictionary.json?t=${Date.now()';
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                dictionary = await response.json();
+                displayDictionary();
+                updateStats();
+            } catch (error) {
+                console.error('获取字典失败:', error);
+                document.getElementById('dictionaryBody').innerHTML = `<tr><td colspan="2" class="error">加载字典失败: ${error.message}</td></tr>`;
+                document.getElementById('dictionaryStats').textContent = '加载字典失败';
+            }
+        }
+        
+        // 执行文本替换
+        function replaceText(text) {
+            let result = text;
+            // 按照词长降序排序，避免短词替换长词的一部分
+            const sortedKeys = Object.keys(dictionary).sort((a, b) => b.length - a.length);
+            
+            for (const key of sortedKeys) {
+                const value = dictionary[key];
+                if (value) {
+                    const regex = new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+                    result = result.replace(regex, value);
+                }
+            }
+            return result;
+        }
+        
+        // 显示字典
+        function displayDictionary(filter = '') {
+            const tbody = document.getElementById('dictionaryBody');
+            const sortedKeys = Object.keys(dictionary).sort();
+            
+            let filteredKeys = sortedKeys;
+            if (filter) {
+                const lowerFilter = filter.toLowerCase();
+                filteredKeys = sortedKeys.filter(key => 
+                    key.toLowerCase().includes(lowerFilter) || 
+                    dictionary[key].toLowerCase().includes(lowerFilter)
+                );
+            }
+            
+            if (filteredKeys.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="2" class="loading">没有找到匹配的屏蔽词</td></tr>`;
+                return;
+            }
+            
+            let html = '';
+            for (const key of filteredKeys) {
+                const value = dictionary[key];
+                html += `
+                    <tr>
+                        <td>${escapeHtml(key)}</td>
+                        <td>${escapeHtml(value)}</td>
+                    </tr>
+                `;
+            }
+            tbody.innerHTML = html;
+        }
+        
+        // 更新统计信息
+        function updateStats() {
+            const totalWords = Object.keys(dictionary).length;
+            document.getElementById('dictionaryStats').textContent = `共 ${totalWords} 条屏蔽词规则`;
+        }
+        
+        // HTML转义
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // 复制到剪贴板
+        async function copyToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                alert('复制成功！');
+            } catch (err) {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动复制。');
+            }
+        }
+        
+        // 事件监听
+        document.addEventListener('DOMContentLoaded', () => {
+            // 加载字典
+            fetchDictionary();
+            
+            // 执行替换按钮
+            document.getElementById('replaceBtn').addEventListener('click', () => {
+                const input = document.getElementById('testInput').value;
+                const result = replaceText(input);
+                document.getElementById('replaceResult').textContent = result;
+            });
+            
+            // 清空按钮
+            document.getElementById('clearBtn').addEventListener('click', () => {
+                document.getElementById('testInput').value = '';
+                document.getElementById('replaceResult').textContent = '';
+            });
+            
+            // 复制结果按钮
+            document.getElementById('copyBtn').addEventListener('click', () => {
+                const result = document.getElementById('replaceResult').textContent;
+                if (result) {
+                    copyToClipboard(result);
+                } else {
+                    alert('没有可复制的结果！');
+                }
+            });
+            
+            // 搜索功能
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                const searchText = e.target.value;
+                displayDictionary(searchText);
+            });
+            
+            // 输入框回车键执行替换
+            document.getElementById('testInput').addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    document.getElementById('replaceBtn').click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
