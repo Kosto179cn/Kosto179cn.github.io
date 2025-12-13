@@ -5,31 +5,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>屏蔽词测试工具</title>
     <style>
+        /* CSS变量定义主题颜色 */
+        :root {
+            /* 白天模式 */
+            --bg-primary: #f5f5f5;
+            --bg-secondary: #fff;
+            --bg-section: #fafafa;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --border-color: #ddd;
+            --accent-color: #3498db;
+            --accent-hover: #2980b9;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --result-bg: #e8f4f8;
+            --result-border: #d1ecf1;
+            --table-hover: #f0f8ff;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 夜间模式 */
+        [data-theme="dark"] {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-section: #2d2d2d;
+            --text-primary: #e0e0e0;
+            --text-secondary: #aaa;
+            --border-color: #444;
+            --accent-color: #4dabf7;
+            --accent-hover: #339af0;
+            --success-color: #51cf66;
+            --error-color: #ff6b6b;
+            --result-bg: #212529;
+            --result-border: #343a40;
+            --table-hover: #373b41;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.6;
+        }
+        
+        /* 主题切换按钮 */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            background-color: var(--accent-hover);
+            transform: scale(1.1);
         }
         
         .container {
             max-width: 1200px;
             margin: 20px auto;
             padding: 20px;
-            background-color: #fff;
+            background-color: var(--bg-secondary);
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow);
         }
         
         h1 {
             text-align: center;
-            color: #2c3e50;
+            color: var(--accent-color);
             margin-bottom: 30px;
             font-size: 28px;
         }
@@ -37,13 +101,13 @@
         .section {
             margin-bottom: 30px;
             padding: 20px;
-            background-color: #fafafa;
+            background-color: var(--bg-section);
             border-radius: 8px;
-            border-left: 4px solid #3498db;
+            border-left: 4px solid var(--accent-color);
         }
         
         h2 {
-            color: #3498db;
+            color: var(--accent-color);
             margin-bottom: 15px;
             font-size: 20px;
         }
@@ -57,12 +121,14 @@
         textarea {
             width: 100%;
             padding: 15px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             font-size: 16px;
             resize: vertical;
             min-height: 150px;
             font-family: inherit;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
         }
         
         .button-group {
@@ -72,7 +138,7 @@
         
         button {
             padding: 10px 20px;
-            background-color: #3498db;
+            background-color: var(--accent-color);
             color: #fff;
             border: none;
             border-radius: 4px;
@@ -82,7 +148,7 @@
         }
         
         button:hover {
-            background-color: #2980b9;
+            background-color: var(--accent-hover);
         }
         
         .result {
@@ -90,18 +156,19 @@
         }
         
         .result h3 {
-            color: #27ae60;
+            color: var(--success-color);
             margin-bottom: 10px;
         }
         
         .result-box {
-            background-color: #e8f4f8;
+            background-color: var(--result-bg);
             padding: 15px;
             border-radius: 4px;
-            border: 1px solid #d1ecf1;
+            border: 1px solid var(--result-border);
             min-height: 100px;
             white-space: pre-wrap;
             font-family: 'Courier New', Courier, monospace;
+            color: var(--text-primary);
         }
         
         .dictionary-section {
@@ -117,48 +184,58 @@
         th, td {
             padding: 12px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
         }
         
         th {
-            background-color: #3498db;
+            background-color: var(--accent-color);
             color: #fff;
             font-weight: bold;
         }
         
         tr:hover {
-            background-color: #f0f8ff;
+            background-color: var(--table-hover);
         }
         
         .search-box {
             margin-bottom: 15px;
             padding: 10px;
             width: 100%;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
             font-size: 16px;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        .search-box::placeholder {
+            color: var(--text-secondary);
         }
         
         .stats {
             margin-bottom: 15px;
             font-size: 14px;
-            color: #666;
+            color: var(--text-secondary);
         }
         
         .loading {
             text-align: center;
-            color: #666;
+            color: var(--text-secondary);
             padding: 20px;
         }
         
         .error {
-            color: #e74c3c;
+            color: var(--error-color);
             text-align: center;
             padding: 20px;
         }
     </style>
 </head>
 <body>
+    <!-- 主题切换按钮 -->
+    <button class="theme-toggle" id="themeToggle" title="切换主题">🌙</button>
+    
     <div class="container">
         <h1>屏蔽词测试工具</h1>
         
@@ -296,10 +373,44 @@
             }
         }
         
+        // 主题切换功能
+        function initTheme() {
+            // 从本地存储获取主题设置，默认为白天模式
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeToggleIcon(savedTheme);
+        }
+        
+        function toggleTheme() {
+            // 切换主题
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            // 更新属性和本地存储
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // 更新按钮图标
+            updateThemeToggleIcon(newTheme);
+        }
+        
+        function updateThemeToggleIcon(theme) {
+            // 更新主题切换按钮的图标
+            const toggleBtn = document.getElementById('themeToggle');
+            toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+            toggleBtn.title = theme === 'dark' ? '切换到白天模式' : '切换到夜间模式';
+        }
+        
         // 事件监听
         document.addEventListener('DOMContentLoaded', () => {
+            // 初始化主题
+            initTheme();
+            
             // 加载字典
             fetchDictionary();
+            
+            // 主题切换按钮
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
             
             // 执行替换按钮
             document.getElementById('replaceBtn').addEventListener('click', () => {
