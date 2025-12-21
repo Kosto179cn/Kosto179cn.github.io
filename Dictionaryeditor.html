@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>管理国服屏蔽词 25.12.6</title>
+  <title>管理国服屏蔽词 25.12.21</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     @keyframes spin {
@@ -198,6 +198,10 @@
         <button id="loadBtn" class="btn btn-primary modern-btn">
           <span class="btn-icon">📥</span>
           加载线上文件
+        </button>
+        <button id="testTokenBtn" class="btn modern-btn" style="background: linear-gradient(135deg, #f39c12, #e67e22); color: white;">
+          <span class="btn-icon">🔑</span>
+          测试Token
         </button>
         <button id="addRow" class="btn btn-success modern-btn">
           <span class="btn-icon">➕</span>
@@ -629,7 +633,8 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    const savedToken = decryptToken(localStorage.getItem('githubToken'));
+    // 检查两种可能的localStorage键名，优先使用"githubToken"
+    const savedToken = decryptToken(localStorage.getItem('githubToken')) || decryptToken(localStorage.getItem('github-Token'));
     if (savedToken) {
       tokenInput.value = savedToken;
       // 验证token有效性
@@ -640,6 +645,7 @@ window.addEventListener('DOMContentLoaded', () => {
         } else {
           // Token无效则清除
           localStorage.removeItem('githubToken');
+          localStorage.removeItem('github-Token'); // 同时清除旧键名
           tokenInput.value = '';
           showToast('Token验证', '保存的Token已失效，请重新输入', 'red');
         }
@@ -647,6 +653,7 @@ window.addEventListener('DOMContentLoaded', () => {
         console.error('Token验证出错:', err);
         showToast('Token验证', 'Token验证出错，请重新输入', 'red');
         localStorage.removeItem('githubToken');
+        localStorage.removeItem('github-Token'); // 同时清除旧键名
         tokenInput.value = '';
       });
     }
@@ -657,7 +664,8 @@ window.addEventListener('DOMContentLoaded', () => {
           if (isValid) {
             const encrypted = encryptToken(token);
             if (encrypted) {
-              localStorage.setItem('githubToken', encrypted);
+              localStorage.setItem('githubToken', encrypted); // 保存到标准键名
+              localStorage.removeItem('github-Token'); // 清除旧键名
               showToast('Token验证', 'Token已保存', 'green');
             }
           } else {
@@ -670,6 +678,7 @@ window.addEventListener('DOMContentLoaded', () => {
       } else {
         // 清空输入时移除保存的token
         localStorage.removeItem('githubToken');
+        localStorage.removeItem('github-Token'); // 同时清除旧键名
       }
     });
 
@@ -797,6 +806,72 @@ window.addEventListener('DOMContentLoaded', () => {
       renderTable();
     };
 
+    // 测试Token
+    document.getElementById('testTokenBtn').onclick = async () => {
+      const token = document.getElementById('token').value;
+      if (!token) {
+        showToast('Token测试', '请先输入Token', 'red');
+        return;
+      }
+      
+      // 先测试基本用户信息获取
+      try {
+        showToast('Token测试', '正在验证Token...', 'grey');
+        
+        // 1. 测试获取用户信息
+        const userRes = await fetch('https://api.github.com/user', {
+          headers: { Authorization: 'token ' + token }
+        });
+        
+        if (userRes.status === 401) {
+          throw new Error('Token无效或已过期，请重新生成');
+        } else if (!userRes.ok) {
+          throw new Error(`Token验证失败: HTTP ${userRes.status}`);
+        }
+        
+        const userData = await userRes.json();
+        
+        // 2. 测试仓库访问权限
+        const repoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+          headers: { Authorization: 'token ' + token }
+        });
+        
+        if (repoRes.status === 404) {
+          throw new Error(`无法访问仓库 ${owner}/${repo}，请检查仓库名称是否正确`);
+        } else if (!repoRes.ok) {
+          throw new Error(`仓库访问失败: HTTP ${repoRes.status}`);
+        }
+        
+        // 3. 测试文件访问权限
+        const fileRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+          headers: { Authorization: 'token ' + token }
+        });
+        
+        if (fileRes.status === 404) {
+          throw new Error(`无法访问文件 ${path}，请检查文件路径是否正确`);
+        } else if (!fileRes.ok) {
+          throw new Error(`文件访问失败: HTTP ${fileRes.status}`);
+        }
+        
+        showToast(
+          'Token测试成功', 
+          `✓ Token有效\n✓ 用户: ${userData.login}\n✓ 仓库访问正常\n✓ 文件访问正常`,
+          'green'
+        );
+        
+      } catch (error) {
+        console.error('Token测试错误:', error);
+        showToast('Token测试失败', error.message, 'red');
+        
+        // 如果是认证问题，清除保存的token
+        if (error.message.includes('Token无效') || error.message.includes('401')) {
+          localStorage.removeItem('githubToken');
+          localStorage.removeItem('github-Token');
+          document.getElementById('token').value = '';
+        }
+      }
+    };
+    
     // 加载文件
     document.getElementById('loadBtn').onclick = async () => {
       showMsg("正在加载...", "grey", 0);
@@ -804,12 +879,29 @@ window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('loadBtn').innerHTML = 
         '<span class="loading-spinner"></span>加载中...';
       const token = document.getElementById('token').value;
-      if (!token) { showMsg("请先输入 Token", "red"); return; }
+      if (!token) { 
+        showMsg("请先输入 Token", "red"); 
+        document.getElementById('loadBtn').disabled = false;
+        document.getElementById('loadBtn').textContent = '加载线上文件';
+        return; 
+      }
       try {
         const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
           headers: { Authorization: 'token ' + token }
         });
-        if (!res.ok) throw new Error("加载失败");
+        
+        if (!res.ok) {
+          if (res.status === 401) {
+            throw new Error("Token认证失败: 请检查Token是否正确、是否过期，或是否有repo权限");
+          } else if (res.status === 403) {
+            throw new Error("访问被拒绝: 可能是API限制或权限不足");
+          } else if (res.status === 404) {
+            throw new Error("仓库或文件不存在: 请检查仓库路径和文件路径是否正确");
+          } else {
+            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+          }
+        }
+        
         const data = await res.json();
         sha = data.sha;
         dict = JSON.parse(decodeURIComponent(escape(atob(data.content))));
@@ -818,9 +910,17 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('loadBtn').disabled = false;
         document.getElementById('loadBtn').textContent = '加载线上文件';
       } catch(e) {
+        console.error('加载文件错误:', e);
         showMsg(`加载失败: ${e.message}`, "red");
         document.getElementById('loadBtn').disabled = false;
         document.getElementById('loadBtn').textContent = '加载线上文件';
+        
+        // 如果是认证问题，清除保存的token
+        if (e.message.includes('认证失败') || e.message.includes('401')) {
+          localStorage.removeItem('githubToken');
+          localStorage.removeItem('github-Token');
+          document.getElementById('token').value = '';
+        }
       }
     };
 
@@ -1752,9 +1852,27 @@ window.addEventListener('DOMContentLoaded', () => {
         });
         
         if (!res.ok) {
+          let errorMessage = `自动保存失败: ${res.status}`;
+          
+          if (res.status === 401) {
+            errorMessage = "Token认证失败: 请检查Token是否正确或已过期，重新输入后重试";
+            // 认证失败时清除保存的token
+            localStorage.removeItem('githubToken');
+            localStorage.removeItem('github-Token');
+            document.getElementById('token').value = '';
+          } else if (res.status === 403) {
+            errorMessage = "访问被拒绝: 可能是API限制或权限不足，请稍后重试";
+          } else if (res.status === 404) {
+            errorMessage = "仓库或文件不存在: 请检查仓库路径和文件路径";
+          } else if (res.status === 409) {
+            errorMessage = "文件冲突: 可能有其他人同时修改了文件，请刷新页面重试";
+          } else if (res.status === 422) {
+            errorMessage = "请求参数错误: 可能是文件内容格式问题";
+          }
+          
           const errorText = await res.text();
           console.error('GitHub API error:', res.status, errorText);
-          throw new Error(`自动保存失败: ${res.status}`);
+          throw new Error(errorMessage);
         }
         
         const data = await res.json();
