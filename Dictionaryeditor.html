@@ -1,1952 +1,909 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <title>管理国服屏蔽词 25.12.23</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .loading-spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(0,0,0,0.3);
-      border-radius: 50%;
-      border-top-color: #3498db;
-      animation: spin 1s ease-in-out infinite;
-      margin-right: 8px;
-      vertical-align: middle;
-    }
-    :root {
-      --primary-color: #3498db;
-      --primary-hover: #2980b9;
-      --success-color: #2ecc71;
-      --danger-color: #e74c3c;
-      --warning-color: #f39c12;
-      --light-bg: #f8f9fa;
-      --border-color: #dee2e6;
-      --text-color: #333;
-      --text-muted: #6c757d;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      color: var(--text-color);
-    }
-
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 20极速赛车开奖结果查询 rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
-
-    .table-container {
-      max-height: 70vh;
-      overflow-y: auto;
-      position: relative;
-      margin: 25px 0;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      animation: fadeIn 0.5s ease;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>国服屏蔽词管理 Pro</title>
+    <!-- Bootstrap 5.3 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
-    table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-    
-    thead th {
-      background: var(--primary-color);
-      color: white;
-      padding: 16px;
-      font-weight: 500;
-      text-align: left;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    
-    tbody {
-      width: 100%;
-    }
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            --bg-color: #f8f9fa;
+        }
 
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #2d3748;
+            padding-bottom: 60px;
+        }
 
+        /* 顶部导航 */
+        .navbar-custom {
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 12px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
 
-    td {
-      padding: 16px;
-      border-bottom: 1px solid var(--border-color);
-      transition: background 0.2s ease;
-    }
+        .brand-text {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            font-size: 1.4rem;
+        }
 
-    tr:hover td {
-      background: var(--light-bg);
-    }
+        /* 卡片样式 */
+        .content-card {
+            background: #fff;
+            border-radius: 16px;
+            border: none;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 24px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
 
-    tr:last-child td {
-      border-bottom: none;
-    }
+        .card-header-custom {
+            padding: 20px;
+            border-bottom: 1px solid #edf2f7;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    input[type="text"], input[type="search"] {
-      width: 100%;
-      padding: 12px 16px;
-      border: 2px solid var(--border-color);
-      border-radius: 8px;
-      font-size: 1em;
-      transition: all 0.3s ease;
-      height: 48px;
-    }
+        /* 表格样式 */
+        .table-custom thead th {
+            background: #f7fafc;
+            color: #718096;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            padding: 16px;
+            border-bottom: 2px solid #edf2f7;
+        }
 
-    input[type="text"]:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-    }
+        .table-custom td {
+            padding: 16px;
+            vertical-align: middle;
+            border-bottom: 1px solid #edf2f7;
+        }
+        
+        .table-custom tr:last-child td {
+            border-bottom: none;
+        }
 
-    .delbtn { 
-      background: var(--danger-color); 
-      border: none;
-      margin: 0; 
-      padding: 8px 16px; 
-      border-radius: 6px;
-      color: white;
-      font-size: 0.9em;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .delbtn:hover {
-      background: #c0392b;
-      transform: translateY(-1px);
-    }
-    .editbtn { 
-      background: var(--warning-color); 
-      border: none;
-      margin: 0; 
-      padding: 8px 16px; 
-      border-radius: 6px;
-      color: white;
-      font-size: 0.9em;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .editbtn:hover {
-      background: #e67e22;
-      transform: translateY(-1px);
-    }
-    
-    .action-buttons {
-      display: flex;
-      gap: 8px;
-    }
-    
-    @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    #addForm { background: #f9f9f9; padding: 12px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 12px; display:none;}
-    #addForm input { width: 90%; margin-bottom: 8px;}
-    #addForm button { margin-bottom: 0;}
-    @media (max-width: 600px) {
-      th, td { font-size: 0.95em; padding: 4px 2px;}
-      button, #token, #search { font-size: 1em; }
-    }
-  </style>
+        /* 输入框美化 */
+        .form-control-custom {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 15px;
+            transition: all 0.3s;
+        }
+
+        .form-control-custom:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* 按钮美化 */
+        .btn-gradient {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(118, 75, 162, 0.3);
+            color: white;
+        }
+
+        /* 状态指示器 */
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: #edf2f7;
+            color: #718096;
+        }
+
+        /* 自动保存状态浮窗 */
+        .save-status-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #fff;
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1050;
+            font-size: 0.9rem;
+            border: 1px solid #edf2f7;
+        }
+
+        /* 批量导入预览区 */
+        .batch-preview-box {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #f8fafc;
+            border: 2px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 10px;
+        }
+
+        .batch-item {
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 4px solid transparent;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+        }
+
+        .batch-item.magic { border-left-color: #ecc94b; }
+        .batch-item.replace { border-left-color: #f56565; }
+        .batch-item.new { border-left-color: #48bb78; }
+
+        /* 加载动画 */
+        .spinner-line {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .toast-container { z-index: 2000; }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>国服屏蔽词管理</h1>
-      <p>安全地管理和编辑游戏屏蔽词库</p>
-    </div>
-    <div class="content">
-  <div class="form-group">
-    <label for="token">GitHub 访问密钥</label>
-    <input type="password" id="token" class="form-control" placeholder="输入 GitHub Personal Access Token" autocomplete="off">
-    <div class="form-help">需要 repo 权限来读写字典文件<br>Token格式通常以 ghp_ 开头，长度为40字符</div>
-  </div>
-      <div class="btn-group">
-        <button id="loadBtn" class="btn btn-primary modern-btn">
-          <span class="btn-icon">📥</span>
-          加载线上文件
-        </button>
-        <button id="testTokenBtn" class="btn modern-btn" style="background: linear-gradient(135deg, #f39c12, #e67e22); color: white;">
-          <span class="btn-icon">🔑</span>
-          测试Token
-        </button>
-        <button id="addRow" class="btn btn-success modern-btn">
-          <span class="btn-icon">➕</span>
-          单条添加
-        </button>
-        <!-- 新增：批量添加按钮 -->
-        <button id="batchAddBtn" class="btn modern-btn" style="background: linear-gradient(135deg, #8e44ad, #9b59b6); color: white;">
-          <span class="btn-icon">📜</span>
-          批量添加
-        </button>
-      </div>
-      <div class="form-group">
-        <div class="search-box">
-          <input type="search" id="search" class="form-control search-input" placeholder="🔍 搜索关键词或替换词...">
-        </div>
-      </div>
-  <div id="addForm" class="add-form">
-    <div class="form-group">
-      <label for="newKey" class="modern-label">原词</label>
-      <input id="newKey" type="text" class="form-control modern-input" placeholder="输入要屏蔽的词语" autocomplete="off">
-    </div>
-    <div class="form-group">
-      <label for="newVal" class="modern-label">替换词</label>
-      <div style="position: relative; display: flex; align-items: stretch;">
-        <input id="newVal" type="text" class="form-control modern-input" placeholder="输入替换后的词语" autocomplete="off" style="flex: 1; padding-right: 120px;">
-        <button type="button" id="insertCharBtn" class="editbtn" style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); font-size: 12px; padding: 6px 10px; white-space: nowrap; z-index: 1;">
-           🪄 插入防屏蔽符
-        </button>
-      </div>
-    </div>
-    <div class="form-actions">
-      <button id="confirmAddBtn" class="btn btn-primary modern-btn">确认添加</button>
-      <button onclick="document.getElementById('addForm').style.display='none'" class="btn btn-secondary modern-btn">取消</button>
-    </div>
-    <div id="addMsg" class="status-message"></div>
-  </div>
-  
-  <!-- 批量添加面板 (新版：分栏式) -->
-  <div id="batchForm" class="add-form" style="display:none; border-color: #9b59b6; background: #fbfaff;">
-    <h3 style="margin-bottom: 10px; color: #8e44ad;">批量导入工作台</h3>
-    
-    <!-- 区域1：原始输入 -->
-    <div class="form-group">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <label class="modern-label" style="color:#666">1. 粘贴原始数据 (支持多种格式)</label>
-        <select id="formatSelector" class="modern-input" style="width:auto; padding:6px 12px; font-size:13px;">
-          <option value="auto">自动识别格式</option>
-          <option value="keyvalue">键值对格式 (原词=替换词)</option>
-          <option value="json">JSON格式</option>
-        </select>
-      </div>
-      <textarea id="batchSource" class="form-control modern-input" rows="4" 
-        placeholder="在这里粘贴...&#10;支持格式：&#10;1) 原词=替换词&#10;2) {"原词":"替换词"}" 
-        style="height: 120px; font-family: monospace; border-style: dashed;"></textarea>
-    </div>
 
-    <!-- 中间操作栏 -->
-    <div style="display:flex; justify-content:center; gap:10px; margin: 10px 0;">
-      <button id="detectFormatBtn" type="button" class="modern-btn" style="background:#27ae60; color:white; padding: 8px 15px; font-size: 13px;">
-        🔍 检测格式
-      </button>
-      <button id="parseBtn" type="button" class="modern-btn" style="background:#8e44ad; color:white; padding: 8px 15px; font-size: 13px;">
-        ⬇️ 解析到等待区
-      </button>
-    </div>
-
-    <!-- 区域2：等待区 -->
-    <div class="form-group">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <label class="modern-label" style="color:#666">2. 等待导入列表 (<span id="previewCount">0</span>)</label>
-        
-        <!-- 你的核心需求：一键加符按钮 -->
-        <button id="batchMagicBtn" type="button" class="editbtn" style="font-size: 12px; padding: 4px 10px; margin-bottom: 6px; background: #f39c12;">
-           🪄 给替换词插入防屏蔽符
-        </button>
-      </div>
-      
-      <!-- 导入选项 -->
-      <div style="display:flex; align-items:center; margin-bottom:8px; padding:8px; background:#f8f9fa; border-radius:6px;">
-        <input type="checkbox" id="replaceExisting" style="margin-right:8px;">
-        <label for="replaceExisting" style="font-size:13px; color:#555; cursor:pointer;">
-          覆盖已存在的词条（默认跳过重复词条）
-        </label>
-      </div>
-      
-      <!-- 预览列表容器 -->
-      <div id="batchPreview" style="
-          height: 200px; 
-          overflow-y: auto; 
-          background: #fff; 
-          border: 2px solid #e1e5e9; 
-          border-radius: 8px;
-          padding: 8px;
-      ">
-        <div style="text-align:center; color:#ccc; padding-top:80px;">暂无数据，请先在上方粘贴并解析</div>
-      </div>
-      
-      <!-- 批量操作按钮 -->
-      <div id="batchActions" style="display:none; margin-top:10px; padding:8px; background:#f8f9fa; border-radius:6px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <span style="font-size:13px; color:#666; font-weight:500;">批量操作：</span>
-          <div style="display:flex; gap:8px;">
-            <button id="selectAllBtn" type="button" class="modern-btn" style="background:#3498db; color:white; padding: 6px 12px; font-size: 12px;">
-              全选
-            </button>
-            <button id="deselectAllBtn" type="button" class="modern-btn" style="background:#95a5a6; color:white; padding: 6px 12px; font-size: 12px;">
-              全不选
-            </button>
-            <button id="selectOnlyNewBtn" type="button" class="modern-btn" style="background:#2ecc71; color:white; padding: 6px 12px; font-size: 12px;">
-              仅选新增
-            </button>
-            <button id="selectOnlyReplaceBtn" type="button" class="modern-btn" style="background:#e74c3c; color:white; padding: 6px 12px; font-size: 12px;">
-              仅选替换
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 草稿状态提示 -->
-      <div id="draftIndicator" style="display:none; margin-top:5px; padding:5px 8px; background:#f0f7ff; border-radius:4px; font-size:12px; color:#3498db; align-items:center; justify-content:space-between;">
-        <span>📝 草稿已保存</span>
-        <button id="clearDraftBtn" style="background:transparent; border:none; color:#e74c3c; cursor:pointer; font-size:12px;">清空</button>
-      </div>
-    </div>
-    
-    <div class="form-actions" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
-      <button id="confirmBatchBtn" class="btn modern-btn" style="background: linear-gradient(135deg, #8e44ad, #9b59b6); color: white; width: 100%;">
-        🚀 确认全部导入
-      </button>
-      <button onclick="document.getElementById('batchForm').style.display='none'" class="btn btn-secondary modern-btn" style="margin-top:8px; width: 100%;">
-        取消
-      </button>
-    </div>
-  </div>
-  <div class="table-container">
-    <table id="dictTable"></table>
-  </div>
-
-  <!-- 右上角自动消失通知 -->
-  <div id="notificationToast" style="display:none; position:fixed; top:20px; right:20px; max-width:300px; background:#fff; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000; overflow:hidden;">
-    <div style="padding:12px 16px;">
-      <div style="display:flex; align-items:center; margin-bottom:6px;">
-        <div id="toastIcon" style="width:20px; height:20px; margin-right:8px; border-radius:50%;"></div>
-        <h3 id="toastTitle" style="margin:0; font-size:14px; font-weight:600;"></h3>
-      </div>
-      <p id="toastContent" style="margin:0; font-size:13px; color:#666;"></p>
-    </div>
-    <div id="toastProgress" style="height:3px; background:#3498db; width:100%;"></div>
-  </style>
-
-  <style>
-    @keyframes slideInRight {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes progress {
-      from { width: 100%; }
-      to { width: 0%; }
-    }
-    
-    /* 现代化样式 */
-    .modern-input {
-        padding: 12px 16px;
-        border: 2px solid #e1e5e9;
-        border-radius: 8px;
-        font-size: 14px;
-        background: #fff;
-        transition: all 0.3s ease;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    
-    .modern-input:focus {
-        outline: none;
-        border-color: #3498db;
-        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-        transform: translateY(-1px);
-    }
-    
-    .modern-label {
-        display: block;
-        margin-bottom: 6px;
-        font-weight: 600;
-        color: #2c3e50;
-        font-size: 14px;
-    }
-    
-    .modern-btn {
-        padding: 12px 20px;
-        border: none;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .modern-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        transition: left 0.5s ease;
-    }
-    
-    .modern-btn:hover::before {
-        left: 100%;
-    }
-    
-    .modern-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-    
-    .modern-btn:active {
-        transform: translateY(0);
-        box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-    }
-    
-    .btn-primary.modern-btn {
-        background: linear-gradient(135deg, #3498db, #2980b9);
-        color: white;
-    }
-    
-    .btn-success.modern-btn {
-        background: linear-gradient(135deg, #27ae60, #229954);
-        color: white;
-    }
-    
-    .btn-secondary.modern-btn {
-        background: linear-gradient(135deg, #95a5a6, #7f8c8d);
-        color: white;
-    }
-    
-    .btn-danger.modern-btn {
-        background: linear-gradient(135deg, #e74c3c, #c0392b);
-        color: white;
-    }
-    
-    /* 固定保存按钮样式 */
-    .save-button {
-        position: fixed;
-        right: 20px;
-        top: 50%;
-        transform: translateY(-50%);
-        padding: 16px 24px;
-        background: linear-gradient(135deg, #3498db, #2980b9);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        opacity: 0.3;
-        transition: all 0.3s ease;
-        z-index: 1000;
-    }
-    
-    .save-button:hover {
-        opacity: 1;
-        transform: translateY(-50%) scale(1.05);
-        box-shadow: 0 6px 16px rgba(0,0,0,0.3);
-    }
-    
-    /* 批量添加等待区样式 */
-    .batch-item {
-        display: flex;
-        align-items: center;
-        padding: 8px 12px;
-        margin-bottom: 5px;
-        background: #f8f9fa;
-        border-radius: 6px;
-        transition: background 0.2s ease;
-        border-left: 3px solid #3498db;
-    }
-    
-    .batch-item:hover {
-        background: #e9ecef;
-    }
-    
-    .batch-item.has-magic {
-        border-left-color: #f39c12;
-        background: #fef8e7;
-    }
-    
-    .batch-item.has-magic:hover {
-        background: #fdeaa7;
-    }
-    
-    .batch-item.will-replace {
-        border-left-color: #e74c3c;
-        background: #fff0f0;
-    }
-    
-    .batch-item.will-replace:hover {
-        background: #ffdddd;
-    }
-    
-    .batch-item.has-magic.will-replace {
-        border-left-color: #e67e22;
-        background: #fffbf0;
-    }
-    
-    .batch-item.has-magic.will-replace:hover {
-        background: #fff5e6;
-    }
-    
-    .batch-item-index {
-        flex: 0 0 25px;
-        color: #666;
-        font-size: 12px;
-        text-align: center;
-        font-weight: 600;
-    }
-    
-    .batch-item-checkbox {
-        flex: 0 0 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .batch-item-key {
-        flex: 0 0 30%;
-        font-weight: 500;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        padding-right: 8px;
-    }
-    
-    .batch-item-value {
-        flex: 1;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        color: #555;
-    }
-    
-    .batch-item-old-value {
-        flex: 1;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        color: #999;
-        font-style: italic;
-        position: relative;
-        padding-left: 15px;
-    }
-    
-    .batch-item-old-value:before {
-        content: "→";
-        position: absolute;
-        left: 0;
-        color: #e74c3c;
-    }
-    
-    .batch-item-magic-indicator {
-        flex: 0 0 15px;
-        height: 15px;
-        border-radius: 50%;
-        background: #f39c12;
-        display: none;
-        margin-left: 8px;
-        font-size: 8px;
-        color: white;
-        text-align: center;
-        line-height: 15px;
-    }
-    
-    .batch-item.has-magic .batch-item-magic-indicator {
-        display: block;
-    }
-    
-    .batch-item-status {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        margin-left: 8px;
-    }
-    
-    .batch-item-replace-indicator {
-        flex: 0 0 15px;
-        height: 15px;
-        border-radius: 50%;
-        background: #e74c3c;
-        display: none;
-        margin-left: 4px;
-        font-size: 10px;
-        color: white;
-        text-align: center;
-        line-height: 15px;
-        font-weight: bold;
-    }
-    
-    .batch-item.will-replace .batch-item-replace-indicator {
-        display: block;
-    }
-  </style>
-  <script>
-  
-  // 显示通知函数 - 移到前面确保可用
-  function showToast(title, content, color="#3498db") {
-    const toast = document.getElementById('notificationToast');
-    const icon = document.getElementById('toastIcon');
-    const progress = document.getElementById('toastProgress');
-    
-    // 设置内容和样式
-    document.getElementById('toastTitle').textContent = title;
-    document.getElementById('toastContent').textContent = content;
-    icon.style.background = color;
-    
-    // 显示通知
-    toast.style.display = 'block';
-    toast.style.animation = 'slideInRight 0.3s forwards';
-    
-    // 进度条动画
-    progress.style.animation = 'progress 2s linear forwards';
-    
-    // 2秒后自动关闭
-    setTimeout(() => {
-      toast.style.animation = 'slideInRight 0.3s reverse forwards';
-      setTimeout(() => toast.style.display = 'none', 300);
-    }, 2000);
-  }
-
-  // Token验证函数 - 移到前面确保可用
-  async function validateToken(token) {
-    try {
-      // GitHub token通常是40字符以上，以"ghp_"开头，放宽验证条件
-      if (!token) return false;
-      if (token.length < 20) return false;
-      
-      // 尝试使用GitHub API验证token
-      const response = await fetch('https://api.github.com/user', {
-        headers: { Authorization: 'token ' + token }
-      });
-      
-      // 如果返回200或401，说明token格式正确（401表示无效但格式正确）
-      return response.status === 200 || response.status === 401;
-    } catch (e) {
-      // 如果网络错误或其他问题，至少检查基本格式
-      console.warn('无法验证Token，使用基本格式检查:', e);
-      return token && (token.startsWith('ghp_') || token.startsWith('gho_') || token.startsWith('ghu_') || token.startsWith('ghs_') || token.startsWith('ghr_') || token.length >= 40);
-    }
-  }
-
-// 自动记住和填充 Token
-window.addEventListener('DOMContentLoaded', () => {
-  const tokenInput = document.getElementById('token');
-  if (tokenInput) {
-    // 加密存储Token - 修复加密解密逻辑
-    const encryptToken = (token) => {
-      try {
-        // 添加时间戳和随机盐增加安全性
-        const salt = Math.random().toString(36).substring(2, 8);
-        const data = JSON.stringify({ token, timestamp: Date.now(), salt });
-        return btoa(data);
-      } catch (e) {
-        console.error("Token加密失败:", e);
-        return null;
-      }
-    };
-    
-    const decryptToken = (encrypted) => {
-      try {
-        if (!encrypted) return null;
-        const decoded = atob(encrypted);
-        const data = JSON.parse(decoded);
-        
-        // 检查token是否存在和是否在24小时内
-        if (!data.token || Date.now() - Number(data.timestamp) > 86400000) {
-          return null;
-        }
-        return data.token;
-      } catch (e) {
-        console.error("Token解密失败:", e);
-        return null; 
-      }
-    };
-
-    // 检查两种可能的localStorage键名，优先使用"githubToken"
-    const savedToken = decryptToken(localStorage.getItem('githubToken')) || decryptToken(localStorage.getItem('github-Token'));
-    if (savedToken) {
-      tokenInput.value = savedToken;
-      // 验证token有效性
-      validateToken(savedToken).then(isValid => {
-        if (isValid) {
-          // Token有效则自动加载
-          setTimeout(() => document.getElementById('loadBtn').click(), 500);
-        } else {
-          // Token无效则清除
-          localStorage.removeItem('githubToken');
-          localStorage.removeItem('github-Token'); // 同时清除旧键名
-          tokenInput.value = '';
-          showToast('Token验证', '保存的Token已失效，请重新输入', 'red');
-        }
-      }).catch(err => {
-        console.error('Token验证出错:', err);
-        showToast('Token验证', 'Token验证出错，请重新输入', 'red');
-        localStorage.removeItem('githubToken');
-        localStorage.removeItem('github-Token'); // 同时清除旧键名
-        tokenInput.value = '';
-      });
-    }
-    tokenInput.addEventListener('input', () => {
-      const token = tokenInput.value.trim();
-      if (token) {
-        validateToken(token).then(isValid => {
-          if (isValid) {
-            const encrypted = encryptToken(token);
-            if (encrypted) {
-              localStorage.setItem('githubToken', encrypted); // 保存到标准键名
-              localStorage.removeItem('github-Token'); // 清除旧键名
-              showToast('Token验证', 'Token已保存', 'green');
-            }
-          } else {
-            showToast('Token验证', 'Token格式可能不正确', 'orange');
-          }
-        }).catch(err => {
-          console.error('Token验证出错:', err);
-          showToast('Token验证', 'Token验证出错', 'red');
-        });
-      } else {
-        // 清空输入时移除保存的token
-        localStorage.removeItem('githubToken');
-        localStorage.removeItem('github-Token'); // 同时清除旧键名
-      }
-    });
-
-
-
-    // 添加自动保存开关
-    const autoSaveToggle = document.createElement('label');
-    autoSaveToggle.innerHTML = `
-      <input type="checkbox" id="autoSaveToggle" checked> 启用自动保存
-      <span id="lastSaveTime" style="margin-left:10px;color:#666;font-size:0.9em;"></span>
-    `;
-    autoSaveToggle.style.display = 'block';
-    autoSaveToggle.style.margin = '10px 0';
-    tokenInput.parentNode.insertBefore(autoSaveToggle, tokenInput.nextSibling);
-
-    document.getElementById('autoSaveToggle').addEventListener('change', (e) => {
-      isAutoSaveEnabled = e.target.checked;
-      showToast('设置', `自动保存已${isAutoSaveEnabled ? '启用' : '禁用'}`, isAutoSaveEnabled ? 'green' : 'orange');
-    });
-
-    const owner = "Kosto179cn";
-    const repo = "Kosto179cn.github.io";
-    const path = "chinese_words_replacer/dictionary.json";
-    let dict = {};
-    let sha = null;
-    let filter = "";
-    let autoSaveTimer = null;
-    let isAutoSaveEnabled = true;
-    let lastSaveTime = null;
-
-
-
-    function showMsg(text, color="blue") {
-      showToast('提示', text, color);
-    }
-
-    function showAddMsg(text, color="red") {
-      showToast('提示', text, color);
-    }
-
-    function renderTable() {
-      const table = document.getElementById('dictTable');
-      // 创建thead和tbody结构
-      table.innerHTML = `
-        <thead>
-          <tr><th>原词</th><th>替换词</th><th>操作</th></tr>
-        </thead>
-        <tbody></tbody>
-      `;
-      const tbody = table.querySelector('tbody');
-      
-      const entries = Object.entries(dict)
-        .filter(([key, val]) => key.includes(filter) || val.includes(filter));
-      
-      if(entries.length===0){
-        const noResultsRow = document.createElement('tr');
-        noResultsRow.innerHTML = `<td colspan=3 style='text-align:center;color:#aaa'>无结果</td>`;
-        tbody.appendChild(noResultsRow);
-        return;
-      }
-      
-      entries.forEach(([key, value], i) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td>${key}</td>
-                         <td>
-                           <div style="display: flex; gap: 5px;">
-                             <input type="text" id="input-${i}" value="${value}" onchange="updateValue('${key}', this.value)" style="flex: 1;">
-                             <button class="editbtn" onclick="insertMagicCharAtCursor('input-${i}')" style="font-size: 12px; padding: 4px 8px; white-space: nowrap;">
-                                🪄 插入防屏蔽符
-                             </button>
-                           </div>
-                         </td>
-                         <td class="action-buttons">
-                            <button class="editbtn" onclick="editKey('${key}')">✏️ 编辑</button>
-                            <button class="delbtn" onclick="deleteRow('${key}')">🗑️ 删除</button>
-                         </td>`;
-        tbody.appendChild(row);
-      });
-    }
-
-    // 搜索功能
-    document.getElementById('search').oninput = function(){
-      filter = this.value.trim();
-      renderTable();
-    };
-
-    // 测试Token
-    document.getElementById('testTokenBtn').onclick = async () => {
-      const token = document.getElementById('token').value;
-      if (!token) {
-        showToast('Token测试', '请先输入Token', 'red');
-        return;
-      }
-      
-      // 先测试基本用户信息获取
-      try {
-        showToast('Token测试', '正在验证Token...', 'grey');
-        
-        // 1. 测试获取用户信息
-        const userRes = await fetch('https://api.github.com/user', {
-          headers: { Authorization: 'token ' + token }
-        });
-        
-        if (userRes.status === 401) {
-          throw new Error('Token无效或已过期，请重新生成');
-        } else if (!userRes.ok) {
-          throw new Error(`Token验证失败: HTTP ${userRes.status}`);
-        }
-        
-        const userData = await userRes.json();
-        
-        // 2. 测试仓库访问权限
-        const repoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
-          headers: { Authorization: 'token ' + token }
-        });
-        
-        if (repoRes.status === 404) {
-          throw new Error(`无法访问仓库 ${owner}/${repo}，请检查仓库名称是否正确`);
-        } else if (!repoRes.ok) {
-          throw new Error(`仓库访问失败: HTTP ${repoRes.status}`);
-        }
-        
-        // 3. 测试文件访问权限
-        const fileRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
-          headers: { Authorization: 'token ' + token }
-        });
-        
-        if (fileRes.status === 404) {
-          throw new Error(`无法访问文件 ${path}，请检查文件路径是否正确`);
-        } else if (!fileRes.ok) {
-          throw new Error(`文件访问失败: HTTP ${fileRes.status}`);
-        }
-        
-        showToast(
-          'Token测试成功', 
-          `✓ Token有效\n✓ 用户: ${userData.login}\n✓ 仓库访问正常\n✓ 文件访问正常`,
-          'green'
-        );
-        
-      } catch (error) {
-        console.error('Token测试错误:', error);
-        showToast('Token测试失败', error.message, 'red');
-        
-        // 如果是认证问题，清除保存的token
-        if (error.message.includes('Token无效') || error.message.includes('401')) {
-          localStorage.removeItem('githubToken');
-          localStorage.removeItem('github-Token');
-          document.getElementById('token').value = '';
-        }
-      }
-    };
-    
-    // 加载文件
-    document.getElementById('loadBtn').onclick = async () => {
-      showMsg("正在加载...", "grey", 0);
-      document.getElementById('loadBtn').disabled = true;
-      document.getElementById('loadBtn').innerHTML = 
-        '<span class="loading-spinner"></span>加载中...';
-      const token = document.getElementById('token').value;
-      if (!token) { 
-        showMsg("请先输入 Token", "red"); 
-        document.getElementById('loadBtn').disabled = false;
-        document.getElementById('loadBtn').textContent = '加载线上文件';
-        return; 
-      }
-      try {
-        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
-          headers: { Authorization: 'token ' + token }
-        });
-        
-        if (!res.ok) {
-          if (res.status === 401) {
-            throw new Error("Token认证失败: 请检查Token是否正确、是否过期，或是否有repo权限");
-          } else if (res.status === 403) {
-            throw new Error("访问被拒绝: 可能是API限制或权限不足");
-          } else if (res.status === 404) {
-            throw new Error("仓库或文件不存在: 请检查仓库路径和文件路径是否正确");
-          } else {
-            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-          }
-        }
-        
-        const data = await res.json();
-        sha = data.sha;
-        dict = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-        renderTable();
-        showMsg("文件已加载，可编辑", "green");
-        document.getElementById('loadBtn').disabled = false;
-        document.getElementById('loadBtn').textContent = '加载线上文件';
-      } catch(e) {
-        console.error('加载文件错误:', e);
-        showMsg(`加载失败: ${e.message}`, "red");
-        document.getElementById('loadBtn').disabled = false;
-        document.getElementById('loadBtn').textContent = '加载线上文件';
-        
-        // 如果是认证问题，清除保存的token
-        if (e.message.includes('认证失败') || e.message.includes('401')) {
-          localStorage.removeItem('githubToken');
-          localStorage.removeItem('github-Token');
-          document.getElementById('token').value = '';
-        }
-      }
-    };
-
-    // 添加词条弹窗
-    document.getElementById('addRow').onclick = () => {
-      document.getElementById('addForm').style.display = 'block';
-      document.getElementById('batchForm').style.display = 'none'; // 关闭批量面板
-      document.getElementById('addMsg').textContent = '';
-      document.getElementById('newKey').value = '';
-      document.getElementById('newVal').value = '';
-      document.getElementById('newKey').focus();
-    };
-
-    // 打开批量添加面板
-    document.getElementById('batchAddBtn').onclick = () => {
-      document.getElementById('addForm').style.display = 'none'; // 关闭单条
-      document.getElementById('batchForm').style.display = 'block';
-      
-      // 从本地存储恢复草稿内容
-      const savedDraft = localStorage.getItem('batchSourceDraft');
-      if (savedDraft && !document.getElementById('batchSource').value) {
-        document.getElementById('batchSource').value = savedDraft;
-        showToast('草稿恢复', '已恢复上次未完成的输入内容', 'blue');
-      }
-      
-      document.getElementById('batchSource').focus();
-    };
-
-    // 临时存储待处理词条的数组
-    let batchItems = [];
-    
-    // 监听批量输入框内容变化，自动保存草稿并检测格式
-    document.getElementById('batchSource').addEventListener('input', () => {
-      const content = document.getElementById('batchSource').value;
-      const draftIndicator = document.getElementById('draftIndicator');
-      
-      if (content.trim()) {
-        localStorage.setItem('batchSourceDraft', content);
-        // 显示草稿保存提示
-        draftIndicator.style.display = 'flex';
-        
-        // 如果是自动识别模式，则自动检测格式
-        if (document.getElementById('formatSelector').value === 'auto') {
-          detectFormatSilently(content);
-        }
-      } else {
-        localStorage.removeItem('batchSourceDraft');
-        // 隐藏草稿保存提示
-        draftIndicator.style.display = 'none';
-      }
-    });
-    
-    // 静默检测格式（不显示提示，只更新选择器）
-    function detectFormatSilently(text) {
-      if (!text.trim()) return;
-      
-      try {
-        // 尝试解析为JSON对象
-        const jsonData = JSON.parse(text);
-        
-        // 检查是否为字典格式的JSON对象（键值对）
-        if (typeof jsonData === 'object' && jsonData !== null && !Array.isArray(jsonData)) {
-          // 进一步检查值是否为字符串
-          let stringValuedPairs = 0;
-          let totalPairs = 0;
-          
-          for (const [key, value] of Object.entries(jsonData)) {
-            totalPairs++;
-            if (typeof value === 'string') {
-              stringValuedPairs++;
-            }
-          }
-          
-          // 如果大部分值都是字符串，则认为是字典格式
-          if (totalPairs > 0 && stringValuedPairs / totalPairs >= 0.8) {
-            document.getElementById('formatSelector').value = 'json';
-            return;
-          }
-        }
-      } catch (e) {
-        // JSON解析失败，继续检测其他格式
-      }
-      
-      // 默认为键值对格式
-      document.getElementById('formatSelector').value = 'keyvalue';
-    }
-    
-    // 清空草稿按钮
-    document.getElementById('clearDraftBtn').onclick = () => {
-      if (confirm('确定要清空草稿内容吗？')) {
-        document.getElementById('batchSource').value = '';
-        localStorage.removeItem('batchSourceDraft');
-        document.getElementById('draftIndicator').style.display = 'none';
-        showToast('草稿已清空', '草稿内容已被删除', 'blue');
-      }
-    };
-    
-    // 格式检测按钮
-    document.getElementById('detectFormatBtn').onclick = () => {
-      const rawText = document.getElementById('batchSource').value.trim();
-      if (!rawText) {
-        showMsg("请先输入内容", "orange");
-        return;
-      }
-      
-      let detectedFormat = 'keyvalue'; // 默认为键值对格式
-      let confidence = 0; // 置信度
-      
-      // 检测是否为JSON格式
-      try {
-        // 尝试解析为JSON对象
-        const jsonData = JSON.parse(rawText);
-        
-        // 检查是否为字典格式的JSON对象（键值对）
-        if (typeof jsonData === 'object' && jsonData !== null && !Array.isArray(jsonData)) {
-          // 进一步检查值是否为字符串
-          let stringValuedPairs = 0;
-          let totalPairs = 0;
-          
-          for (const [key, value] of Object.entries(jsonData)) {
-            totalPairs++;
-            if (typeof value === 'string') {
-              stringValuedPairs++;
-            }
-          }
-          
-          // 如果大部分值都是字符串，则认为是字典格式
-          if (totalPairs > 0 && stringValuedPairs / totalPairs >= 0.8) {
-            detectedFormat = 'json';
-            confidence = stringValuedPairs / totalPairs;
-          }
-        }
-      } catch (e) {
-        // JSON解析失败，继续检测其他格式
-      }
-      
-      // 检测是否为键值对格式
-      if (detectedFormat === 'keyvalue') {
-        const lines = rawText.split(/\n/);
-        let keyValuePairs = 0;
-        let validLines = 0;
-        
-        for (const line of lines) {
-          const trimmedLine = line.trim();
-          if (!trimmedLine) continue;
-          
-          validLines++;
-          
-          // 检查是否有分隔符（=、:、制表符等）
-          if (trimmedLine.includes('=') || trimmedLine.includes(':') || trimmedLine.includes('\t')) {
-            keyValuePairs++;
-          }
-        }
-        
-        if (validLines > 0) {
-          confidence = keyValuePairs / validLines;
-        }
-      }
-      
-      // 更新格式选择器
-      document.getElementById('formatSelector').value = detectedFormat;
-      
-      // 显示检测结果
-      let formatName = detectedFormat === 'json' ? 'JSON格式' : '键值对格式';
-      let message = `检测为${formatName}，置信度：${Math.round(confidence * 100)}%`;
-      
-      if (confidence >= 0.9) {
-        showMsg(message, "green");
-      } else if (confidence >= 0.6) {
-        showMsg(message, "orange");
-      } else {
-        showMsg(message + "，建议检查格式", "red");
-      }
-    };
-    
-    // 格式选择器变化时，更新提示文本
-    document.getElementById('formatSelector').onchange = (e) => {
-      const format = e.target.value;
-      const textarea = document.getElementById('batchSource');
-      
-      if (format === 'json') {
-        textarea.placeholder = '在这里粘贴JSON数据...&#10;格式示例：&#10;{"测试":"Test","敏感":"屏蔽"}';
-      } else if (format === 'keyvalue') {
-        textarea.placeholder = '在这里粘贴键值对数据...&#10;格式示例：&#10;测试=Test&#10;敏感=屏蔽';
-      } else {
-        textarea.placeholder = '在这里粘贴...&#10;支持格式：&#10;1) 原词=替换词&#10;2) {"原词":"替换词"}';
-      }
-    };
-    
-    // 解析按钮：将原始文本解析到待处理列表
-    document.getElementById('parseBtn').onclick = () => {
-      const rawText = document.getElementById('batchSource').value;
-      if (!rawText.trim()) {
-        showMsg("请先输入内容", "orange");
-        return;
-      }
-
-      const format = document.getElementById('formatSelector').value;
-      batchItems = [];
-      let parseError = null;
-      let duplicateCount = 0; // 新增：记录完全相同的词条数量
-
-      try {
-        if (format === 'json' || (format === 'auto' && isLikelyJson(rawText))) {
-          // JSON格式解析
-          try {
-            const jsonData = JSON.parse(rawText);
-            
-            if (typeof jsonData === 'object' && jsonData !== null && !Array.isArray(jsonData)) {
-              // 对象格式，遍历所有键值对
-              for (const [key, val] of Object.entries(jsonData)) {
-                if (!key || typeof val !== 'string') continue;
-                
-                // 检查替换词是否已包含防屏蔽符 U+200E
-                const { cleanValue, hasMagic } = checkAndRemoveMagicChar(val);
-                
-                // 新增：检查新旧词汇是否完全相同
-                let skipDuplicate = false;
-                if (dict[key]) {
-                  // 获取字典中的值，去除防屏蔽符进行比较
-                  const existingCleanValue = dict[key].replace(/\u200E/g, '');
-                  if (existingCleanValue === cleanValue) {
-                    duplicateCount++;
-                    skipDuplicate = true;
-                  }
-                }
-                
-                // 检查是否已存在
-                const isReplaceExisting = document.getElementById('replaceExisting').checked;
-                if (dict[key] && !isReplaceExisting && !skipDuplicate) {
-                  // 如果没有跳过重复项，且不允许替换已存在的词条，则跳过
-                  skipDuplicate = true;
-                }
-                
-                if (!skipDuplicate) {
-                  batchItems.push({
-                    key: key,
-                    value: cleanValue,
-                    hasMagic: hasMagic,
-                    willReplace: dict[key] && isReplaceExisting, // 标记是否将替换现有词条
-                    selected: true // 默认选中所有项
-                  });
-                }
-              }
-            } else if (Array.isArray(jsonData)) {
-              // 数组格式，检查是否为对象数组
-              jsonData.forEach(item => {
-                if (typeof item === 'object' && item !== null && !Array.isArray(item)) {
-                  // 尝试从对象中提取键值对
-                  const keys = Object.keys(item);
-                  if (keys.length >= 2) {
-                    const key = String(keys[0]);
-                    const val = String(item[keys[1]]);
-                    
-                    if (!key || !val) return;
-                    
-                    // 检查替换词是否已包含防屏蔽符 U+200E
-                    const { cleanValue, hasMagic } = checkAndRemoveMagicChar(val);
-                    
-                    // 新增：检查新旧词汇是否完全相同
-                    let skipDuplicate = false;
-                    if (dict[key]) {
-                      // 获取字典中的值，去除防屏蔽符进行比较
-                      const existingCleanValue = dict[key].replace(/\u200E/g, '');
-                      if (existingCleanValue === cleanValue) {
-                        duplicateCount++;
-                        skipDuplicate = true;
-                      }
-                    }
-                    
-                    const isReplaceExisting = document.getElementById('replaceExisting').checked;
-                    if (dict[key] && !isReplaceExisting && !skipDuplicate) {
-                      // 如果没有跳过重复项，且不允许替换已存在的词条，则跳过
-                      skipDuplicate = true;
-                    }
-                    
-                    if (!skipDuplicate) {
-                      batchItems.push({
-                        key: key,
-                        value: cleanValue,
-                        hasMagic: hasMagic,
-                        willReplace: dict[key] && isReplaceExisting, // 标记是否将替换现有词条
-                        selected: true // 默认选中所有项
-                      });
-                    }
-                  }
-                }
-              });
-            }
-          } catch (e) {
-            parseError = `JSON解析失败: ${e.message}`;
-          }
-        } else {
-          // 键值对格式解析
-          const lines = rawText.split(/\n/);
-          
-          lines.forEach((line, index) => {
-            line = line.trim();
-            if (!line) return; // 跳过空行
-            
-            // 支持用 等号(=)、中文冒号(：)、英文冒号(:) 或 制表符 分隔
-            let separatorIndex = -1;
-            // 优先找等号
-            if (line.includes('=')) separatorIndex = line.indexOf('=');
-            // 其次找制表符
-            else if (line.includes('\t')) separatorIndex = line.indexOf('\t');
-            // 再次找冒号
-            else if (line.includes(':')) separatorIndex = line.indexOf(':');
-            
-            if (separatorIndex === -1) {
-              // 尝试用空格分隔（只取第一个空格作为分隔符）
-              separatorIndex = line.indexOf(' ');
-            }
-
-            if (separatorIndex > -1) {
-              const key = line.substring(0, separatorIndex).trim();
-              let val = line.substring(separatorIndex + 1).trim();
-
-              if (key && val) {
-                // 检查替换词是否已包含防屏蔽符 U+200E
-                const { cleanValue, hasMagic } = checkAndRemoveMagicChar(val);
-                
-                // 新增：检查新旧词汇是否完全相同
-                let skipDuplicate = false;
-                if (dict[key]) {
-                  // 获取字典中的值，去除防屏蔽符进行比较
-                  const existingCleanValue = dict[key].replace(/\u200E/g, '');
-                  if (existingCleanValue === cleanValue) {
-                    duplicateCount++;
-                    skipDuplicate = true;
-                  }
-                }
-                
-                // 检查是否已存在或已在待处理列表中
-                const isReplaceExisting = document.getElementById('replaceExisting').checked;
-                if (dict[key] && !isReplaceExisting && !skipDuplicate) {
-                  // 如果没有跳过重复项，且不允许替换已存在的词条，则跳过
-                  skipDuplicate = true;
-                }
-                
-                if (!skipDuplicate) {
-                  batchItems.push({
-                    key: key,
-                    value: cleanValue,
-                    hasMagic: hasMagic,
-                    willReplace: dict[key] && isReplaceExisting, // 标记是否将替换现有词条
-                    selected: true // 默认选中所有项
-                  });
-                }
-              }
-            }
-          });
-        }
-      } catch (e) {
-        parseError = `解析失败: ${e.message}`;
-      }
-      
-      // 显示结果
-      if (parseError) {
-        showMsg(parseError, "red");
-        return;
-      }
-
-      // 渲染预览列表
-      renderBatchPreview();
-      
-      // 统计已识别防屏蔽符和将替换的词条数量
-      const magicCount = batchItems.filter(item => item.hasMagic).length;
-      const replaceCount = batchItems.filter(item => item.willReplace).length;
-      let message = `已解析出 ${batchItems.length} 条待处理词条`;
-      if (duplicateCount > 0) {
-        message += `，已过滤 ${duplicateCount} 条相同词条`;
-      }
-      if (magicCount > 0) {
-        message += `，其中 ${magicCount} 条已包含防屏蔽符`;
-      }
-      if (replaceCount > 0) {
-        message += `，${replaceCount} 条将替换已存在的词条`;
-      }
-      showMsg(message, "green");
-    };
-    
-    // 辅助函数：判断文本是否可能为JSON格式
-    function isLikelyJson(text) {
-      const trimmed = text.trim();
-      return (trimmed.startsWith('{') && trimmed.endsWith('}')) || 
-             (trimmed.startsWith('[') && trimmed.endsWith(']'));
-    }
-    
-    // 辅助函数：检查并移除防屏蔽符
-    function checkAndRemoveMagicChar(val) {
-      let hasMagicChar = false;
-      let cleanValue = val;
-      
-      // 方法1：检查是否每个字符后都有U+200E（针对长文本）
-      if (val.length > 3) {
-        const chars = val.split('').filter((c, i) => i % 2 === 0);
-        const charsWithMagic = val.split('').filter((c, i) => i % 2 === 1);
-        if (charsWithMagic.every(c => c === '\u200E') && charsWithMagic.length === chars.length) {
-          hasMagicChar = true;
-          // 去除防屏蔽符，保留原始文本用于显示
-          cleanValue = chars.join('');
-        }
-      }
-      
-      // 方法2：检查中间是否包含U+200E（针对短文本）
-      if (!hasMagicChar && val.includes('\u200E')) {
-        hasMagicChar = true;
-        // 去除所有防屏蔽符，保留原始文本
-        cleanValue = val.replace(/\u200E/g, '');
-      }
-      
-      return { cleanValue, hasMagic: hasMagicChar };
-    }
-
-    // 渲染批量预览列表
-    function renderBatchPreview() {
-      const preview = document.getElementById('batchPreview');
-      const count = document.getElementById('previewCount');
-      const batchActions = document.getElementById('batchActions');
-      
-      count.textContent = batchItems.length;
-
-      if (batchItems.length === 0) {
-        preview.innerHTML = '<div style="text-align:center; color:#ccc; padding-top:80px;">暂无数据，请先在上方粘贴并解析</div>';
-        batchActions.style.display = 'none';
-        return;
-      }
-
-      // 显示批量操作按钮
-      batchActions.style.display = 'block';
-
-      let html = '';
-      let hasReplacements = false;
-      
-      batchItems.forEach((item, index) => {
-        // 为已包含防屏蔽符的词条在显示时添加防屏蔽符，这样用户能看到实际效果
-        const displayValue = item.hasMagic ? 
-          (item.value.length > 3 ? 
-            item.value.split('').map(c => c + '\u200E').join('') : 
-            item.value.slice(0, Math.floor(item.value.length/2)) + '\u200E' + item.value.slice(Math.floor(item.value.length/2))
-          ) : 
-          item.value;
-          
-        // 添加样式类
-        let itemClasses = '';
-        if (item.hasMagic) itemClasses += ' has-magic';
-        if (item.willReplace) {
-          itemClasses += ' will-replace';
-          hasReplacements = true;
-        }
-        
-        // 创建状态指示器
-        let statusIndicators = `<div class="batch-item-magic-indicator" title="${item.hasMagic ? '已包含防屏蔽符' : '未包含防屏蔽符'}">✓</div>`;
-        if (item.willReplace) {
-          statusIndicators += `<div class="batch-item-replace-indicator" title="将替换已存在的词条">↻</div>`;
-        }
-        
-        // 创建内容区域
-        let contentArea = `
-          <div class="batch-item-key">${item.key}</div>
-          <div class="batch-item-value">${displayValue}</div>
-          <div class="batch-item-status">
-            ${statusIndicators}
-          </div>
-        `;
-        
-        // 如果是替换项，添加旧值显示
-        if (item.willReplace) {
-          const oldValue = dict[item.key];
-          const displayOldValue = oldValue.includes('\u200E') ? 
-            oldValue : // 如果旧值已有防屏蔽符，直接显示
-            (oldValue.length > 3 ? 
-              oldValue.split('').map(c => c + '\u200E').join('') : 
-              oldValue.slice(0, Math.floor(oldValue.length/2)) + '\u200E' + oldValue.slice(Math.floor(oldValue.length/2))
-            );
-          
-          contentArea = `
-            <div class="batch-item-key">${item.key}</div>
-            <div class="batch-item-value">${displayValue}</div>
-            <div class="batch-item-old-value" title="当前值: ${oldValue}">${displayOldValue}</div>
-            <div class="batch-item-status">
-              ${statusIndicators}
+    <!-- 顶部导航 -->
+    <nav class="navbar navbar-custom">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-shield-alt text-primary fs-4"></i>
+                    <span class="brand-text">国服屏蔽词管理</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-light text-primary fw-bold border" data-bs-toggle="modal" data-bs-target="#configModal">
+                        <i class="fas fa-cog"></i> 设置
+                    </button>
+                    <button id="loadBtn" class="btn btn-gradient">
+                        <i class="fas fa-cloud-download-alt"></i> 加载文件
+                    </button>
+                </div>
             </div>
-          `;
-        }
-        
-        // 确保选中状态
-        const checked = item.selected !== false ? 'checked' : '';
-        
-        html += `
-          <div class="batch-item${itemClasses}" data-index="${index}">
-            <div class="batch-item-checkbox">
-              <input type="checkbox" ${checked} data-index="${index}" class="item-checkbox">
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- 头部统计与操作 -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-8">
+                <div class="content-card h-100 p-4 d-flex align-items-center">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" id="searchInput" class="form-control form-control-custom border-start-0" placeholder="搜索关键词或替换词...">
+                    </div>
+                </div>
             </div>
-            <div class="batch-item-index">${index + 1}</div>
-            ${contentArea}
-          </div>
-        `;
-      });
+            <div class="col-md-4">
+                <div class="content-card h-100 p-4 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small text-uppercase fw-bold">当前词条数</div>
+                        <div class="fs-2 fw-bold text-dark" id="totalCount">0</div>
+                    </div>
+                    <div class="d-flex flex-column gap-2">
+                        <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addSingleModal">
+                            <i class="fas fa-plus"></i> 单条添加
+                        </button>
+                        <button class="btn btn-outline-success btn-sm" id="openBatchModalBtn">
+                            <i class="fas fa-file-import"></i> 批量导入
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-      preview.innerHTML = html;
-      
-      // 添加复选框事件监听
-      document.querySelectorAll('.item-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', (e) => {
-          const index = parseInt(e.target.dataset.index);
-          batchItems[index].selected = e.target.checked;
-        });
-      });
-      
-      // 如果没有替换项，隐藏旧值列的提示
-      if (!hasReplacements) {
-        // 这里可以添加一些额外的UI逻辑
-      }
-    }
+        <!-- 列表区域 -->
+        <div class="content-card">
+            <div class="card-header-custom">
+                <h5 class="m-0 fw-bold text-secondary d-flex align-items-center">
+                    <i class="fas fa-list-alt me-2"></i>词库列表
+                    <!-- [修复] 此处补全了 dictCount 元素 -->
+                    <span class="badge bg-secondary ms-2" style="font-size: 0.7em;" id="dictCount">0</span>
+                </h5>
+                <span class="status-badge" id="dataStatus">未加载</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-custom table-hover mb-0" id="dictTable">
+                    <thead>
+                        <tr>
+                            <th width="30%">原词</th>
+                            <th width="50%">替换词</th>
+                            <th width="20%" class="text-end">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dictTableBody">
+                        <tr>
+                            <td colspan="3" class="text-center py-5">
+                                <div class="text-muted mb-3">
+                                    <i class="fas fa-inbox fa-3x opacity-25"></i>
+                                </div>
+                                <p class="text-muted">请点击右上角“加载文件”获取数据</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-    // 一键加符按钮：给所有替换词插入防屏蔽符
-    document.getElementById('batchMagicBtn').onclick = () => {
-      if (batchItems.length === 0) {
-        showMsg("请先解析内容", "orange");
-        return;
-      }
+    <!-- 自动保存状态悬浮窗 -->
+    <div class="save-status-float" id="saveStatus" style="display: none;">
+        <div id="saveIcon"><i class="fas fa-check-circle text-success"></i></div>
+        <div id="saveText" class="fw-bold text-secondary">已同步</div>
+    </div>
 
-      let changedCount = 0;
-      batchItems.forEach(item => {
-        if (!item.hasMagic && item.value.length > 1) {
-          // 如果词条长度大于3个字符，在每个字符后插入防屏蔽符
-          if (item.value.length > 3) {
-            // 将字符串拆分为字符数组，每个字符后添加防屏蔽符
-            let newValue = '';
-            for (let i = 0; i < item.value.length; i++) {
-              newValue += item.value[i] + '\u200E';
+    <!-- 通知 Toast 容器 -->
+    <div class="toast-container position-fixed top-0 end-0 p-3"></div>
+
+    <!-- ================= 模态框区域 ================= -->
+
+    <!-- 1. 设置模态框 -->
+    <div class="modal fade" id="configModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">系统设置</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-secondary">GitHub Access Token</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fas fa-key"></i></span>
+                            <input type="password" id="tokenInput" class="form-control" placeholder="ghp_..." autocomplete="off">
+                        </div>
+                        <div class="form-text text-muted small mt-2">
+                            <i class="fas fa-shield-alt"></i> Token 将会被加密存储在本地 (Key: githubToken)。
+                        </div>
+                    </div>
+                    
+                    <div class="bg-light p-3 rounded-3 mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="autoSaveSwitch" checked>
+                            <label class="form-check-label fw-bold" for="autoSaveSwitch">启用自动保存</label>
+                        </div>
+                        <div class="text-muted small mt-1">修改后3秒自动同步到 GitHub</div>
+                    </div>
+
+                    <button class="btn btn-outline-primary w-100" id="testTokenBtn">
+                        验证 Token 有效性
+                    </button>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal">完成</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 单条添加模态框 -->
+    <div class="modal fade" id="addSingleModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">添加屏蔽词</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">原词</label>
+                        <input type="text" id="singleKey" class="form-control form-control-custom" placeholder="例如：敏感词">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">替换词</label>
+                        <div class="input-group">
+                            <input type="text" id="singleVal" class="form-control form-control-custom" placeholder="例如：敏*词">
+                            <button class="btn btn-warning text-white" type="button" onclick="App.insertMagicChar('singleVal')">
+                                <i class="fas fa-magic"></i> 加符
+                            </button>
+                        </div>
+                        <div class="form-text">点击“加符”可插入隐形防屏蔽字符 (U+200E)</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-gradient" id="confirmAddSingleBtn">确认添加</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 批量导入模态框 -->
+    <div class="modal fade" id="batchModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-file-import text-primary me-2"></i>批量导入工作台</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row h-100">
+                        <!-- 左侧输入 -->
+                        <div class="col-lg-5 d-flex flex-column border-end">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="fw-bold">1. 粘贴数据</label>
+                                <select id="batchFormat" class="form-select form-select-sm w-auto border-0 bg-light">
+                                    <option value="auto">自动识别格式</option>
+                                    <option value="keyvalue">键值对 (Key=Value)</option>
+                                    <option value="json">JSON</option>
+                                </select>
+                            </div>
+                            <textarea id="batchInput" class="form-control flex-grow-1 mb-3" style="min-height: 200px; font-family: monospace; font-size: 0.9rem;" placeholder="支持格式：&#10;1. 原词=替换词&#10;2. JSON 对象 {&quot;原词&quot;:&quot;替换词&quot;}"></textarea>
+                            <div class="d-grid">
+                                <button class="btn btn-primary" id="parseBatchBtn">
+                                    <i class="fas fa-arrow-right me-2"></i>解析到预览区
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 右侧预览 -->
+                        <div class="col-lg-7 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="fw-bold">2. 预览与操作 (<span id="batchCount">0</span>)</label>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-warning" id="batchMagicBtn">
+                                        <i class="fas fa-magic"></i> 全体加符
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- 选项 -->
+                            <div class="bg-light p-2 rounded mb-2 d-flex align-items-center justify-content-between">
+                                <div class="form-check ms-2">
+                                    <input class="form-check-input" type="checkbox" id="batchOverwrite">
+                                    <label class="form-check-label small" for="batchOverwrite">覆盖已存在的词条</label>
+                                </div>
+                                <div class="small text-muted">
+                                    <span class="badge bg-success rounded-circle p-1 me-1"> </span>新增
+                                    <span class="badge bg-danger rounded-circle p-1 me-1 ms-2"> </span>替换
+                                    <span class="badge bg-warning text-dark rounded-circle p-1 me-1 ms-2"> </span>含符
+                                </div>
+                            </div>
+
+                            <div id="batchPreviewList" class="batch-preview-box flex-grow-1">
+                                <div class="text-center text-muted py-5 mt-4">
+                                    <i class="fas fa-paste fa-2x mb-3 opacity-25"></i>
+                                    <p>请先在左侧粘贴数据并解析</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-gradient px-4" id="confirmBatchImportBtn">
+                        <i class="fas fa-check me-2"></i>确认导入
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 脚本逻辑 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        /**
+         * 核心逻辑模块
+         */
+        
+        // 常量配置
+        const CONFIG = {
+            owner: "Kosto179cn",
+            repo: "Kosto179cn.github.io",
+            path: "chinese_words_replacer/dictionary.json",
+            tokenKey: "githubToken", // 标准化键名
+            magicChar: '\u200E'
+        };
+
+        // 工具类
+        const Utils = {
+            // 加密 Token
+            encryptToken: (token) => {
+                try {
+                    const salt = Math.random().toString(36).substring(2, 8);
+                    const data = JSON.stringify({ token, timestamp: Date.now(), salt });
+                    return btoa(data);
+                } catch (e) { return null; }
+            },
+            
+            // 解密 Token
+            decryptToken: (encrypted) => {
+                try {
+                    if (!encrypted) return null;
+                    const data = JSON.parse(atob(encrypted));
+                    return data.token;
+                } catch (e) { return null; }
+            },
+
+            // 转义 HTML
+            escapeHtml: (str) => {
+                if (!str) return '';
+                return str.replace(/&/g, "&amp;")
+                          .replace(/</g, "&lt;")
+                          .replace(/>/g, "&gt;")
+                          .replace(/"/g, "&quot;")
+                          .replace(/'/g, "&#039;");
+            },
+
+            // 显示 Toast
+            showToast: (message, type = 'info') => {
+                const container = document.querySelector('.toast-container');
+                const id = 'toast-' + Date.now();
+                const colors = {
+                    info: 'text-bg-primary',
+                    success: 'text-bg-success',
+                    error: 'text-bg-danger',
+                    warning: 'text-bg-warning'
+                };
+                
+                const html = `
+                    <div id="${id}" class="toast align-items-center ${colors[type]} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'} me-2"></i>
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>
+                `;
+                
+                container.insertAdjacentHTML('beforeend', html);
+                const toastEl = document.getElementById(id);
+                const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+                toast.show();
+                
+                toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+            },
+
+            // 更新自动保存状态UI
+            updateSaveStatus: (status, text) => {
+                const el = document.getElementById('saveStatus');
+                const icon = document.getElementById('saveIcon');
+                const txt = document.getElementById('saveText');
+                
+                el.style.display = 'flex';
+                txt.textContent = text;
+                
+                if (status === 'saving') {
+                    icon.innerHTML = '<div class="spinner-border spinner-loading text-primary" style="width:1rem;height:1rem;"></div>';
+                } else if (status === 'success') {
+                    icon.innerHTML = '<i class="fas fa-check-circle text-success"></i>';
+                    setTimeout(() => { if(el.style.display!=='none') el.style.display='none'; }, 3000);
+                } else if (status === 'error') {
+                    icon.innerHTML = '<i class="fas fa-exclamation-circle text-danger"></i>';
+                } else {
+                    el.style.display = 'none';
+                }
             }
-            item.value = newValue;
-          } else {
-            // 对于3个字符及以下的词条，在字符串中间插入防屏蔽符
-            const mid = Math.floor(item.value.length / 2);
-            item.value = item.value.slice(0, mid) + '\u200E' + item.value.slice(mid);
-          }
-          item.hasMagic = true;
-          changedCount++;
-        } else if (item.hasMagic) {
-          // 对于已经有防屏蔽符的词条，确保使用正确的格式
-          const cleanValue = item.value.replace(/\u200E/g, '');
-          
-          // 如果词条长度大于3个字符，在每个字符后插入防屏蔽符
-          if (cleanValue.length > 3) {
-            // 将字符串拆分为字符数组，每个字符后添加防屏蔽符
-            let newValue = '';
-            for (let i = 0; i < cleanValue.length; i++) {
-              newValue += cleanValue[i] + '\u200E';
+        };
+
+        // Token 管理
+        const TokenManager = {
+            init: () => {
+                // 迁移旧键名逻辑：github-Token -> githubToken
+                const oldToken = localStorage.getItem('github-Token');
+                if (oldToken) {
+                    // 如果 githubToken 不存在，则迁移过去
+                    if (!localStorage.getItem(CONFIG.tokenKey)) {
+                        localStorage.setItem(CONFIG.tokenKey, oldToken);
+                        console.log('Migrated github-Token to githubToken');
+                    }
+                    // 无论是否迁移成功，删除旧 key 防止混淆
+                    localStorage.removeItem('github-Token');
+                }
+
+                // 加载 Token
+                const encrypted = localStorage.getItem(CONFIG.tokenKey);
+                const token = Utils.decryptToken(encrypted);
+                if (token) {
+                    document.getElementById('tokenInput').value = token;
+                    // 自动加载
+                    setTimeout(() => App.loadData(), 500);
+                }
+            },
+
+            save: () => {
+                const token = document.getElementById('tokenInput').value.trim();
+                if (token) {
+                    const encrypted = Utils.encryptToken(token);
+                    localStorage.setItem(CONFIG.tokenKey, encrypted);
+                    // 确保旧键被清除
+                    localStorage.removeItem('github-Token');
+                    Utils.showToast('Token 已保存', 'success');
+                } else {
+                    localStorage.removeItem(CONFIG.tokenKey);
+                }
+            },
+
+            get: () => {
+                const encrypted = localStorage.getItem(CONFIG.tokenKey);
+                return Utils.decryptToken(encrypted);
             }
-            item.value = newValue;
-          } else {
-            // 对于3个字符及以下的词条，在字符串中间插入防屏蔽符
-            const mid = Math.floor(cleanValue.length / 2);
-            item.value = cleanValue.slice(0, mid) + '\u200E' + cleanValue.slice(mid);
-          }
-        }
-      });
+        };
 
-      // 重新渲染预览
-      renderBatchPreview();
-      showToast('防屏蔽符处理', `已处理 ${batchItems.length} 个词条的防屏蔽符`, '#f39c12');
-    };
+        // GitHub API
+        const GitHubAPI = {
+            // 获取文件
+            fetchFile: async () => {
+                const token = TokenManager.get();
+                if (!token) throw new Error("Token 未设置");
 
-    // 批量操作按钮事件处理
-    document.getElementById('selectAllBtn').onclick = () => {
-      batchItems.forEach(item => item.selected = true);
-      document.querySelectorAll('.item-checkbox').forEach(cb => cb.checked = true);
-    };
-    
-    document.getElementById('deselectAllBtn').onclick = () => {
-      batchItems.forEach(item => item.selected = false);
-      document.querySelectorAll('.item-checkbox').forEach(cb => cb.checked = false);
-    };
-    
-    document.getElementById('selectOnlyNewBtn').onclick = () => {
-      batchItems.forEach((item, index) => {
-        const isSelected = !item.willReplace;
-        item.selected = isSelected;
-        document.querySelector(`.item-checkbox[data-index="${index}"]`).checked = isSelected;
-      });
-    };
-    
-    document.getElementById('selectOnlyReplaceBtn').onclick = () => {
-      batchItems.forEach((item, index) => {
-        const isSelected = item.willReplace;
-        item.selected = isSelected;
-        document.querySelector(`.item-checkbox[data-index="${index}"]`).checked = isSelected;
-      });
-    };
-    
-    // 确认批量导入按钮：将待处理列表中的词条添加到字典
-    document.getElementById('confirmBatchBtn').onclick = () => {
-      if (batchItems.length === 0) {
-        showMsg("没有可导入的词条", "orange");
-        return;
-      }
+                const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.path}`;
+                const res = await fetch(url, { headers: { Authorization: `token ${token}` } });
 
-      let successCount = 0;
-      let replaceCount = 0;
-      let skipCount = 0;
+                if (!res.ok) {
+                    if (res.status === 401) throw new Error("Token 无效或过期");
+                    if (res.status === 404) throw new Error("文件或仓库不存在");
+                    throw new Error(`HTTP Error: ${res.status}`);
+                }
 
-      batchItems.forEach(item => {
-        // 检查用户是否选择了此项
-        if (item.selected === false) {
-          skipCount++;
-          return;
-        }
-        
-        // 检查是否已存在
-        const isReplaceExisting = document.getElementById('replaceExisting').checked;
-        const existingValue = dict[item.key];
-        
-        if (existingValue) {
-          if (isReplaceExisting && item.willReplace) {
-            // 替换已存在的词条
-            dict[item.key] = item.value;
-            replaceCount++;
-          } else {
-            // 跳过已存在的词条
-            skipCount++;
-            return;
-          }
-        } else {
-          // 添加新词条
-          dict[item.key] = item.value;
-          successCount++;
-        }
-      });
+                return await res.json();
+            },
 
-      // 更新界面
-      document.getElementById('batchForm').style.display = 'none';
-      document.getElementById('batchSource').value = ''; // 清空输入框
-      localStorage.removeItem('batchSourceDraft'); // 清除草稿
-      batchItems = []; // 清空待处理列表
-      renderBatchPreview(); // 清空等待区显示
-      renderTable();
-      
-      // 显示结果通知
-      let msg = `成功导入 ${successCount} 条`;
-      if (replaceCount > 0) msg += `，替换已存在 ${replaceCount} 条`;
-      if (skipCount > 0) msg += `，跳过 ${skipCount} 条`;
-      
-      showToast('批量导入完成', msg, (successCount > 0 || replaceCount > 0) ? 'green' : 'orange');
+            // 更新文件
+            updateFile: async (contentObj, sha) => {
+                const token = TokenManager.get();
+                if (!token) throw new Error("Token 未设置");
 
-      // 只有真正添加了词才触发保存
-      if (successCount > 0 || replaceCount > 0) {
-        triggerAutoSave();
-      }
-    };
+                // Base64 编码 (处理 UTF-8)
+                const contentStr = JSON.stringify(contentObj, null, 2);
+                const encoder = new TextEncoder();
+                const data = encoder.encode(contentStr);
+                let binary = '';
+                for (let i = 0; i < data.byteLength; i++) binary += String.fromCharCode(data[i]);
+                const contentBase64 = btoa(binary);
 
-    // 新增：插入隐形字符 U+200E 的功能
-    document.getElementById('insertCharBtn').onclick = (e) => {
-      e.preventDefault(); // 防止触发表单默认行为
-      const input = document.getElementById('newVal');
-      const invisibleChar = '\u200E'; // U+200E 字符
-      
-      // 获取当前光标位置，在光标处插入而不是末尾
-      const startPos = input.selectionStart;
-      const endPos = input.selectionEnd;
-      
-      // 插入字符
-      input.value = input.value.substring(0, startPos)
-        + invisibleChar
-        + input.value.substring(endPos, input.value.length);
-      
-      // 重新定位光标到插入字符之后
-      input.selectionStart = startPos + invisibleChar.length;
-      input.selectionEnd = startPos + invisibleChar.length;
-      
-      // 让输入框重新获得焦点
-      input.focus();
-      
-      // 触发更新事件
-      input.dispatchEvent(new Event('change'));
-      
-      // 提示用户
-      showToast('小工具', '已在光标处插入隐形字符 U+200E', '#f39c12');
-    };
+                const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.path}`;
+                const res = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        Authorization: `token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: "Update via Shield Words Manager Pro",
+                        content: contentBase64,
+                        sha: sha
+                    })
+                });
 
-    // 新增：在指定输入框的光标位置插入防屏蔽符
-    function insertMagicCharAtCursor(inputId) {
-      const input = document.getElementById(inputId);
-      if (!input) return;
-      
-      const invisibleChar = '\u200E'; // U+200E 字符
-      
-      // 获取当前光标位置，在光标处插入而不是末尾
-      const startPos = input.selectionStart;
-      const endPos = input.selectionEnd;
-      
-      // 插入字符
-      input.value = input.value.substring(0, startPos)
-        + invisibleChar
-        + input.value.substring(endPos, input.value.length);
-      
-      // 重新定位光标到插入字符之后
-      input.selectionStart = startPos + invisibleChar.length;
-      input.selectionEnd = startPos + invisibleChar.length;
-      
-      // 让输入框重新获得焦点
-      input.focus();
-      
-      // 触发更新事件
-      input.dispatchEvent(new Event('change'));
-      
-      // 提示用户
-      showToast('小工具', '已在光标处插入隐形字符 U+200E', '#f39c12');
-    }
+                if (!res.ok) throw new Error(`保存失败: ${res.status}`);
+                return await res.json();
+            }
+        };
 
-    // 确认添加词条
-    document.getElementById('confirmAddBtn').onclick = () => {
-      let key = document.getElementById('newKey').value.trim();
-      let val = document.getElementById('newVal').value.trim();
-      
-      // 数据验证
-      if(!key) { 
-        showAddMsg("词不能为空"); 
-        document.getElementById('newKey').focus();
-        return;
-      }
-      if(key.length > 50) {
-        showAddMsg("词长度不能超过50个字符");
-        document.getElementById('newKey').focus();
-        return;
-      }
-      if(!val) {
-        showAddMsg("替换词不能为空");
-        document.getElementById('newVal').focus();
-        return;
-      }
-      if(val.length > 200) {
-        showAddMsg("替换词长度不能超过200个字符");
-        document.getElementById('newVal').focus();
-        return;
-      }
-      if(dict[key]) { 
-        showAddMsg("该词已存在"); 
-        document.getElementById('newKey').focus();
-        return;
-      }
-      
-      dict[key] = val;
-      document.getElementById('addForm').style.display = 'none';
-      renderTable();
-      showMsg(`已添加词条: ${key}`, "green");
-      triggerAutoSave();
-    };
+        // 主应用逻辑
+        const App = {
+            data: {},
+            sha: null,
+            autoSaveTimer: null,
+            batchDraft: [],
 
-    // 自定义弹窗函数
-    function showCustomPrompt(message, defaultValue, callback) {
-      const modal = document.createElement('div');
-      modal.style = `
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-        background: rgba(0,0,0,0.5); display: flex; justify-content: center; 
-        align-items: center; z-index: 10000;
-      `;
-      
-      modal.innerHTML = `
-        <div style="background: white; padding: 20px; border-radius: 8px; width: 300px;">
-          <div style="margin-bottom: 10px;">${message}</div>
-          <input type="text" id="promptInput" value="${defaultValue || ''}" 
-                 style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box;">
-          <div style="display: flex; gap: 10px; justify-content: flex-end;">
-            <button id="promptCancelBtn" class="modern-btn btn-secondary">取消</button>
-            <button id="promptConfirmBtn" class="modern-btn btn-primary">确定</button>
-          </div>
-        </div>
-      `;
-      
-      document.body.appendChild(modal);
-      document.getElementById('promptInput').focus();
-      
-      // 添加事件监听器
-      document.getElementById('promptCancelBtn').onclick = function() {
-        modal.remove();
-      };
-      
-      document.getElementById('promptConfirmBtn').onclick = function() {
-        const value = document.getElementById('promptInput').value;
-        modal.remove();
-        callback(value);
-      };
-    }
+            init: () => {
+                TokenManager.init();
+                App.bindEvents();
+            },
 
-    function showCustomConfirm(message, callback) {
-      const modal = document.createElement('div');
-      modal.style = `
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-        background: rgba(0,0,0,0.5); display: flex; justify-content: center; 
-        align-items: center; z-index: 10000;
-      `;
-      
-      modal.innerHTML = `
-        <div style="background: white; padding: 20px; border-radius: 8px; width: 300px;">
-          <div style="margin-bottom: 15px;">${message}</div>
-          <div style="display: flex; gap: 10px; justify-content: flex-end;">
-            <button id="cancelBtn" class="modern-btn btn-secondary">取消</button>
-            <button id="confirmBtn" class="modern-btn btn-danger">确定</button>
-          </div>
-        </div>
-      `;
-      modal.id = 'confirmModal';
-      
-      document.body.appendChild(modal);
-      
-      // 添加事件监听器
-      document.getElementById('cancelBtn').onclick = function() {
-        modal.remove();
-        callback(false);
-      };
-      
-      document.getElementById('confirmBtn').onclick = function() {
-        modal.remove();
-        callback(true);
-      };
-    }
-    
-    function showCustomPrompt(message, defaultValue, callback) {
-      const modal = document.createElement('div');
-      modal.style = `
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-        background: rgba(0,0,0,0.5); display: flex; justify-content: center; 
-        align-items: center; z-index: 10000;
-      `;
-      
-      modal.innerHTML = `
-        <div style="background: white; padding: 20px; border-radius: 8px; width: 300px;">
-          <div style="margin-bottom: 15px;">${message}</div>
-          <input type="text" id="promptInput" value="${defaultValue}" style="width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;">
-          <div style="display: flex; gap: 10px; justify-content: flex-end;">
-            <button id="cancelBtn" class="modern-btn btn-secondary">取消</button>
-            <button id="confirmBtn" class="modern-btn btn-primary">确定</button>
-          </div>
-        </div>
-      `;
-      modal.id = 'promptModal';
-      
-      document.body.appendChild(modal);
-      
-      // 添加事件监听器
-      document.getElementById('cancelBtn').onclick = function() {
-        modal.remove();
-        callback(null);
-      };
-      
-      document.getElementById('confirmBtn').onclick = function() {
-        const value = document.getElementById('promptInput').value.trim();
-        modal.remove();
-        callback(value);
-      };
-      
-      // 添加回车键提交功能
-      document.getElementById('promptInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          const value = document.getElementById('promptInput').value.trim();
-          modal.remove();
-          callback(value);
-        }
-      });
-    }
+            bindEvents: () => {
+                // Token 保存
+                document.getElementById('tokenInput').addEventListener('input', TokenManager.save);
+                
+                // 加载按钮
+                document.getElementById('loadBtn').onclick = App.loadData;
+                
+                // 搜索
+                document.getElementById('searchInput').addEventListener('input', (e) => App.renderTable(e.target.value));
+                
+                // 单条添加
+                document.getElementById('confirmAddSingleBtn').onclick = App.addSingle;
+                
+                // 批量相关
+                document.getElementById('openBatchModalBtn').onclick = () => {
+                    const saved = localStorage.getItem('batchSourceDraft');
+                    if (saved) document.getElementById('batchInput').value = saved;
+                    new bootstrap.Modal(document.getElementById('batchModal')).show();
+                };
+                document.getElementById('batchInput').addEventListener('input', (e) => {
+                    localStorage.setItem('batchSourceDraft', e.target.value);
+                });
+                document.getElementById('parseBatchBtn').onclick = App.parseBatch;
+                document.getElementById('confirmBatchImportBtn').onclick = App.importBatch;
+                document.getElementById('batchMagicBtn').onclick = App.batchAddMagic;
+                
+                // 测试 Token
+                document.getElementById('testTokenBtn').onclick = async () => {
+                    try {
+                        await GitHubAPI.fetchFile();
+                        Utils.showToast('Token 验证成功', 'success');
+                    } catch (e) {
+                        Utils.showToast(`验证失败: ${e.message}`, 'error');
+                    }
+                };
+            },
 
+            loadData: async () => {
+                const btn = document.getElementById('loadBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> 加载中...';
 
+                try {
+                    const res = await GitHubAPI.fetchFile();
+                    App.sha = res.sha;
+                    // 解码 UTF-8
+                    const decoded = decodeURIComponent(escape(atob(res.content)));
+                    App.data = JSON.parse(decoded);
+                    
+                    App.renderTable();
+                    document.getElementById('dataStatus').textContent = '已加载';
+                    document.getElementById('dataStatus').className = 'status-badge bg-success text-white';
+                    Utils.showToast('加载成功', 'success');
+                } catch (e) {
+                    Utils.showToast(e.message, 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-cloud-download-alt"></i> 加载文件';
+                }
+            },
 
-    // 编辑替换词
-    window.updateValue = (key, newValue) => {
-      dict[key] = newValue;
-      triggerAutoSave();
-    };
+            renderTable: (filter = '') => {
+                const tbody = document.getElementById('dictTableBody');
+                tbody.innerHTML = '';
+                const entries = Object.entries(App.data).filter(([k, v]) => 
+                    k.includes(filter) || v.includes(filter)
+                );
 
-    // 编辑原词
-    window.editKey = (oldKey) => {
-      const newValue = prompt('编辑原词:', oldKey);
-      if (newValue && newValue !== oldKey) {
-        const value = dict[oldKey];
-        delete dict[oldKey];
-        dict[newValue] = value;
-        renderTable();
-        triggerAutoSave();
-      }
-    };
+                // 更新计数器 (使用安全检查)
+                const totalCountEl = document.getElementById('totalCount');
+                if (totalCountEl) totalCountEl.textContent = entries.length;
 
-    function triggerAutoSave() {
-      console.log('triggerAutoSave called', { isAutoSaveEnabled, sha });
-      if (!isAutoSaveEnabled || !sha) {
-        console.log('Auto save skipped - isAutoSaveEnabled:', isAutoSaveEnabled, 'sha:', sha);
-        return;
-      }
-      
-      clearTimeout(autoSaveTimer);
-      autoSaveTimer = setTimeout(() => {
-        console.log('Auto saving to GitHub...');
-        saveToGithub();
-      }, 3000); // 延长到3秒，避免频繁保存
-      
-      updateLastSaveTime('等待保存...');
-    }
+                const dictCountEl = document.getElementById('dictCount');
+                if (dictCountEl) dictCountEl.textContent = entries.length;
 
-    function updateLastSaveTime(text) {
-      const el = document.getElementById('lastSaveTime');
-      if (el) el.textContent = text;
-    }
+                if (entries.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-muted">无匹配数据</td></tr>`;
+                    return;
+                }
 
-    async function saveToGithub() {
-      const token = document.getElementById('token').value;
-      if (!token || !sha) {
-        console.log('saveToGithub skipped - token:', !!token, 'sha:', sha);
-        return;
-      }
-      
-      try {
-        console.log('Starting auto save to GitHub...');
-        updateLastSaveTime('保存中...');
-        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
-          method: 'PUT',
-          headers: {
-            Authorization: 'token ' + token,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            message: "Auto update dictionary.json",
-            content: btoa(unescape(encodeURIComponent(JSON.stringify(dict, null, 2)))),
-            sha: sha,
-            branch: "main"
-          })
-        });
-        
-        if (!res.ok) {
-          let errorMessage = `自动保存失败: ${res.status}`;
-          
-          if (res.status === 401) {
-            errorMessage = "Token认证失败: 请检查Token是否正确或已过期，重新输入后重试";
-            // 认证失败时清除保存的token
-            localStorage.removeItem('githubToken');
-            localStorage.removeItem('github-Token');
-            document.getElementById('token').value = '';
-          } else if (res.status === 403) {
-            errorMessage = "访问被拒绝: 可能是API限制或权限不足，请稍后重试";
-          } else if (res.status === 404) {
-            errorMessage = "仓库或文件不存在: 请检查仓库路径和文件路径";
-          } else if (res.status === 409) {
-            errorMessage = "文件冲突: 可能有其他人同时修改了文件，请刷新页面重试";
-          } else if (res.status === 422) {
-            errorMessage = "请求参数错误: 可能是文件内容格式问题";
-          }
-          
-          const errorText = await res.text();
-          console.error('GitHub API error:', res.status, errorText);
-          throw new Error(errorMessage);
-        }
-        
-        const data = await res.json();
-        sha = data.content.sha;
-        lastSaveTime = new Date();
-        updateLastSaveTime(`最后保存: ${lastSaveTime.toLocaleTimeString()}`);
-        console.log('Auto save successful, new sha:', sha);
-        showToast('自动保存', '字典已自动保存', 'green');
-      } catch(e) {
-        console.error('Auto save error:', e);
-        showToast('自动保存失败', e.message, 'red');
-        updateLastSaveTime('保存失败');
-      }
-    }
+                // 虚拟列表简单优化：只渲染前 100 条防止卡顿 (搜索会缩小范围)
+                const displayEntries = entries.slice(0, 100);
 
-    // 删除词条
-    window.deleteRow = (key) => {
-      showCustomConfirm(`确定要删除 "${key}" 这个词条吗？`, (confirmed) => {
-        if(confirmed){
-          delete dict[key];
-          renderTable();
-          triggerAutoSave();
-        }
-      });
-    };
+                displayEntries.forEach(([key, val]) => {
+                    const row = document.createElement('tr');
+                    const safeKey = Utils.escapeHtml(key);
+                    // Input ID 用于魔术字符插入定位
+                    const inputId = `val-${Math.random().toString(36).substr(2, 9)}`;
+                    
+                    row.innerHTML = `
+                        <td class="fw-bold text-dark">${safeKey}</td>
+                        <td>
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control border-0 bg-transparent" id="${inputId}" value="${Utils.escapeHtml(val)}" onchange="App.updateItem('${safeKey}', this.value)">
+                                <button class="btn btn-link text-warning p-0 ms-2" title="插入防屏蔽符" onclick="App.insertMagicChar('${inputId}')">
+                                    <i class="fas fa-magic"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-link text-danger p-0" onclick="App.deleteItem('${safeKey}')">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            },
 
-  }
-});
-</script>
-  <script>
-    // 将insertMagicCharAtCursor函数移到全局作用域，以便在表格中的按钮可以调用
-    function insertMagicCharAtCursor(inputId) {
-      const input = document.getElementById(inputId);
-      if (!input) return;
-      
-      const invisibleChar = '\u200E'; // U+200E 字符
-      
-      // 获取当前光标位置，在光标处插入而不是末尾
-      const startPos = input.selectionStart;
-      const endPos = input.selectionEnd;
-      
-      // 插入字符
-      input.value = input.value.substring(0, startPos)
-        + invisibleChar
-        + input.value.substring(endPos, input.value.length);
-      
-      // 重新定位光标到插入字符之后
-      input.selectionStart = startPos + invisibleChar.length;
-      input.selectionEnd = startPos + invisibleChar.length;
-      
-      // 让输入框重新获得焦点
-      input.focus();
-      
-      // 触发更新事件
-      input.dispatchEvent(new Event('change'));
-      
-      // 显示简单的提示，因为我们无法访问全局的showToast函数
-      console.log('已在光标处插入隐形字符 U+200E');
-    }
-  </script>
+            // 更新单条
+            updateItem: (key, newVal) => {
+                App.data[key] = newVal;
+                App.triggerAutoSave();
+            },
+
+            // 删除单条
+            deleteItem: (key) => {
+                if (confirm(`确定要删除 "${key}" 吗？`)) {
+                    delete App.data[key];
+                    App.renderTable(document.getElementById('searchInput').value);
+                    App.triggerAutoSave();
+                }
+            },
+
+            // 添加单条
+            addSingle: () => {
+                const key = document.getElementById('singleKey').value.trim();
+                const val = document.getElementById('singleVal').value.trim();
+                
+                if (!key || !val) return Utils.showToast('内容不能为空', 'warning');
+                if (App.data[key]) return Utils.showToast('该词条已存在', 'error');
+
+                App.data[key] = val;
+                App.renderTable();
+                
+                // 仅清空
+                document.getElementById('singleKey').value = '';
+                document.getElementById('singleVal').value = '';
+                bootstrap.Modal.getInstance(document.getElementById('addSingleModal')).hide();
+                Utils.showToast('添加成功', 'success');
+                App.triggerAutoSave();
+            },
+
+            // 插入 Magic Char
+            insertMagicChar: (inputId) => {
+                const input = document.getElementById(inputId);
+                if (!input) return;
+
+                const start = input.selectionStart;
+                const end = input.selectionEnd;
+                const text = input.value;
+                
+                input.value = text.substring(0, start) + CONFIG.magicChar + text.substring(end);
+                input.selectionStart = input.selectionEnd = start + 1;
+                input.focus();
+                
+                // 触发 change
+                input.dispatchEvent(new Event('change'));
+            },
+
+            // 批量解析
+            parseBatch: () => {
+                const text = document.getElementById('batchInput').value;
+                const format = document.getElementById('batchFormat').value;
+                App.batchDraft = [];
+                
+                if (!text.trim()) return;
+
+                try {
+                    // JSON 检测
+                    if (format === 'json' || (format === 'auto' && text.trim().startsWith('{'))) {
+                        const json = JSON.parse(text);
+                        Object.entries(json).forEach(([k, v]) => App.batchDraft.push({ key: k, val: v }));
+                    } else {
+                        // Key-Value
+                        const lines = text.split('\n');
+                        lines.forEach(line => {
+                            if (!line.trim()) return;
+                            const parts = line.split(/=|:|\t/);
+                            if (parts.length >= 2) {
+                                App.batchDraft.push({ key: parts[0].trim(), val: parts.slice(1).join('=').trim() });
+                            }
+                        });
+                    }
+                    App.renderBatchPreview();
+                } catch (e) {
+                    Utils.showToast('解析失败，请检查格式', 'error');
+                }
+            },
+
+            // 渲染批量预览
+            renderBatchPreview: () => {
+                const container = document.getElementById('batchPreviewList');
+                container.innerHTML = '';
+                document.getElementById('batchCount').textContent = App.batchDraft.length;
+                
+                if (App.batchDraft.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted py-5">无有效数据</div>';
+                    return;
+                }
+
+                App.batchDraft.forEach(item => {
+                    const isExist = !!App.data[item.key];
+                    const hasMagic = item.val.includes(CONFIG.magicChar);
+                    
+                    let className = 'new';
+                    if (isExist) className = 'replace';
+                    if (hasMagic) className += ' magic';
+
+                    const div = document.createElement('div');
+                    div.className = `batch-item ${className}`;
+                    div.innerHTML = `
+                        <div class="fw-bold me-2">${Utils.escapeHtml(item.key)}</div>
+                        <div class="text-muted flex-grow-1 text-truncate">→ ${Utils.escapeHtml(item.val)}</div>
+                        ${isExist ? '<span class="badge bg-danger">覆</span>' : '<span class="badge bg-success">新</span>'}
+                        ${hasMagic ? '<span class="badge bg-warning text-dark ms-1">符</span>' : ''}
+                    `;
+                    container.appendChild(div);
+                });
+            },
+
+            // 批量加符
+            batchAddMagic: () => {
+                App.batchDraft.forEach(item => {
+                    if (!item.val.includes(CONFIG.magicChar)) {
+                        // 简单逻辑：如果长度>3，每个字符插；否则中间插
+                        if (item.val.length > 3) {
+                            item.val = item.val.split('').join(CONFIG.magicChar);
+                        } else {
+                            const mid = Math.floor(item.val.length / 2);
+                            item.val = item.val.slice(0, mid) + CONFIG.magicChar + item.val.slice(mid);
+                        }
+                    }
+                });
+                App.renderBatchPreview();
+                Utils.showToast('已为所有预览项添加防屏蔽符', 'success');
+            },
+
+            // 确认批量导入
+            importBatch: () => {
+                const overwrite = document.getElementById('batchOverwrite').checked;
+                let count = 0;
+                
+                App.batchDraft.forEach(item => {
+                    if (!App.data[item.key] || overwrite) {
+                        App.data[item.key] = item.val;
+                        count++;
+                    }
+                });
+
+                App.renderTable();
+                bootstrap.Modal.getInstance(document.getElementById('batchModal')).hide();
+                Utils.showToast(`成功导入 ${count} 条数据`, 'success');
+                
+                // 清理
+                document.getElementById('batchInput').value = '';
+                localStorage.removeItem('batchSourceDraft');
+                App.batchDraft = [];
+                App.triggerAutoSave();
+            },
+
+            // 自动保存
+            triggerAutoSave: () => {
+                if (!document.getElementById('autoSaveSwitch').checked || !App.sha) return;
+
+                Utils.updateSaveStatus('saving', '正在同步...');
+                clearTimeout(App.autoSaveTimer);
+
+                App.autoSaveTimer = setTimeout(async () => {
+                    try {
+                        const res = await GitHubAPI.updateFile(App.data, App.sha);
+                        App.sha = res.content.sha;
+                        Utils.updateSaveStatus('success', '已同步到 GitHub');
+                    } catch (e) {
+                        Utils.updateSaveStatus('error', '同步失败');
+                        Utils.showToast('自动保存失败: ' + e.message, 'error');
+                    }
+                }, 3000); // 3秒防抖
+            }
+        };
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', App.init);
+
+    </script>
 </body>
 </html>
