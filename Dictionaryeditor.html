@@ -1,3 +1,4 @@
+<!-- START OF FILE Dictionaryeditor.html -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -183,6 +184,9 @@
         <div class="container">
             <div class="d-flex justify-content-between align-items-center w-100">
                 <div class="d-flex align-items-center gap-2">
+                    <a href="index.html" class="btn btn-sm btn-outline-secondary me-2">
+                        <i class="fas fa-home"></i> 主页
+                    </a>
                     <i class="fas fa-shield-alt text-primary fs-4"></i>
                     <span class="brand-text">国服屏蔽词管理</span>
                 </div>
@@ -232,7 +236,6 @@
             <div class="card-header-custom">
                 <h5 class="m-0 fw-bold text-secondary d-flex align-items-center">
                     <i class="fas fa-list-alt me-2"></i>词库列表
-                    <!-- [修复] 此处补全了 dictCount 元素 -->
                     <span class="badge bg-secondary ms-2" style="font-size: 0.7em;" id="dictCount">0</span>
                 </h5>
                 <span class="status-badge" id="dataStatus">未加载</span>
@@ -355,15 +358,32 @@
                     <div class="row h-100">
                         <!-- 左侧输入 -->
                         <div class="col-lg-5 d-flex flex-column border-end">
+                            <!-- 新增：网络导入区域 -->
+                            <div class="bg-light p-3 rounded mb-3 border">
+                                <label class="fw-bold mb-2"><i class="fas fa-globe me-1"></i>网络文件导入</label>
+                                <div class="input-group input-group-sm mb-2">
+                                    <input type="text" id="batchUrlInput" class="form-control" placeholder="https://example.com/dict.txt">
+                                    <button class="btn btn-outline-primary" id="fetchUrlBtn">
+                                        <i class="fas fa-download"></i> 获取
+                                    </button>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="corsProxySwitch" checked>
+                                    <label class="form-check-label small text-muted" for="corsProxySwitch">
+                                        使用 CORS 代理 (推荐，解决跨域失败问题)
+                                    </label>
+                                </div>
+                            </div>
+
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <label class="fw-bold">1. 粘贴数据</label>
+                                <label class="fw-bold">直接粘贴数据</label>
                                 <select id="batchFormat" class="form-select form-select-sm w-auto border-0 bg-light">
                                     <option value="auto">自动识别格式</option>
-                                    <option value="keyvalue">键值对 (Key=Value)</option>
+                                    <option value="keyvalue">键值对 (Key=Value 或 空格)</option>
                                     <option value="json">JSON</option>
                                 </select>
                             </div>
-                            <textarea id="batchInput" class="form-control flex-grow-1 mb-3" style="min-height: 200px; font-family: monospace; font-size: 0.9rem;" placeholder="支持格式：&#10;1. 原词=替换词&#10;2. JSON 对象 {&quot;原词&quot;:&quot;替换词&quot;}"></textarea>
+                            <textarea id="batchInput" class="form-control flex-grow-1 mb-3" style="min-height: 200px; font-family: monospace; font-size: 0.9rem;" placeholder="支持格式：&#10;1. 原词 替换词 (空格/Tab分隔)&#10;2. 原词=替换词&#10;3. JSON 对象 {&quot;Key&quot;:&quot;Val&quot;}"></textarea>
                             <div class="d-grid">
                                 <button class="btn btn-primary" id="parseBatchBtn">
                                     <i class="fas fa-arrow-right me-2"></i>解析到预览区
@@ -377,7 +397,7 @@
                                 <label class="fw-bold">2. 预览与操作 (<span id="batchCount">0</span>)</label>
                                 <div class="btn-group btn-group-sm">
                                     <button class="btn btn-outline-warning" id="batchMagicBtn">
-                                        <i class="fas fa-magic"></i> 全体加符
+                                        <i class="fas fa-magic"></i> 全体加符 (间隔)
                                     </button>
                                 </div>
                             </div>
@@ -398,7 +418,7 @@
                             <div id="batchPreviewList" class="batch-preview-box flex-grow-1">
                                 <div class="text-center text-muted py-5 mt-4">
                                     <i class="fas fa-paste fa-2x mb-3 opacity-25"></i>
-                                    <p>请先在左侧粘贴数据并解析</p>
+                                    <p>请先在左侧粘贴数据或输入网址并解析</p>
                                 </div>
                             </div>
                         </div>
@@ -645,6 +665,8 @@
                 document.getElementById('parseBatchBtn').onclick = App.parseBatch;
                 document.getElementById('confirmBatchImportBtn').onclick = App.importBatch;
                 document.getElementById('batchMagicBtn').onclick = App.batchAddMagic;
+                // 新增：网络获取按钮绑定
+                document.getElementById('fetchUrlBtn').onclick = App.fetchFromUrl;
                 
                 // 测试 Token
                 document.getElementById('testTokenBtn').onclick = async () => {
@@ -655,6 +677,47 @@
                         Utils.showToast(`验证失败: ${e.message}`, 'error');
                     }
                 };
+            },
+
+            // 新增：从网络获取文件
+            fetchFromUrl: async () => {
+                let url = document.getElementById('batchUrlInput').value.trim();
+                const useProxy = document.getElementById('corsProxySwitch').checked;
+                const btn = document.getElementById('fetchUrlBtn');
+                
+                if (!url) return Utils.showToast('请输入有效的 URL', 'warning');
+
+                const originalHtml = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                try {
+                    // 如果勾选代理，使用 allorigins.win 绕过 CORS
+                    if (useProxy) {
+                        url = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                    }
+
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    
+                    const text = await res.text();
+                    
+                    if (!text.trim()) throw new Error('文件内容为空');
+
+                    // 填充到输入框
+                    const textarea = document.getElementById('batchInput');
+                    textarea.value = text;
+                    // 触发 input 事件以保存草稿
+                    textarea.dispatchEvent(new Event('input'));
+                    
+                    Utils.showToast('获取成功，请点击“解析到预览区”', 'success');
+                } catch (e) {
+                    console.error(e);
+                    Utils.showToast(`获取失败: ${e.message} (请检查链接或尝试切换代理开关)`, 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
             },
 
             loadData: async () => {
@@ -794,13 +857,24 @@
                         const json = JSON.parse(text);
                         Object.entries(json).forEach(([k, v]) => App.batchDraft.push({ key: k, val: v }));
                     } else {
-                        // Key-Value
+                        // Key-Value 解析优化：支持 空格、=、:、Tab
                         const lines = text.split('\n');
                         lines.forEach(line => {
-                            if (!line.trim()) return;
-                            const parts = line.split(/=|:|\t/);
-                            if (parts.length >= 2) {
-                                App.batchDraft.push({ key: parts[0].trim(), val: parts.slice(1).join('=').trim() });
+                            line = line.trim();
+                            if (!line) return;
+                            
+                            // 尝试匹配 "Key=Val", "Key:Val", "Key\tVal", "Key Val"
+                            // 匹配逻辑：第一个非空字符序列作为Key，剩余部分（去除分隔符后）作为Val
+                            // 修正：支持各种分隔符，优先匹配 =:
+                            let match = line.match(/^([^=:\t]+)[=:\t]+(.*)$/); // 匹配 =, :, Tab
+                            
+                            if (!match) {
+                                // 如果没有标点分隔符，尝试匹配第一个空格
+                                match = line.match(/^(\S+)\s+(.*)$/);
+                            }
+
+                            if (match) {
+                                App.batchDraft.push({ key: match[1].trim(), val: match[2].trim() });
                             }
                         });
                     }
@@ -845,17 +919,13 @@
             batchAddMagic: () => {
                 App.batchDraft.forEach(item => {
                     if (!item.val.includes(CONFIG.magicChar)) {
-                        // 简单逻辑：如果长度>3，每个字符插；否则中间插
-                        if (item.val.length > 3) {
-                            item.val = item.val.split('').join(CONFIG.magicChar);
-                        } else {
-                            const mid = Math.floor(item.val.length / 2);
-                            item.val = item.val.slice(0, mid) + CONFIG.magicChar + item.val.slice(mid);
-                        }
+                        // 全体加符逻辑：在每个字符之间插入屏蔽符
+                        // 例: "AB" -> "A-B", "ABC" -> "A-B-C"
+                        item.val = item.val.split('').join(CONFIG.magicChar);
                     }
                 });
                 App.renderBatchPreview();
-                Utils.showToast('已为所有预览项添加防屏蔽符', 'success');
+                Utils.showToast('已为所有预览项添加间隔防屏蔽符', 'success');
             },
 
             // 确认批量导入
