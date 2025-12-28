@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T-Node System Monitor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* 科技蓝/灰色调 - 伪装成日志系统 */
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary: #64748b;
+            --success: #059669;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #334155;
+            --text-sub: #64748b;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --radius: 0.5rem;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+        body { font-family: 'Segoe UI', 'Roboto', monospace, sans-serif; background: var(--bg-body); color: var(--text-main); line-height: 1.5; padding-bottom: 60px; }
+
+        /* --- 布局 --- */
+        .container { max-width: 1440px; margin: 0 auto; padding: 24px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .header h1 { font-size: 1.25rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .header h1 i { color: var(--primary); }
+        
+        /* --- 卡片 --- */
+        .card { background: var(--bg-card); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 20px; margin-bottom: 20px; border: 1px solid var(--border); }
+        
+        /* --- 表单 --- */
+        .login-grid { display: grid; grid-template-columns: 3fr 1fr auto; gap: 16px; align-items: end; }
+        .form-group label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; }
+        .input-wrapper { position: relative; }
+        .input-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-sub); pointer-events: none; font-size: 0.9rem; }
+        
+        .form-control { width: 100%; padding: 8px 12px 8px 36px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.9rem; font-family: 'Consolas', monospace; background: #fff; color: var(--text-main); }
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); }
+        
+        /* --- 按钮 --- */
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 16px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-size: 0.85rem; font-family: 'Segoe UI', sans-serif; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-ghost { background: transparent; color: var(--text-sub); border: 1px solid var(--border); }
+        .btn-ghost:hover { background: #e2e8f0; color: var(--text-main); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-sm { padding: 4px 10px; font-size: 0.75rem; }
+        .btn-icon { padding: 6px; width: 28px; height: 28px; border-radius: 4px; }
+
+        /* --- 统计 --- */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-item { background: var(--bg-card); padding: 16px; border-radius: var(--radius); border-left: 3px solid var(--primary); box-shadow: var(--shadow-sm); }
+        .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--text-main); font-family: 'Consolas', monospace; }
+        .stat-label { font-size: 0.75rem; color: var(--text-sub); text-transform: uppercase; font-weight: 600; margin-top: 4px; }
+
+        /* --- 工具栏 --- */
+        .toolbar { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+        .search-box { position: relative; max-width: 320px; width: 100%; }
+        .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        
+        .filter-chip { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 100px; background: #f1f5f9; font-size: 0.8rem; cursor: pointer; border: 1px solid transparent; user-select: none; color: var(--text-sub); transition: all 0.2s; }
+        .filter-chip.active { background: #eff6ff; color: var(--primary); border-color: #bfdbfe; font-weight: 600; }
+
+        /* --- 表格 --- */
+        .table-container { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: #fff; }
+        table { width: 100%; border-collapse: collapse; white-space: nowrap; font-family: 'Consolas', monospace; font-size: 0.85rem; }
+        th { background: #f8fafc; padding: 12px 16px; text-align: left; font-weight: 600; color: var(--text-sub); border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+        th:hover { color: var(--primary); background: #f1f5f9; }
+        td { padding: 10px 16px; border-bottom: 1px solid var(--border); color: var(--text-main); vertical-align: middle; }
+        tr:hover { background-color: #f8fafc; }
+        tr.selected { background-color: #eff6ff; }
+
+        /* 敏感信息伪装样式 */
+        .secret-cell { display: flex; align-items: center; gap: 8px; max-width: 200px; }
+        
+        .secret-value { 
+            background: #f1f5f9; 
+            padding: 2px 6px; 
+            border-radius: 3px; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            max-width: 160px; 
+            color: #475569;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            cursor: pointer; 
+        }
+        
+        .secret-value:hover {
+            border-color: var(--border);
+            background: #fff;
+        }
+
+        .secret-value:active {
+            background: #e2e8f0;
+            transform: scale(0.98);
+        }
+
+        /* 模糊效果 */
+        .secret-blur { 
+            color: transparent; 
+            text-shadow: 0 0 5px rgba(0,0,0,0.5); 
+            user-select: none; 
+        }
+        
+        /* 明文效果 */
+        .secret-reveal { 
+            color: inherit; 
+            text-shadow: none; 
+        }
+
+        /* --- 分页 --- */
+        .pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 0.85rem; }
+        .page-controls { display: flex; gap: 4px; }
+        .page-btn { min-width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: white; }
+        .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* --- 模态框 --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(2px); }
+        .modal-box { background: white; padding: 24px; border-radius: var(--radius); width: 90%; max-width: 600px; box-shadow: var(--shadow); max-height: 85vh; display: flex; flex-direction: column; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+        .json-viewer { background: #0f172a; color: #cbd5e1; padding: 16px; border-radius: 6px; overflow: auto; font-family: 'Consolas', monospace; font-size: 0.8rem; line-height: 1.4; }
+
+        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1100; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { pointer-events: auto; background: white; padding: 10px 16px; border-radius: 6px; box-shadow: var(--shadow); border-left: 3px solid var(--primary); display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s ease; font-size: 0.9rem; }
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        @media (max-width: 768px) {
+            .login-grid { grid-template-columns: 1fr; }
+            .toolbar { flex-direction: column; align-items: stretch; gap: 12px; }
+            .header { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1><i class="fas fa-server"></i> T-Node System Monitor</h1>
+        <div class="header-actions">
+            <span style="font-size: 0.8rem; color: var(--text-sub); font-family: monospace;">v2.5.4-stable</span>
+        </div>
+    </div>
+
+    <!-- 登录/配置区域 -->
+    <div class="card">
+        <form id="loginForm" onsubmit="event.preventDefault(); fetchData();">
+            <div class="login-grid">
+                <div class="form-group">
+                    <label>API Access Key</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-terminal"></i>
+                        <input type="password" id="giteeToken" class="form-control" placeholder="Authentication Key..." autocomplete="off">
+                        <i class="fas fa-eye" style="left: auto; right: 12px; cursor: pointer; pointer-events: auto;" onclick="toggleTokenVisibility(this)"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Region Endpoint</label>
+                    <div class="input-wrapper">
+                        <select id="serverSelect" class="form-control form-select" onchange="changeServer()">
+                            <option value="cn">CN-East-1 (Main)</option>
+                            <option value="en">US-West-2 (Global)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary" id="fetchBtn" style="flex: 1;">
+                        <i class="fas fa-network-wired"></i> Connect
+                    </button>
+                    <button type="button" class="btn btn-ghost" onclick="saveToken()" title="Cache Credentials">
+                        <i class="fas fa-save"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- 统计面板 -->
+    <div id="statsSection" class="stats-grid" style="display:none;">
+        <div class="stat-item" style="border-color: #2563eb;">
+            <div class="stat-value" id="totalCount">0</div>
+            <div class="stat-label">Total Nodes</div>
+        </div>
+        <div class="stat-item" style="border-color: #059669;">
+            <div class="stat-value" id="withPassword">0</div>
+            <div class="stat-label">Config Active</div>
+        </div>
+        <div class="stat-item" style="border-color: #d97706;">
+            <div class="stat-value" id="withToken">0</div>
+            <div class="stat-label">Sessions</div>
+        </div>
+        <div class="stat-item" style="border-color: #dc2626;">
+            <div class="stat-value" id="withFingerprint">0</div>
+            <div class="stat-label">HWID Logs</div>
+        </div>
+    </div>
+
+    <!-- 数据主区域 -->
+    <div class="card" id="dataSection" style="display:none;">
+        <div class="toolbar">
+            <div class="search-box">
+                <div class="input-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search Node ID..." oninput="handleSearch()">
+                </div>
+            </div>
+            
+            <div class="filters">
+                <label class="filter-chip active" onclick="toggleFilter(this, 'all')">
+                    <i class="fas fa-border-all"></i> All
+                </label>
+                <label class="filter-chip" onclick="toggleFilter(this, 'hasPass')">
+                    <i class="fas fa-cube"></i> Type A
+                </label>
+                <label class="filter-chip" onclick="toggleFilter(this, 'hasToken')">
+                    <i class="fas fa-code-branch"></i> Type B
+                </label>
+                
+                <div style="width: 1px; height: 24px; background: var(--border); margin: 0 8px;"></div>
+
+                <button class="btn btn-ghost btn-sm" onclick="toggleSecrets()" title="Toggle Masking">
+                    <i class="fas fa-low-vision" id="eyeIcon"></i> Masking
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="exportData()">
+                    <i class="fas fa-file-export"></i> Export Log
+                </button>
+                <button class="btn btn-danger btn-sm" id="batchDeleteBtn" style="display:none;" onclick="batchDelete()">
+                    <i class="fas fa-eraser"></i> Purge (<span id="selectCount">0</span>)
+                </button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th width="40"><input type="checkbox" onchange="toggleSelectAll(this)"></th>
+                        <th onclick="sortData('TankiName')">Node ID <i class="fas fa-sort"></i></th>
+                        <th onclick="sortData('Key')">Auth Signature <i class="fas fa-sort"></i></th>
+                        <th onclick="sortData('Password')">Payload / Config <i class="fas fa-sort"></i></th>
+                        <th>Device Hash</th>
+                        <th onclick="sortData('LastUpdate')">Sync Time <i class="fas fa-sort"></i></th>
+                        <th width="80">Opts</th>
+                    </tr>
+                </thead>
+                <tbody id="dataBody">
+                    <!-- JS Render -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 分页 -->
+        <div class="pagination">
+            <div class="page-info">
+                <span>Total <span id="totalFilterCount">0</span> records</span>
+                <select id="pageSize" onchange="changePageSize()" class="form-select" style="border: 1px solid var(--border); border-radius: 4px; padding: 2px; margin-left: 8px; font-size: 0.8rem;">
+                    <option value="10">10</option>
+                    <option value="20" selected>20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+            <div class="page-controls" id="pageControls"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="jsonModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="fas fa-terminal"></i> Raw Data Stream</h3>
+            <button class="btn btn-ghost btn-icon" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="jsonContent" class="json-viewer"></div>
+        <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
+            <button class="btn btn-primary btn-sm" onclick="copyJsonContent()">Copy Buffer</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+    const state = {
+        token: localStorage.getItem('giteeToken') || '',
+        server: localStorage.getItem('currentServer') || 'cn',
+        originalData: [],
+        filteredData: [],
+        currentPage: 1,
+        itemsPerPage: 20,
+        sortField: 'LastUpdate',
+        sortOrder: 'desc',
+        showSecrets: localStorage.getItem('showSecrets') === 'true', // 初始化时读取 localStorage
+        selectedIds: new Set(),
+        filterMode: 'all', 
+        urls: {
+            cn: 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/entrance_hash_key.json',
+            en: 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/entrance_hash_en_key.json'
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if(state.token) document.getElementById('giteeToken').value = state.token;
+        document.getElementById('serverSelect').value = state.server;
+        
+        // 初始化图标状态
+        updateEyeIcon();
+        
+        if(state.token) fetchData(); 
+    });
+
+    async function fetchData() {
+        const tokenInput = document.getElementById('giteeToken').value.trim();
+        if (!tokenInput) return showToast('API Key required', 'error');
+        state.token = tokenInput;
+
+        const btn = document.getElementById('fetchBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Connecting...';
+
+        try {
+            const url = `${state.urls[state.server]}?access_token=${state.token}`;
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`Connection Error: ${res.status}`);
+            
+            const data = await res.json();
+            const content = JSON.parse(decodeURIComponent(escape(atob(data.content)))); 
+            
+            state.originalData = content.map((item, index) => ({
+                ...item, 
+                _id: index, 
+                LastUpdate: item.LastUpdate || '' 
+            }));
+
+            state.selectedIds.clear();
+            state.currentPage = 1;
+            updateStats();
+            applyFilters();
+            
+            document.getElementById('statsSection').style.display = 'grid';
+            document.getElementById('dataSection').style.display = 'block';
+            showToast(`Sync Complete: ${state.originalData.length} records`, 'success');
+
+        } catch (err) {
+            console.error(err);
+            showToast(err.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-network-wired"></i> Connect';
+        }
+    }
+
+    function applyFilters() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        
+        state.filteredData = state.originalData.filter(item => {
+            const matchSearch = (item.TankiName || '').toLowerCase().includes(query);
+            
+            let matchType = true;
+            if (state.filterMode === 'hasPass') matchType = !!item.Password;
+            if (state.filterMode === 'hasToken') matchType = !!item.Token;
+            
+            return matchSearch && matchType;
+        });
+
+        state.filteredData.sort((a, b) => {
+            if (state.sortField === 'LastUpdate') {
+                const timeA = new Date(a.LastUpdate).getTime() || 0;
+                const timeB = new Date(b.LastUpdate).getTime() || 0;
+                return state.sortOrder === 'asc' ? timeA - timeB : timeB - timeA;
+            }
+            let valA = (a[state.sortField] || '').toString().toLowerCase();
+            let valB = (b[state.sortField] || '').toString().toLowerCase();
+            if (valA < valB) return state.sortOrder === 'asc' ? -1 : 1;
+            if (valA > valB) return state.sortOrder === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        state.currentPage = 1;
+        renderTable();
+        renderPagination();
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('dataBody');
+        tbody.innerHTML = '';
+
+        const start = (state.currentPage - 1) * state.itemsPerPage;
+        const end = start + state.itemsPerPage;
+        const pageData = state.filteredData.slice(start, end);
+
+        document.getElementById('totalFilterCount').innerText = state.filteredData.length;
+
+        const batchBtn = document.getElementById('batchDeleteBtn');
+        if (state.selectedIds.size > 0) {
+            batchBtn.style.display = 'inline-flex';
+            document.getElementById('selectCount').innerText = state.selectedIds.size;
+        } else {
+            batchBtn.style.display = 'none';
+        }
+
+        if (pageData.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 40px; color: var(--text-sub);">No logs found</td></tr>`;
+            return;
+        }
+
+        pageData.forEach(item => {
+            const isSelected = state.selectedIds.has(item._id);
+            const tr = document.createElement('tr');
+            if(isSelected) tr.classList.add('selected');
+            
+            let authCol = '<span style="color:#cbd5e1">-</span>';
+            if (item.Key) authCol = createSecretHtml(item.Key, 'Sig');
+            else if (item.Token) authCol = createSecretHtml(item.Token, 'Sess', true);
+
+            const deviceHashHtml = item.Fingerprint 
+                ? createSecretHtml(item.Fingerprint, 'Hash') 
+                : '<span style="color:#cbd5e1">-</span>';
+
+            tr.innerHTML = `
+                <td><input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelect(${item._id})"></td>
+                <td style="font-weight:600; color:var(--primary); font-family:monospace;">${item.TankiName}</td>
+                <td>${authCol}</td>
+                <td>${item.Password ? createSecretHtml(item.Password, 'Cfg') : '<span style="color:#cbd5e1">-</span>'}</td>
+                <td>${deviceHashHtml}</td>
+                <td style="font-size:0.8rem; color:var(--text-sub);">${formatDate(item.LastUpdate)}</td>
+                <td>
+                    <button class="btn btn-ghost btn-sm btn-icon" onclick="viewJson(${item._id})" title="Raw View"><i class="fas fa-code"></i></button>
+                    <button class="btn btn-ghost btn-sm btn-icon" style="color:var(--danger)" onclick="deleteItem(${item._id})" title="Purge"><i class="fas fa-times"></i></button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function createSecretHtml(val, type, isToken = false) {
+        const displayVal = state.showSecrets ? val : maskStr(val);
+        const blurClass = state.showSecrets ? 'secret-reveal' : 'secret-blur';
+        
+        let actionBtn = '';
+        if (isToken) {
+            actionBtn = `<a href="https://3dtank.com/play/?token=${encodeURIComponent(val)}&sub_partner_id=partner4399" target="_blank" title="Open Link" style="color:var(--secondary); margin-left:4px;"><i class="fas fa-external-link-alt"></i></a>`;
+        }
+        
+        return `
+            <div class="secret-cell">
+                <div class="secret-value ${blurClass}" 
+                     data-val="${escapeHtml(val)}" 
+                     onclick="copyText(this.dataset.val)" 
+                     title="Click to Copy">${displayVal}</div>
+                ${actionBtn}
+            </div>
+        `;
+    }
+
+    function renderPagination() {
+        const totalPages = Math.ceil(state.filteredData.length / state.itemsPerPage);
+        const container = document.getElementById('pageControls');
+        container.innerHTML = '';
+
+        if (totalPages <= 1) return;
+
+        const createBtn = (page, text, active = false) => {
+            const btn = document.createElement('button');
+            btn.className = `page-btn ${active ? 'active' : ''}`;
+            btn.innerText = text;
+            btn.onclick = () => {
+                state.currentPage = page;
+                renderTable();
+                renderPagination();
+            };
+            return btn;
+        };
+
+        const prevBtn = createBtn(state.currentPage - 1, '<');
+        prevBtn.disabled = state.currentPage === 1;
+        container.appendChild(prevBtn);
+
+        let startPage = Math.max(1, state.currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+
+        if (startPage > 1) {
+            container.appendChild(createBtn(1, '1'));
+            if (startPage > 2) container.appendChild(document.createTextNode('..'));
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            container.appendChild(createBtn(i, i, i === state.currentPage));
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) container.appendChild(document.createTextNode('..'));
+            container.appendChild(createBtn(totalPages, totalPages));
+        }
+
+        const nextBtn = createBtn(state.currentPage + 1, '>');
+        nextBtn.disabled = state.currentPage === totalPages;
+        container.appendChild(nextBtn);
+    }
+
+    function changePageSize() {
+        state.itemsPerPage = parseInt(document.getElementById('pageSize').value);
+        state.currentPage = 1;
+        renderTable();
+        renderPagination();
+    }
+
+    function handleSearch() {
+        clearTimeout(window.searchTimer);
+        window.searchTimer = setTimeout(applyFilters, 300);
+    }
+
+    function sortData(field) {
+        if (state.sortField === field) {
+            state.sortOrder = state.sortOrder === 'asc' ? 'desc' : 'asc';
+        } else {
+            state.sortField = field;
+            state.sortOrder = 'desc'; 
+        }
+        applyFilters();
+    }
+
+    function toggleFilter(el, mode) {
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        state.filterMode = mode;
+        applyFilters();
+    }
+
+    // 更新图标辅助函数
+    function updateEyeIcon() {
+        const icon = document.getElementById('eyeIcon');
+        if(icon) {
+            icon.className = state.showSecrets ? 'fas fa-eye' : 'fas fa-low-vision';
+        }
+    }
+
+    function toggleSecrets() {
+        state.showSecrets = !state.showSecrets;
+        localStorage.setItem('showSecrets', state.showSecrets); // 保存状态到本地
+        updateEyeIcon(); // 更新图标
+        renderTable();
+    }
+
+    function toggleSelect(id) {
+        if (state.selectedIds.has(id)) state.selectedIds.delete(id);
+        else state.selectedIds.add(id);
+        renderTable();
+    }
+
+    function toggleSelectAll(checkbox) {
+        const start = (state.currentPage - 1) * state.itemsPerPage;
+        const end = start + state.itemsPerPage;
+        const pageData = state.filteredData.slice(start, end);
+
+        if (checkbox.checked) {
+            pageData.forEach(item => state.selectedIds.add(item._id));
+        } else {
+            pageData.forEach(item => state.selectedIds.delete(item._id));
+        }
+        renderTable();
+    }
+
+    async function deleteItem(id) {
+        if (!confirm('Confirm purge of selected node log?')) return;
+        await performDelete([id]);
+    }
+
+    async function batchDelete() {
+        if (state.selectedIds.size === 0) return;
+        if (!confirm(`Purge ${state.selectedIds.size} records?`)) return;
+        await performDelete(Array.from(state.selectedIds));
+    }
+
+    async function performDelete(idsToDelete) {
+        const idsSet = new Set(idsToDelete);
+        const newData = state.originalData.filter(item => !idsSet.has(item._id));
+        const dataToSave = newData.map(({_id, ...rest}) => rest);
+
+        try {
+            showToast('Syncing database...', 'info');
+            const url = state.urls[state.server];
+            
+            const getRes = await fetch(`${url}?access_token=${state.token}`);
+            const getData = await getRes.json();
+            
+            const contentStr = JSON.stringify(dataToSave, null, 2);
+            const encodedContent = btoa(unescape(encodeURIComponent(contentStr)));
+
+            const putRes = await fetch(url, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    access_token: state.token,
+                    content: encodedContent,
+                    sha: getData.sha,
+                    message: `Purge ${idsToDelete.length} logs via Monitor`
+                })
+            });
+
+            if (!putRes.ok) throw new Error('Sync Failed');
+
+            state.originalData = newData;
+            state.selectedIds.clear();
+            applyFilters();
+            updateStats();
+            showToast('Logs Purged', 'success');
+
+        } catch (err) {
+            console.error(err);
+            showToast('Error: ' + err.message, 'error');
+        }
+    }
+
+    function exportData() {
+        if (state.filteredData.length === 0) return showToast('No data to export', 'error');
+        
+        const type = confirm("Export format: OK for CSV, Cancel for JSON") ? 'csv' : 'json';
+        const data = state.filteredData.map(({_id, ...rest}) => rest);
+        
+        let content = '';
+        let mime = '';
+        let ext = '';
+
+        if (type === 'json') {
+            content = JSON.stringify(data, null, 2);
+            mime = 'application/json';
+            ext = 'json';
+        } else {
+            const headers = ['TankiName', 'Key', 'Token', 'Password', 'Fingerprint', 'LastUpdate'];
+            content = headers.join(',') + '\n' + data.map(row => {
+                return headers.map(fieldName => `"${(row[fieldName] || '').replace(/"/g, '""')}"`).join(',');
+            }).join('\n');
+            mime = 'text/csv';
+            ext = 'csv';
+        }
+
+        const blob = new Blob([content], { type: mime });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `system_log_${new Date().toISOString().slice(0,10)}.${ext}`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function updateStats() {
+        document.getElementById('totalCount').innerText = state.originalData.length;
+        document.getElementById('withPassword').innerText = state.originalData.filter(i => i.Password).length;
+        document.getElementById('withToken').innerText = state.originalData.filter(i => i.Token).length;
+        document.getElementById('withFingerprint').innerText = state.originalData.filter(i => i.Fingerprint).length;
+    }
+
+    function maskStr(str, visibleLen = 4) {
+        if (!str) return '';
+        if (str.length <= visibleLen * 2) return '●●●●●●';
+        return str.substring(0, visibleLen) + '...' + str.substring(str.length - visibleLen);
+    }
+
+    function formatDate(str) {
+        if (!str) return '-';
+        try {
+            const date = new Date(str);
+            if (isNaN(date.getTime())) return str;
+            const pad = (n) => n.toString().padStart(2, '0');
+            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+        } catch (e) {
+            return str;
+        }
+    }
+
+    function viewJson(id) {
+        const item = state.originalData.find(i => i._id === id);
+        const { _id, ...cleanItem } = item;
+        document.getElementById('jsonContent').innerText = JSON.stringify(cleanItem, null, 2);
+        document.getElementById('jsonModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('jsonModal').style.display = 'none';
+    }
+
+    function copyText(txt) {
+        if (!txt) return showToast('Nothing to copy', 'error');
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(txt)
+                .then(() => showToast('Copied to buffer', 'success'))
+                .catch(() => fallbackCopy(txt));
+        } else {
+            fallbackCopy(txt);
+        }
+    }
+
+    function fallbackCopy(txt) {
+        const textArea = document.createElement("textarea");
+        textArea.value = txt;
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.position = "fixed";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) showToast('Copied to buffer', 'success');
+            else showToast('Copy failed', 'error');
+        } catch (err) {
+            showToast('Browser blocked copy', 'error');
+        }
+        document.body.removeChild(textArea);
+    }
+
+    function copyJsonContent() {
+        const txt = document.getElementById('jsonContent').innerText;
+        copyText(txt);
+    }
+
+    function showToast(msg, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const el = document.createElement('div');
+        el.className = `toast ${type}`;
+        el.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'}"></i> ${msg}`;
+        container.appendChild(el);
+        setTimeout(() => el.remove(), 3000);
+    }
+
+    function saveToken() {
+        const t = document.getElementById('giteeToken').value;
+        if(t) {
+            localStorage.setItem('giteeToken', t);
+            showToast('Auth Key Cached', 'success');
+        }
+    }
+
+    function changeServer() {
+        state.server = document.getElementById('serverSelect').value;
+        localStorage.setItem('currentServer', state.server);
+        if(state.token) fetchData();
+    }
+
+    function toggleTokenVisibility(icon) {
+        const input = document.getElementById('giteeToken');
+        input.type = input.type === 'password' ? 'text' : 'password';
+        icon.className = input.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    window.onclick = function(e) {
+        if (e.target == document.getElementById('jsonModal')) closeModal();
+    }
+</script>
+</body>
+</html>
