@@ -479,6 +479,27 @@
             return value.replace(/[^\x00-\xFF]/g, '').trim();
         }
 
+        // 加密 Token
+        function encryptToken(token) {
+            try {
+                const salt = Math.random().toString(36).substring(2, 8);
+                const data = JSON.stringify({ token, timestamp: Date.now(), salt });
+                return btoa(data);
+            } catch (e) { return null; }
+        }
+
+        // 解密 Token（兼容加密和非加密）
+        function decryptToken(encrypted) {
+            try {
+                if (!encrypted) return null;
+                const data = JSON.parse(atob(encrypted));
+                return data.token;
+            } catch (e) {
+                // 解密失败，说明可能是明文 Token
+                return encrypted;
+            }
+        }
+
         // ================= GitHub Token 管理 =================
         // 验证Token是否有效
         async function validateToken(token) {
@@ -509,7 +530,7 @@
 
         // 初始化Token状态
         async function initTokenStatus() {
-            const token = localStorage.getItem(GITHUB_TOKEN_KEY);
+            const encryptedToken = localStorage.getItem(GITHUB_TOKEN_KEY);
             const tokenInput = document.getElementById('githubTokenInput');
             const saveBtn = document.getElementById('saveTokenBtn');
             const logoutBtn = document.getElementById('logoutTokenBtn');
@@ -517,17 +538,20 @@
 
             // 清空状态
             statusEl.innerHTML = '';
-            
-            if (token) {
+
+            if (encryptedToken) {
+                // 尝试解密 Token（兼容加密和非加密）
+                const token = decryptToken(encryptedToken);
+
                 // 仅保留Token的有效字符
                 const cleanToken = token.trim().replace(/[^\x00-\xFF]/g, '');
                 tokenInput.value = cleanToken;
                 saveBtn.style.display = 'none';
                 logoutBtn.style.display = 'inline-block';
-                
+
                 // 显示验证中状态
                 statusEl.innerHTML = '<div class="loading-spinner"></div> 验证中...';
-                
+
                 // 验证Token有效性
                 const isValid = await validateToken(cleanToken);
                 if (isValid) {
@@ -570,8 +594,9 @@
             // 验证Token
             const isValid = await validateToken(cleanToken);
             if (isValid) {
-                // 存储清理后的Token
-                localStorage.setItem(GITHUB_TOKEN_KEY, cleanToken);
+                // 加密后存储Token
+                const encryptedToken = encryptToken(cleanToken);
+                localStorage.setItem(GITHUB_TOKEN_KEY, encryptedToken);
                 await initTokenStatus();
                 alert('Token验证通过并保存！');
             } else {
@@ -593,13 +618,16 @@
 
         // 检查Token是否存在且有效
         async function checkToken() {
-            const token = localStorage.getItem(GITHUB_TOKEN_KEY);
-            if (!token) {
+            const encryptedToken = localStorage.getItem(GITHUB_TOKEN_KEY);
+            if (!encryptedToken) {
                 alert('请先登录GitHub Token！');
                 document.getElementById('githubTokenInput').focus();
                 return false;
             }
-            
+
+            // 尝试解密 Token（兼容加密和非加密）
+            const token = decryptToken(encryptedToken);
+
             // 清理并验证Token
             const cleanToken = token.trim().replace(/[^\x00-\xFF]/g, '');
             // 二次验证Token有效性
@@ -610,7 +638,7 @@
                 initTokenStatus();
                 return false;
             }
-            
+
             return cleanToken;
         }
 
