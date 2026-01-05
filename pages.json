@@ -1,13 +1,5 @@
 [
   {
-    "filename": "versioncheck-editor.html",
-    "title": "版本控制文件编辑器 - Kosto",
-    "desc": "配置脚本版本号及更新日志。",
-    "icon": "fa-code-branch",
-    "category": "tool",
-    "theme": "theme-tool"
-  },
-  {
     "filename": "Servers.html",
     "title": "3D坦克-服务器六合一",
     "desc": "3D坦克各服快速入口整合。",
