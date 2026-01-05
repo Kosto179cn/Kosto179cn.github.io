@@ -16,14 +16,6 @@
     "theme": "theme-edit"
   },
   {
-    "filename": "Dictionaryeditor.html",
-    "title": "国服屏蔽词管理 Pro",
-    "desc": "在线编辑国服屏蔽字库，支持实时检索。",
-    "icon": "fa-book",
-    "category": "tool",
-    "theme": "theme-edit"
-  },
-  {
     "filename": "ratings.html",
     "title": "Kosto 战绩查询 | 3D坦克",
     "desc": "查询国服/外服的玩家账号数据",
