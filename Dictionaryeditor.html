@@ -175,6 +175,50 @@
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .toast-container { z-index: 2000; }
+
+        /* --- 新增样式：屏蔽符可视化 --- */
+        .magic-tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 0 4px;
+            margin: 0 1px;
+            border-radius: 4px;
+            background-color: #f6e05e; /* 黄色背景 */
+            color: #744210;
+            font-family: monospace;
+            vertical-align: middle;
+            user-select: none;
+            cursor: help;
+        }
+        .magic-preview {
+            font-size: 0.85rem;
+            color: #718096;
+            margin-top: 4px;
+            padding-left: 2px;
+            min-height: 1.2em; /* 防止高度跳动 */
+        }
+
+        /* --- 表格容器自适应 --- */
+        .table-container-wrapper {
+            height: calc(100vh - 280px);
+            min-height: 400px;
+            max-height: 800px;
+            overflow-y: auto;
+        }
+        .table-container-wrapper::-webkit-scrollbar {
+            width: 8px;
+        }
+        .table-container-wrapper::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .table-container-wrapper::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        .table-container-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
     </style>
 </head>
 <body>
@@ -238,11 +282,25 @@
                     <i class="fas fa-list-alt me-2"></i>词库列表
                     <span class="badge bg-secondary ms-2" style="font-size: 0.7em;" id="dictCount">0</span>
                 </h5>
-                <span class="status-badge" id="dataStatus">未加载</span>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <label class="small text-muted mb-0">显示：</label>
+                        <select id="displayLimitSelect" class="form-select form-select-sm" style="width: auto;">
+                            <option value="50">50 条</option>
+                            <option value="100" selected>100 条</option>
+                            <option value="200">200 条</option>
+                            <option value="500">500 条</option>
+                            <option value="1000">1000 条</option>
+                            <option value="0">全部</option>
+                        </select>
+                    </div>
+                    <span class="status-badge" id="dataStatus">未加载</span>
+                </div>
             </div>
-            <div class="table-responsive">
-                <table class="table table-custom table-hover mb-0" id="dictTable">
-                    <thead>
+            <div class="table-container-wrapper" id="tableContainer">
+                <div class="table-responsive">
+                    <table class="table table-custom table-hover mb-0" id="dictTable">
+                        <thead>
                         <tr>
                             <th width="30%">原词</th>
                             <th width="50%">替换词</th>
@@ -255,11 +313,12 @@
                                 <div class="text-muted mb-3">
                                     <i class="fas fa-inbox fa-3x opacity-25"></i>
                                 </div>
-                                <p class="text-muted">请点击右上角“加载文件”获取数据</p>
+                                <p class="text-muted">请点击右上角"加载文件"获取数据</p>
                             </td>
                         </tr>
                     </tbody>
-                </table>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -330,12 +389,18 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold">替换词</label>
                         <div class="input-group">
-                            <input type="text" id="singleVal" class="form-control form-control-custom" placeholder="例如：敏*词">
+                            <input type="text"
+                                   id="singleVal"
+                                   class="form-control form-control-custom"
+                                   placeholder="例如：敏*词"
+                                   oninput="App.renderSinglePreview()"> <!-- 添加 oninput 事件 -->
                             <button class="btn btn-warning text-white" type="button" onclick="App.insertMagicChar('singleVal')">
                                 <i class="fas fa-magic"></i> 加符
                             </button>
                         </div>
-                        <div class="form-text">点击“加符”可插入隐形防屏蔽字符 (U+200E)</div>
+                        <!-- 新增：可视化预览区域 -->
+                        <div id="singleValPreview" class="magic-preview"></div>
+                        <div class="form-text">点击"加符"可插入隐形防屏蔽字符 (U+200E)</div>
                     </div>
                 </div>
                 <div class="modal-footer border-0">
@@ -447,6 +512,7 @@
             repo: "Kosto179cn.github.io",
             path: "chinese_words_replacer/dictionary.json",
             tokenKey: "githubToken", // 标准化键名
+            displayLimitKey: "displayLimit", // 显示条数设置的键名
             magicChar: '\u200E'
         };
 
@@ -637,7 +703,16 @@
 
             init: () => {
                 TokenManager.init();
+
+                // 加载用户设置的显示条数
+                const savedLimit = localStorage.getItem(CONFIG.displayLimitKey);
+                if (savedLimit) {
+                    const selectEl = document.getElementById('displayLimitSelect');
+                    if (selectEl) selectEl.value = savedLimit;
+                }
+
                 App.bindEvents();
+                App.adjustTableHeight();
             },
 
             bindEvents: () => {
@@ -649,7 +724,13 @@
                 
                 // 搜索
                 document.getElementById('searchInput').addEventListener('input', (e) => App.renderTable(e.target.value));
-                
+
+                // 显示条数选择
+                document.getElementById('displayLimitSelect').addEventListener('change', (e) => {
+                    localStorage.setItem(CONFIG.displayLimitKey, e.target.value);
+                    App.renderTable(document.getElementById('searchInput').value);
+                });
+
                 // 单条添加
                 document.getElementById('confirmAddSingleBtn').onclick = App.addSingle;
                 
@@ -677,6 +758,32 @@
                         Utils.showToast(`验证失败: ${e.message}`, 'error');
                     }
                 };
+
+                // 窗口大小变化时调整表格容器高度
+                window.addEventListener('resize', () => {
+                    App.adjustTableHeight();
+                });
+            },
+
+            // 新增：调整表格容器高度
+            adjustTableHeight: () => {
+                const container = document.getElementById('tableContainer');
+                if (!container) return;
+
+                const viewportHeight = window.innerHeight;
+                const headerHeight = 100; // 导航栏高度
+                const searchHeight = 150; // 搜索和统计区域高度
+                const cardHeaderHeight = 70; // 卡片头部高度
+                const cardPadding = 32; // 卡片内边距
+                const footerHeight = 60; // 底部预留空间
+
+                // 计算容器高度
+                const containerHeight = viewportHeight - headerHeight - searchHeight - cardHeaderHeight - cardPadding - footerHeight;
+
+                // 设置最小和最大高度
+                const finalHeight = Math.max(400, Math.min(containerHeight, 900));
+
+                container.style.height = `${finalHeight}px`;
             },
 
             // 新增：从网络获取文件
@@ -710,7 +817,7 @@
                     // 触发 input 事件以保存草稿
                     textarea.dispatchEvent(new Event('input'));
                     
-                    Utils.showToast('获取成功，请点击“解析到预览区”', 'success');
+                    Utils.showToast('获取成功，请点击"解析到预览区"', 'success');
                 } catch (e) {
                     console.error(e);
                     Utils.showToast(`获取失败: ${e.message} (请检查链接或尝试切换代理开关)`, 'error');
@@ -747,11 +854,11 @@
             renderTable: (filter = '') => {
                 const tbody = document.getElementById('dictTableBody');
                 tbody.innerHTML = '';
-                const entries = Object.entries(App.data).filter(([k, v]) => 
+                const entries = Object.entries(App.data).filter(([k, v]) =>
                     k.includes(filter) || v.includes(filter)
                 );
 
-                // 更新计数器 (使用安全检查)
+                // 更新计数器
                 const totalCountEl = document.getElementById('totalCount');
                 if (totalCountEl) totalCountEl.textContent = entries.length;
 
@@ -763,32 +870,52 @@
                     return;
                 }
 
-                // 虚拟列表简单优化：只渲染前 100 条防止卡顿 (搜索会缩小范围)
-                const displayEntries = entries.slice(0, 100);
+                // 获取用户选择的显示条数限制
+                const limit = parseInt(document.getElementById('displayLimitSelect').value);
+                // 如果 limit 为 0，表示显示全部
+                const displayEntries = limit === 0 ? entries : entries.slice(0, limit);
 
                 displayEntries.forEach(([key, val]) => {
                     const row = document.createElement('tr');
                     const safeKey = Utils.escapeHtml(key);
-                    // Input ID 用于魔术字符插入定位
-                    const inputId = `val-${Math.random().toString(36).substr(2, 9)}`;
-                    
+
+                    // 生成唯一ID
+                    const uniqueId = Math.random().toString(36).substr(2, 9);
+                    const inputId = `val-${uniqueId}`;
+                    const previewId = `prev-${uniqueId}`;
+
                     row.innerHTML = `
-                        <td class="fw-bold text-dark">${safeKey}</td>
+                        <td class="fw-bold text-dark align-top pt-3">${safeKey}</td>
                         <td>
-                            <div class="input-group input-group-sm">
-                                <input type="text" class="form-control border-0 bg-transparent" id="${inputId}" value="${Utils.escapeHtml(val)}" onchange="App.updateItem('${safeKey}', this.value)">
-                                <button class="btn btn-link text-warning p-0 ms-2" title="插入防屏蔽符" onclick="App.insertMagicChar('${inputId}')">
-                                    <i class="fas fa-magic"></i>
-                                </button>
+                            <div class="d-flex flex-column">
+                                <div class="input-group input-group-sm">
+                                    <!-- 增加 oninput 事件，实时更新下方预览 -->
+                                    <input type="text"
+                                           class="form-control border-0 bg-transparent"
+                                           id="${inputId}"
+                                           value="${Utils.escapeHtml(val)}"
+                                           onchange="App.updateItem('${safeKey}', this.value)"
+                                           oninput="App.renderVisualPreview(this, '${previewId}')"
+                                    >
+                                    <button class="btn btn-link text-warning p-0 ms-2" title="插入防屏蔽符" onclick="App.insertMagicChar('${inputId}')">
+                                        <i class="fas fa-magic"></i>
+                                    </button>
+                                </div>
+                                <!-- 新增：可视化预览区域 -->
+                                <div id="${previewId}" class="magic-preview"></div>
                             </div>
                         </td>
-                        <td class="text-end">
+                        <td class="text-end align-top pt-3">
                             <button class="btn btn-sm btn-link text-danger p-0" onclick="App.deleteItem('${safeKey}')">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </td>
                     `;
                     tbody.appendChild(row);
+
+                    // 渲染完行后，立即触发一次预览计算，如果有屏蔽符直接显示出来
+                    const inputEl = document.getElementById(inputId);
+                    App.renderVisualPreview(inputEl, previewId);
                 });
             },
 
@@ -811,16 +938,20 @@
             addSingle: () => {
                 const key = document.getElementById('singleKey').value.trim();
                 const val = document.getElementById('singleVal').value.trim();
-                
+
                 if (!key || !val) return Utils.showToast('内容不能为空', 'warning');
                 if (App.data[key]) return Utils.showToast('该词条已存在', 'error');
 
                 App.data[key] = val;
                 App.renderTable();
-                
-                // 仅清空
+
+                // 清空输入框
                 document.getElementById('singleKey').value = '';
                 document.getElementById('singleVal').value = '';
+                // 清空预览 (新增)
+                document.getElementById('singleValPreview').innerHTML = '';
+                document.getElementById('singleValPreview').style.display = 'none';
+
                 bootstrap.Modal.getInstance(document.getElementById('addSingleModal')).hide();
                 Utils.showToast('添加成功', 'success');
                 App.triggerAutoSave();
@@ -834,13 +965,48 @@
                 const start = input.selectionStart;
                 const end = input.selectionEnd;
                 const text = input.value;
-                
+
                 input.value = text.substring(0, start) + CONFIG.magicChar + text.substring(end);
                 input.selectionStart = input.selectionEnd = start + 1;
                 input.focus();
-                
-                // 触发 change
+
+                // 触发 change 以保存数据
                 input.dispatchEvent(new Event('change'));
+                // 触发 input 以更新可视化视图 (新增这一行)
+                input.dispatchEvent(new Event('input'));
+            },
+
+            // 新增：渲染可视化预览（辅助函数）
+            renderVisualPreview: (inputEl, previewId) => {
+                const val = inputEl.value;
+                const previewEl = document.getElementById(previewId);
+                if (!previewEl) return;
+
+                // 检查是否包含屏蔽符
+                if (val.includes(CONFIG.magicChar)) {
+                    // 将字符串按屏蔽符分割，然后用可视化标签连接
+                    // 使用 font-awesome 的幽灵图标或者文字"符"来表示
+                    const visualHtml = val.split(CONFIG.magicChar)
+                        .map(part => Utils.escapeHtml(part))
+                        .join('<span class="magic-tag" title="此处有不可见防屏蔽符 (U+200E)"><i class="fas fa-ghost"></i></span>');
+
+                    previewEl.innerHTML = visualHtml;
+                    previewEl.style.display = 'block';
+                } else {
+                    // 如果没有屏蔽符，隐藏预览或者是清空
+                    previewEl.innerHTML = '';
+                    previewEl.style.display = 'none';
+                }
+            },
+
+            // 新增：为单条添加模态框实现可视化预览
+            renderSinglePreview: () => {
+                const inputEl = document.getElementById('singleVal');
+                const previewEl = document.getElementById('singleValPreview'); // 新增的预览元素 ID
+                if (!inputEl || !previewEl) return;
+
+                // 调用通用的预览渲染逻辑
+                App.renderVisualPreview(inputEl, 'singleValPreview');
             },
 
             // 批量解析
