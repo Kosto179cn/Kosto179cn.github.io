@@ -56,6 +56,14 @@
     "theme": "theme-edit"
   },
   {
+    "filename": "ratings.html",
+    "title": "Kosto 战绩查询 | 3D坦克",
+    "desc": "自动发现的新页面",
+    "icon": "fa-file",
+    "category": "other",
+    "theme": "theme-other"
+  },
+  {
     "filename": "status.html",
     "title": "3D坦克服务器状态页面",
     "desc": "实时监控在线人数与负载。",
