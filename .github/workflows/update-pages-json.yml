@@ -6,6 +6,7 @@ on:
   push:
     paths:
       - '**.html'
+      - 'page-config.json'  # 新增：监听配置文件变更
   workflow_dispatch:
 
 permissions:
@@ -31,50 +32,21 @@ jobs:
           import json
           import re
 
-          # --- 1. 页面配置表 ---
-          CONFIG_MAP = {
-              "whitelist.html": { 
-                  "icon": "fa-shield-alt", "category": "admin", "theme": "theme-admin", 
-                  "desc": "高级权限管理，配置用户ID及黑名单。" 
-              },
-              "ts.html": { 
-                  "icon": "fa-gavel", "category": "admin", "theme": "theme-warn", 
-                  "desc": "处理用户投诉，审核违规行为。" 
-              },
-              "Dictionaryeditor.html": { 
-                  "icon": "fa-book", "category": "tool", "theme": "theme-edit", 
-                  "desc": "在线编辑国服屏蔽字库，支持实时检索。" 
-              },
-              "versioncheck-editor.html": { 
-                  "icon": "fa-code-branch", "category": "tool", "theme": "theme-tool", 
-                  "desc": "配置脚本版本号及更新日志。" 
-              },
-              "Servers.html": { 
-                  "icon": "fa-server", "category": "game", "theme": "theme-game", 
-                  "desc": "3D坦克各服快速入口整合。" 
-              },
-              "status.html": { 
-                  "icon": "fa-heartbeat", "category": "game", "theme": "theme-game", 
-                  "desc": "实时监控在线人数与负载。" 
-              },
-              "test.html": { 
-                  "icon": "fa-flask", "category": "game", "theme": "theme-game", 
-                  "desc": "Test Server 快速连接与状态。" 
-              },
-              "replacement.html": { 
-                  "icon": "fa-spell-check", "category": "tool", "theme": "theme-edit", 
-                  "desc": "输入文本测试是否被屏蔽。" 
-              }
-          }
-          
-          # --- 2. 这里是黑名单：不想显示的网页加在这里 ---
-          EXCLUDE_FILES = [
-                'index.html',
-                'test.html',
-                'status.html',
-                'ts.html',
-                'system.html'
-                ]
+          # --- 1. 读取外部配置文件 ---
+          CONFIG_FILE = "page-config.json"
+          try:
+              with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                  config_data = json.load(f)
+              CONFIG_MAP = config_data.get("CONFIG_MAP", {})
+              EXCLUDE_FILES = config_data.get("EXCLUDE_FILES", [])
+          except FileNotFoundError:
+              print(f"警告：配置文件 {CONFIG_FILE} 未找到，使用默认配置")
+              CONFIG_MAP = {}
+              EXCLUDE_FILES = []
+          except json.JSONDecodeError as e:
+              print(f"警告：配置文件解析错误 {e}，使用默认配置")
+              CONFIG_MAP = {}
+              EXCLUDE_FILES = []
 
           pages_data = []
 
@@ -101,7 +73,7 @@ jobs:
                           if match:
                               entry['title'] = match.group(1)
                   except Exception as e:
-                      print(f"Error reading {filename}: {e}")
+                      print(f"读取 {filename} 出错: {e}")
 
                   # 如果在配置表里有记录，覆盖默认值
                   if filename in CONFIG_MAP:
@@ -113,7 +85,7 @@ jobs:
           with open('pages.json', 'w', encoding='utf-8') as f:
               json.dump(pages_data, f, ensure_ascii=False, indent=2)
               
-          print(f"Generated pages.json with {len(pages_data)} entries.")
+          print(f"生成 pages.json，共 {len(pages_data)} 个条目")
           EOF
 
           python generate_json.py
@@ -128,5 +100,5 @@ jobs:
             git commit -m "Auto-update pages.json"
             git push
           else
-            echo "No changes"
+            echo "pages.json 无变更"
           fi
