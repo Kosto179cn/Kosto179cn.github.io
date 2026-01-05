@@ -54,6 +54,7 @@
     "test.html",
     "status.html",
     "ts.html",
-    "system.html"
+    "system.html",
+    "whitelist.html"
   ]
 }
