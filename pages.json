@@ -34,17 +34,9 @@
   {
     "filename": "ratings.html",
     "title": "Kosto 战绩查询 | 3D坦克",
-    "desc": "自动发现的新页面",
-    "icon": "fa-file",
-    "category": "other",
-    "theme": "theme-other"
-  },
-  {
-    "filename": "config-editor.html",
-    "title": "页面配置编辑器 | Kosto Hub",
-    "desc": "自动发现的新页面",
-    "icon": "fa-file",
-    "category": "other",
-    "theme": "theme-other"
+    "desc": "查询国服/外服的玩家账号数据",
+    "icon": "fa-tools",
+    "category": "tool",
+    "theme": "theme-tool"
   }
 ]
