@@ -1,11 +1,37 @@
-- name: Generate pages.json script
+name: Generate Pages JSON
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  push:
+    paths:
+      - '**.html'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Generate pages.json script
         run: |
           cat <<EOF > generate_json.py
           import os
           import json
           import re
 
-          # --- 配置区域 ---
+          # --- 1. 页面配置表 ---
           CONFIG_MAP = {
               "whitelist.html": { 
                   "icon": "fa-shield-alt", "category": "admin", "theme": "theme-admin", 
@@ -41,25 +67,23 @@
               }
           }
           
-          # -----------------------------------------------------------
-          # 【修改这里】在此列表中添加你想屏蔽的文件名 (必须带 .html 后缀)
-          # -----------------------------------------------------------
+          # --- 2. 这里是黑名单：不想显示的网页加在这里 ---
           EXCLUDE_FILES = [
-              'index.html', 
-              'test.html',
-              'status.html',
-              'ts.html',
-              'system.html'
-          ]
+                'index.html',
+                'test.html',
+                'status.html',
+                'ts.html',
+                'system.html'
+                ]
 
           pages_data = []
 
           # 扫描当前目录
           for filename in os.listdir('.'):
-              # 逻辑：如果是html文件 且 不在排除列表中，才进行处理
+              # 逻辑：必须是 html 且 不在排除列表中
               if filename.endswith('.html') and filename not in EXCLUDE_FILES:
                   
-                  # 1. 默认值
+                  # 默认值
                   entry = {
                       "filename": filename,
                       "title": filename.replace('.html', ''),
@@ -69,7 +93,7 @@
                       "theme": "theme-other"
                   }
 
-                  # 2. 尝试读取 HTML 文件内容提取 <title>
+                  # 尝试提取 <title>
                   try:
                       with open(filename, 'r', encoding='utf-8') as f:
                           content = f.read()
@@ -79,7 +103,7 @@
                   except Exception as e:
                       print(f"Error reading {filename}: {e}")
 
-                  # 3. 如果在配置表里有记录，覆盖默认值
+                  # 如果在配置表里有记录，覆盖默认值
                   if filename in CONFIG_MAP:
                       entry.update(CONFIG_MAP[filename])
 
@@ -93,3 +117,16 @@
           EOF
 
           python generate_json.py
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          
+          if [[ -n $(git status --porcelain pages.json) ]]; then
+            git add pages.json
+            git commit -m "Auto-update pages.json"
+            git push
+          else
+            echo "No changes"
+          fi
