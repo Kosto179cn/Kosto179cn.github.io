@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Kosto 战绩查询 | 3D坦克</title>
+    <!-- 引入字体和图标 -->
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&family=M+PLUS+1p:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet" />
+    
+    <style>
+        :root {
+            --font-main: 'Rubik', 'M PLUS 1p', sans-serif;
+            --ease-out: cubic-bezier(0.2, 0, 0, 1);
+            --transition: 0.3s var(--ease-out);
+        }
+
+        /* 深色主题 (Cyberpunk / Neon Green) */
+        [data-theme="dark"] {
+            --primary: #76FF33;
+            --primary-dim: rgba(118, 255, 51, 0.15);
+            --primary-glow: rgba(118, 255, 51, 0.4);
+            
+            --bg-color: #050b14;
+            --bg-gradient: radial-gradient(circle at top center, #112233 0%, #020408 100%);
+            
+            --surface: rgba(16, 30, 45, 0.85);
+            --surface-hover: rgba(25, 45, 65, 0.9);
+            --border: rgba(255, 255, 255, 0.1);
+            
+            --text-main: #ffffff;
+            --text-sec: #94a3b8;
+            
+            --increase: #76FF33;
+            --decrease: #ff5555;
+            
+            --shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+            --glass-blur: blur(12px);
+        }
+
+        /* 浅色主题 (Clean / Modern) */
+        [data-theme="light"] {
+            --primary: #008f39;
+            --primary-dim: rgba(0, 143, 57, 0.1);
+            --primary-glow: rgba(0, 143, 57, 0.2);
+            
+            --bg-color: #f0f2f5;
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            
+            --surface: rgba(255, 255, 255, 0.9);
+            --surface-hover: rgba(255, 255, 255, 1);
+            --border: rgba(0, 0, 0, 0.05);
+            
+            --text-main: #1a202c;
+            --text-sec: #718096;
+            
+            --increase: #00aa44;
+            --decrease: #e53e3e;
+            
+            --shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+            --glass-blur: blur(12px);
+        }
+
+        /* --- 基础设置 --- */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            margin: 0;
+            font-family: var(--font-main);
+            background: var(--bg-color);
+            background-image: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            transition: background var(--transition), color var(--transition);
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+            padding-top: 80px;
+        }
+
+        /* --- 顶部导航栏 --- */
+        .top-bar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.01); /* 透明，按钮浮动 */
+            pointer-events: none;
+        }
+
+        .top-bar > * { pointer-events: auto; }
+
+        .brand-logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 15px var(--primary-glow);
+            opacity: 0.9;
+            backdrop-filter: blur(5px);
+            padding: 5px 10px;
+            border-radius: 8px;
+        }
+
+        .action-btn {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-sec);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+            backdrop-filter: var(--glass-blur);
+        }
+        .action-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px var(--primary-glow);
+        }
+
+        .back-btn {
+            padding: 0 20px;
+            width: auto;
+            font-weight: 600;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        /* --- 标题与搜索区 --- */
+        .hero-section {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.6s var(--ease-out);
+        }
+
+        h1 {
+            font-size: 42px;
+            font-weight: 800;
+            margin: 20px 0;
+            background: linear-gradient(135deg, var(--primary) 0%, #fff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .search-card {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 30px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            backdrop-filter: var(--glass-blur);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-sec);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .styled-input, .styled-select {
+            width: 100%;
+            height: 50px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0 16px;
+            color: var(--text-main);
+            font-size: 16px;
+            font-family: var(--font-main);
+            transition: var(--transition);
+        }
+        
+        [data-theme="light"] .styled-input, 
+        [data-theme="light"] .styled-select { background: rgba(0,0,0,0.03); }
+
+        .styled-input:focus, .styled-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-dim);
+        }
+
+        .primary-btn {
+            width: 100%;
+            height: 50px;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+        [data-theme="light"] .primary-btn { color: #fff; }
+
+        .primary-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            filter: brightness(1.1);
+        }
+        .primary-btn:active { transform: scale(0.98); }
+        .primary-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .monitor-btn {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text-sec);
+            margin-top: 10px;
+            box-shadow: none;
+        }
+        [data-theme="dark"] .monitor-btn { color: var(--text-main); }
+        .monitor-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-dim);
+        }
+        .monitor-btn.monitoring {
+            border-color: var(--decrease);
+            color: var(--decrease);
+            animation: pulse 2s infinite;
+        }
+
+        .error-msg {
+            color: var(--decrease);
+            font-size: 14px;
+            margin-top: 15px;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        /* --- 概览卡片 Grid --- */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: var(--transition);
+            backdrop-filter: var(--glass-blur);
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: var(--surface-hover);
+            border-color: var(--primary-dim);
+        }
+        
+        .stat-icon {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: var(--primary);
+            background: var(--primary-dim);
+            padding: 8px;
+            border-radius: 12px;
+        }
+        
+        .stat-label { font-size: 12px; color: var(--text-sec); text-transform: uppercase; margin-bottom: 5px; }
+        .stat-value { font-size: 18px; font-weight: 700; color: var(--text-main); }
+        .stat-value.highlight { color: var(--primary); text-shadow: 0 0 10px var(--primary-glow); }
+
+        /* --- 排行榜 --- */
+        .section-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            backdrop-filter: var(--glass-blur);
+            box-shadow: var(--shadow);
+            animation: fadeInUp 0.5s var(--ease-out);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+            padding-left: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.1);
+        }
+
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th, td { padding: 15px; text-align: left; }
+        th {
+            background: rgba(0,0,0,0.2);
+            color: var(--text-sec);
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        td {
+            border-bottom: 1px solid var(--border);
+            color: var(--text-main);
+            font-size: 14px;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: var(--primary-dim); }
+
+        .rank-col { font-weight: bold; color: var(--primary); width: 60px; }
+        .link-text { cursor: pointer; transition: 0.2s; border-bottom: 1px dashed var(--text-sec); }
+        .link-text:hover { color: var(--primary); border-color: var(--primary); }
+
+        /* --- 列表滚动容器 --- */
+        .horizontal-scroll {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 20px;
+            scroll-behavior: smooth;
+        }
+        .horizontal-scroll::-webkit-scrollbar { height: 6px; }
+        .horizontal-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        .horizontal-scroll::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        .item-card {
+            flex: 0 0 240px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: var(--transition);
+        }
+        .item-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: var(--primary);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .item-card.updated { border: 1px solid var(--primary); background: var(--primary-dim); }
+
+        .item-img {
+            width: 120px; height: 80px;
+            object-fit: contain;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+        }
+
+        .item-name { font-weight: 700; margin-bottom: 10px; font-size: 16px; }
+        .item-stat { font-size: 13px; color: var(--text-sec); margin: 2px 0; width: 100%; display: flex; justify-content: space-between; }
+        .item-stat strong { color: var(--text-main); }
+
+        .mini-btn {
+            margin-top: 15px;
+            font-size: 12px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: var(--surface-hover);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .mini-btn:hover { 
+            background: var(--primary); 
+            color: #000; 
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        /* --- Tab 切换 --- */
+        .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; }
+        .tab-btn {
+            background: transparent; border: none;
+            color: var(--text-sec); font-size: 16px; font-weight: 600;
+            padding: 10px 20px; cursor: pointer;
+            position: relative; transition: var(--transition);
+        }
+        .tab-btn.active { color: var(--primary); }
+        .tab-btn.active::after {
+            content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 30px; height: 3px; background: var(--primary); border-radius: 3px;
+            box-shadow: 0 0 10px var(--primary);
+        }
+        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: block; }
+
+        /* --- 模态框 (Modal) --- */
+        .modal {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+            z-index: 2000; display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: var(--transition);
+        }
+        .modal.open { opacity: 1; pointer-events: auto; }
+        
+        .modal-box {
+            background: var(--bg-color); 
+            border: 1px solid var(--primary);
+            width: 90%; max-width: 600px; max-height: 80vh;
+            border-radius: 24px; padding: 24px;
+            overflow-y: auto;
+            transform: scale(0.9); transition: var(--transition);
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column;
+        }
+        .modal.open .modal-box { transform: scale(1); }
+        
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-title { font-size: 20px; font-weight: bold; color: var(--primary); }
+        .modal-close { background:none; border:none; color:var(--text-sec); font-size:24px; cursor:pointer; }
+        .modal-close:hover { color: var(--decrease); }
+
+        /* --- 动画 & 工具 --- */
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 85, 85, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 85, 85, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 85, 85, 0); } }
+        
+        .loader {
+            width: 50px; height: 50px; border: 4px solid var(--border);
+            border-top-color: var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 30px auto;
+            display: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .change-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 5px; }
+        .tag-up { background: rgba(118, 255, 51, 0.2); color: var(--increase); }
+        .tag-down { background: rgba(255, 85, 85, 0.2); color: var(--decrease); }
+    </style>
+</head>
+<body>
+
+<!-- 顶部条 -->
+<div class="top-bar">
+    <!-- 方式1：让 Logo 点击也能回主页 (可选) -->
+    <a href="index.html" class="brand-logo" style="text-decoration: none;">Kosto Hub</a>
+
+    <div style="display:flex; gap:10px; pointer-events:auto;">
+        <!-- 内部返回按钮 (保持不变) -->
+        <div id="backContainer" style="display:none;">
+            <button id="backBtn" class="action-btn back-btn">
+                <span class="material-symbols-rounded">arrow_back</span> 返回
+            </button>
+        </div>
+
+        <!-- 【新增】返回主页按钮 -->
+        <a href="index.html" class="action-btn" title="返回主页" style="text-decoration: none;">
+            <span class="material-symbols-rounded">home</span>
+        </a>
+
+        <!-- 主题切换按钮 (保持不变) -->
+        <button id="themeToggle" class="action-btn">
+            <span class="material-symbols-rounded">dark_mode</span>
+        </button>
+    </div>
+</div>
+
+<div class="app-container">
+    
+    <div class="hero-section">
+        <h1>Kosto 3D坦克国服/外服账号数据查询</h1>
+    </div>
+
+    <!-- 搜索区域 -->
+    <div class="search-card">
+        <div class="input-group">
+            <label>选择服务器</label>
+            <select id="serverSelect" class="styled-select">
+                <option value="eu" selected>外服 (EU)</option>
+                <option value="cn" disabled>国服 (CN) - 维护中</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>玩家昵称</label>
+            <input type="text" id="usernameInput" class="styled-input" placeholder="输入玩家 ID..." autocomplete="off">
+        </div>
+        <button id="fetchBtn" class="primary-btn">查询战绩</button>
+        <button id="monitorBtn" class="primary-btn monitor-btn" style="display:none;">开启实时监测</button>
+        <div id="errorMsg" class="error-msg"></div>
+    </div>
+
+    <div id="loader" class="loader"></div>
+
+    <!-- 排行榜区域 -->
+    <div id="leaderboardView">
+        <div id="leaderboardContent">
+            <!-- 动态注入 -->
+        </div>
+    </div>
+
+    <!-- 结果详情区域 -->
+    <div id="resultView" style="display: none;">
+        
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="profile">玩家概览</button>
+            <button class="tab-btn" data-tab="log">变更日志</button>
+        </div>
+
+        <div id="tab-profile" class="tab-content active">
+            <!-- 概览 Grid -->
+            <div id="summaryGrid" class="profile-grid"></div>
+            
+            <!-- 排名表 -->
+            <div id="rankSection"></div>
+
+            <!-- 各类列表 -->
+            <div id="listsSection"></div>
+        </div>
+
+        <div id="tab-log" class="tab-content">
+            <div class="section-card">
+                <div class="section-title">实时数据变更</div>
+                <div id="logContainer" style="min-height: 100px;">
+                    <p style="text-align:center; color:var(--text-sec); font-style:italic;">暂无变更记录</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 详细数据模态框 -->
+<div id="detailModal" class="modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div id="modalTitle" class="modal-title">详细数据</div>
+            <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+        <div id="modalContent"></div>
+    </div>
+</div>
+
+<script>
+    // --- 配置 & 常量 ---
+    const API = {
+        base: { 'eu': 'https://ratings.tankionline.com/api/eu/profile/', 'cn': 'https://ratings.3dtank.com/get_stat/profile/' },
+        leaderboard: 'https://ratings.tankionline.com/api/eu/top/',
+        proxy: 'https://api.codetabs.com/v1/proxy?quest='
+    };
+    
+    const RANKS = ["新兵", "二等兵", "一等兵", "下士", "中士", "上士", "三级军士长", "二级军士长", "一级军士长", "军士长", "五级准尉", "四级准尉", "三级准尉", "二级准尉", "一级准尉", "特级准尉", "少尉", "中尉", "上尉", "少校", "中校", "上校", "准将", "少将", "中将", "上将", "元帅", "陆军元帅", "统帅", "大元帅", "传奇"];
+    
+    const TRANSLATION = { 
+        'JGR': '个人剑圣', 'TJR': '团队剑圣', 'RESISTANCE': '抗性', 'SHAFT': '镭射炮', 'THUNDER': '雷暴炮', 
+        'CRITICAL': '暴击', 'MINE': '地雷', 'RAILGUN': '激光炮', 'FREEZE': '冰风暴', 'SMOKY': '轰天炮', 
+        'RICOCHET': '火龙珠', 'ARTILLERY': '马格南', 'FIREBIRD': '火焰炮', 'TWINS': '离子炮', 
+        'GAUSS': '电磁炮', 'ROCKET_LAUNCHER': '火箭炮', 'ISIS': '磁力炮', 'TESLA': '特斯拉', 
+        'SCORPIO': '蝎子', 'MACHINE_GUN': '极速炮', 'SHOTGUN': '滑膛炮' 
+    };
+
+    const LIST_CONFIG = [
+        { key: 'turretsPlayed', title: '炮塔使用情况' }, 
+        { key: 'hullsPlayed', title: '底盘使用情况' }, 
+        { key: 'dronesPlayed', title: '无人机' }, 
+        { key: 'resistanceModules', title: '防御模块' }, 
+        { key: 'paintsPlayed', title: '迷彩涂装' }, 
+        { key: 'modesPlayed', title: '模式偏好' }, 
+        { key: 'suppliesUsage', title: '道具消耗' }, 
+        { key: 'presents', title: '收到的礼物' }
+    ];
+
+    // --- DOM 元素 ---
+    const els = {
+        themeBtn: document.getElementById('themeToggle'),
+        server: document.getElementById('serverSelect'),
+        username: document.getElementById('usernameInput'),
+        fetchBtn: document.getElementById('fetchBtn'),
+        monitorBtn: document.getElementById('monitorBtn'),
+        error: document.getElementById('errorMsg'),
+        loader: document.getElementById('loader'),
+        views: { lb: document.getElementById('leaderboardView'), res: document.getElementById('resultView') },
+        backContainer: document.getElementById('backContainer'),
+        backBtn: document.getElementById('backBtn'),
+        summary: document.getElementById('summaryGrid'),
+        rank: document.getElementById('rankSection'),
+        lists: document.getElementById('listsSection'),
+        logs: document.getElementById('logContainer'),
+        lbContent: document.getElementById('leaderboardContent'),
+        modal: document.getElementById('detailModal'),
+        modalTitle: document.getElementById('modalTitle'),
+        modalContent: document.getElementById('modalContent')
+    };
+
+    // --- 状态 ---
+    let state = {
+        monitoring: false,
+        timer: null,
+        lastData: null,
+        logs: [],
+        lbData: null
+    };
+
+    // --- 初始化 ---
+    initTheme();
+    loadLeaderboard();
+    bindEvents();
+
+    // --- 事件绑定 ---
+    function bindEvents() {
+        els.themeBtn.addEventListener('click', toggleTheme);
+        els.fetchBtn.addEventListener('click', () => doSearch());
+        els.username.addEventListener('keypress', e => e.key === 'Enter' && doSearch());
+        els.backBtn.addEventListener('click', showLeaderboard);
+        els.monitorBtn.addEventListener('click', toggleMonitor);
+        
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => switchTab(e.target));
+        });
+
+        window.addEventListener('popstate', handlePopState);
+        els.modal.addEventListener('click', (e) => { if(e.target === els.modal) closeModal(); });
+        
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('username')) {
+            els.username.value = params.get('username');
+            if (params.get('server')) els.server.value = params.get('server');
+            doSearch();
+        }
+    }
+
+    // --- 核心功能 ---
+
+    async function doSearch() {
+        const user = els.username.value.trim();
+        const srv = els.server.value;
+        if (!user) return showError('请输入玩家昵称');
+
+        stopMonitor();
+        showLoading(true);
+        showError(''); 
+
+        try {
+            updateUrl(srv, user);
+            const data = await fetchProfile(srv, user);
+            renderProfile(data);
+            state.lastData = data;
+            
+            els.views.lb.style.display = 'none';
+            els.views.res.style.display = 'block';
+            els.backContainer.style.display = 'block';
+            els.monitorBtn.style.display = 'block';
+            
+        } catch (e) {
+            showError(e.message);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    async function fetchProfile(srv, user) {
+        const url = `${API.proxy}${encodeURIComponent(API.base[srv] + '?user=' + user + '&lang=cn&_=' + Date.now())}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('网络请求失败');
+        const json = await res.json();
+        if (json.responseType === 'NOT_FOUND') throw new Error('找不到该玩家 (可能已改名或隐藏资料)');
+        return json.response;
+    }
+
+    function renderProfile(data, oldData = null) {
+        renderSummary(data, oldData);
+        renderRankTable(data, oldData);
+        renderLists(data, oldData);
+    }
+
+    function renderSummary(data, oldData) {
+        const createItem = (icon, label, val, oldVal, isPremium) => {
+            let diffHtml = '';
+            if (oldData && val !== oldVal) {
+                const diff = val - oldVal;
+                if (diff !== 0) {
+                    diffHtml = `<span class="change-tag ${diff>0?'tag-up':'tag-down'}">${diff>0?'+':''}${diff}</span>`;
+                    addLog(label, oldVal, val);
+                }
+            }
+            return `
+            <div class="stat-card">
+                <div class="stat-icon"><span class="material-symbols-rounded">${icon}</span></div>
+                <div class="stat-label">${label}</div>
+                <div class="stat-value ${isPremium?'highlight':''}">${val.toLocaleString()}${diffHtml}</div>
+            </div>`;
+        };
+
+        const score = data.score;
+        const kd = data.deaths ? (data.kills/data.deaths).toFixed(2) : '∞';
+        const rankName = data.rank < RANKS.length ? RANKS[data.rank] : `Legend ${data.rank - 29}`;
+        const time = formatTime((data.hullsPlayed||[]).reduce((a,b)=>a+(b.timePlayed||0),0));
+
+        let html = '';
+        html += createItem('person', '昵称', data.name, oldData?.name, data.hasPremium);
+        html += `<div class="stat-card"><div class="stat-icon"><span class="material-symbols-rounded">military_tech</span></div><div class="stat-label">军衔</div><div class="stat-value">${rankName}</div></div>`;
+        html += createItem('star', '经验值', score, oldData?.score);
+        html += createItem('swords', '击杀', data.kills, oldData?.kills);
+        html += createItem('skull', '死亡', data.deaths, oldData?.deaths);
+        html += `<div class="stat-card"><div class="stat-icon"><span class="material-symbols-rounded">percent</span></div><div class="stat-label">K/D 比</div><div class="stat-value">${kd}</div></div>`;
+        html += createItem('diamond', '获得水晶', data.earnedCrystals, oldData?.earnedCrystals);
+        html += createItem('deployed_code', '金箱子', data.caughtGolds, oldData?.caughtGolds);
+        html += `<div class="stat-card"><div class="stat-icon"><span class="material-symbols-rounded">schedule</span></div><div class="stat-label">游戏时长</div><div class="stat-value" style="font-size:14px">${time}</div></div>`;
+
+        els.summary.innerHTML = html;
+    }
+
+    function renderRankTable(data, oldData) {
+        const cats = [
+            {k:'score', n:'经验值'}, {k:'golds', n:'金箱子'}, 
+            {k:'crystals', n:'水晶'}, {k:'efficiency', n:'效率'}
+        ];
+        
+        const cur = data.rating || {};
+        const prev = data.previousRating || {};
+
+        let rows = cats.map(c => {
+            const v = cur[c.k]?.value ?? -1;
+            const p = cur[c.k]?.position ?? -1;
+            const val = c.k === 'efficiency' && v !== -1 ? (v/1000).toFixed(2) : (v===-1?'-':v.toLocaleString());
+            const pos = p === -1 ? '-' : p.toLocaleString();
+            
+            return `<tr>
+                <td>${c.n}</td>
+                <td style="color:var(--primary); font-weight:bold">#${pos}</td>
+                <td>${val}</td>
+            </tr>`;
+        }).join('');
+
+        els.rank.innerHTML = `
+        <div class="section-card">
+            <div class="section-title"><span class="material-symbols-rounded" style="margin-right:10px">leaderboard</span> 本周排名</div>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>项目</th><th>排名</th><th>数值</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+        </div>`;
+    }
+
+    // --- 数据聚合与列表渲染 (已恢复聚合逻辑) ---
+    function aggregateData(items, title) {
+        const map = {};
+        items.forEach(item => {
+            const key = title === '防御模块' ? `${item.name}-${item.resistance||0}` : item.name;
+            if (!map[key]) {
+                map[key] = {
+                    ...item,
+                    timePlayed: 0,
+                    scoreEarned: 0,
+                    usages: 0,
+                    count: 0,
+                    grade: -1,
+                    detailedGrades: []
+                };
+            }
+            const entry = map[key];
+            entry.timePlayed += (item.timePlayed || 0);
+            entry.scoreEarned += (item.scoreEarned || 0);
+            entry.usages += (item.usages || 0);
+            entry.count += (item.count || 0);
+            if ((item.grade || -1) > entry.grade) entry.grade = item.grade;
+            entry.detailedGrades.push(item);
+        });
+        return Object.values(map);
+    }
+
+    // 缓存详细数据，用于弹窗
+    window.detailCache = {};
+
+    function renderLists(data, oldData) {
+        let html = '';
+        window.detailCache = {}; 
+
+        LIST_CONFIG.forEach(cfg => {
+            const rawItems = data[cfg.key];
+            if (!rawItems || rawItems.length === 0) return;
+
+            // 1. 聚合数据 (合并重复项)
+            const items = aggregateData(rawItems, cfg.title);
+
+            // 2. 排序 (按时间或使用量)
+            items.sort((a,b) => (b.timePlayed||b.usages||0) - (a.timePlayed||a.usages||0));
+
+            let cards = items.slice(0, 15).map((item, idx) => {
+                let img = item.imageUrl ? item.imageUrl.replace(/s\.(eu\.tankionline|3dtank)\.com/g, 'res.3dtank.com').replace(/\.tnk/g, '.webp') : '';
+                let val = '';
+                if (item.timePlayed !== undefined && item.timePlayed > 0) val = `<div class="item-stat"><strong>时长</strong> <span>${formatTime(item.timePlayed, true)}</span></div>`;
+                if (item.scoreEarned !== undefined && item.scoreEarned > 0) val += `<div class="item-stat"><strong>经验</strong> <span>${item.scoreEarned.toLocaleString()}</span></div>`;
+                if (item.usages !== undefined && item.usages > 0) val += `<div class="item-stat"><strong>使用</strong> <span>${item.usages.toLocaleString()}</span></div>`;
+                if (item.count !== undefined && item.count > 0) val += `<div class="item-stat"><strong>数量</strong> <span>${item.count.toLocaleString()}</span></div>`;
+                
+                let grade = item.grade !== undefined && item.grade > -1 ? `<span style="font-size:12px; background:var(--primary); color:#000; padding:2px 6px; border-radius:4px; margin-bottom:5px;">Mk${item.grade+1}</span>` : '';
+
+                // Store detail data
+                const cacheKey = `${cfg.key}_${idx}`;
+                let showDetailBtn = false;
+                if (item.detailedGrades && item.detailedGrades.length > 1) {
+                    window.detailCache[cacheKey] = item.detailedGrades;
+                    showDetailBtn = true;
+                }
+
+                // 按钮文案
+                let btnText = '查看各等级数据';
+                if(cfg.title === '玩过的模式') btnText = '查看各类型数据';
+                if(cfg.title === '迷彩涂装') btnText = '查看各版本数据';
+
+                return `
+                <div class="item-card">
+                    <div style="flex:1; display:flex; flex-direction:column; align-items:center;">
+                        <div class="item-name">${trans(item.name)}</div>
+                        ${img ? `<img src="${img}" class="item-img" loading="lazy">` : ''}
+                        ${grade}
+                    </div>
+                    <div style="width:100%">${val}</div>
+                    ${showDetailBtn ? `<button class="mini-btn" onclick="openDetail('${cacheKey}', '${trans(item.name)}', '${btnText}')">${btnText}</button>` : ''}
+                </div>`;
+            }).join('');
+
+            html += `
+            <div class="section-card">
+                <div class="section-title">${cfg.title}</div>
+                <div class="horizontal-scroll">${cards}</div>
+            </div>`;
+        });
+        els.lists.innerHTML = html;
+    }
+
+    // 打开模态框
+    window.openDetail = (cacheKey, name, titleContext) => {
+        const data = window.detailCache[cacheKey];
+        if (!data) return;
+
+        els.modalTitle.textContent = `${name}`;
+        
+        // 排序：按等级升序
+        data.sort((a,b) => (a.grade||0) - (b.grade||0));
+
+        let th1 = '等级/类型';
+        if(titleContext.includes('类型')) th1 = '类型';
+        if(titleContext.includes('版本')) th1 = '版本';
+        if(titleContext.includes('等级')) th1 = '等级';
+
+        const rows = data.map(d => {
+            let label = '-';
+            if(d.type) label = d.type;
+            else if (d.grade !== undefined && d.grade > -1) label = `Mk${d.grade+1}`;
+            else if (d.id) label = d.id;
+
+            return `
+            <tr>
+                <td>${trans(label)}</td>
+                <td>${d.timePlayed ? formatTime(d.timePlayed) : '-'}</td>
+                <td>${d.scoreEarned ? d.scoreEarned.toLocaleString() : '-'}</td>
+            </tr>`;
+        }).join('');
+
+        els.modalContent.innerHTML = `
+        <div class="table-container">
+            <table style="min-width:100%">
+                <thead><tr><th>${th1}</th><th>游戏时长</th><th>获得经验</th></tr></thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>`;
+        
+        els.modal.classList.add('open');
+    };
+
+    window.closeModal = () => {
+        els.modal.classList.remove('open');
+    };
+
+    // --- 排行榜首页 ---
+    async function loadLeaderboard() {
+        if (state.lbData) return;
+        els.lbContent.innerHTML = '<div class="loader" style="display:block"></div>';
+        
+        try {
+            const res = await fetch(API.proxy + encodeURIComponent(API.leaderboard));
+            const json = await res.json();
+            const data = json.response;
+
+            const starUrl = API.proxy + encodeURIComponent('https://pages.tankionline.com/challenge-accepted');
+            const starRes = await fetch(starUrl);
+            const starHtml = await starRes.text();
+            const starMatches = [...starHtml.matchAll(/<li[^>]*>[\s\S]*?<div class="name">(.*?)<\/div>[\s\S]*?<div class="stars">\s*(\d+)\s*<\/div>/g)];
+            const stars = starMatches.map(m => ({ uid: m[1].trim(), value: parseInt(m[2]) })).slice(0, 10);
+
+            data.stars = stars;
+            state.lbData = data;
+            renderLeaderboardUI(data);
+
+        } catch(e) {
+            els.lbContent.innerHTML = `<div class="error-msg">加载排行榜失败: ${e.message}</div>`;
+        }
+    }
+
+    function renderLeaderboardUI(data) {
+        const cats = [
+            {k:'stars', t:'本周星星挑战 (Stars)'},
+            {k:'score', t:'经验值 (Score)'},
+            {k:'crystals', t:'水晶 (Crystals)'},
+            {k:'efficiency', t:'效率 (Efficiency)'}
+        ];
+
+        let html = '<div class="profile-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">';
+        
+        cats.forEach(c => {
+            const list = data[c.k] || [];
+            if(list.length === 0) return;
+
+            let rows = list.slice(0, 10).map((p, i) => {
+                let val = p.value.toLocaleString();
+                if(c.k === 'efficiency') val = (p.value/1000).toLocaleString();
+                return `<tr>
+                    <td class="rank-col">#${i+1}</td>
+                    <td><span class="link-text" onclick="quickSearch('${p.uid}')">${p.uid}</span></td>
+                    <td style="text-align:right; font-family:monospace">${val}</td>
+                </tr>`;
+            }).join('');
+
+            html += `
+            <div class="section-card" style="margin:0; padding:15px">
+                <div class="section-title" style="font-size:16px; margin-bottom:10px;">${c.t}</div>
+                <table style="min-width:100%"><tbody>${rows}</tbody></table>
+            </div>`;
+        });
+        
+        html += '</div>';
+        els.lbContent.innerHTML = html;
+    }
+
+    // --- 辅助功能 ---
+
+    function toggleMonitor() {
+        if (state.monitoring) {
+            stopMonitor();
+        } else {
+            state.monitoring = true;
+            els.monitorBtn.textContent = '停止监测';
+            els.monitorBtn.classList.add('monitoring');
+            els.fetchBtn.disabled = true;
+            els.username.disabled = true;
+            pollData();
+        }
+    }
+
+    function stopMonitor() {
+        state.monitoring = false;
+        clearTimeout(state.timer);
+        els.monitorBtn.textContent = '开启实时监测';
+        els.monitorBtn.classList.remove('monitoring');
+        els.fetchBtn.disabled = false;
+        els.username.disabled = false;
+    }
+
+    async function pollData() {
+        if (!state.monitoring) return;
+        try {
+            const data = await fetchProfile(els.server.value, els.username.value);
+            renderProfile(data, state.lastData);
+            state.lastData = data;
+        } catch(e) { console.error(e); }
+        state.timer = setTimeout(pollData, 5000);
+    }
+
+    function addLog(item, oldV, newV) {
+        const time = new Date().toLocaleTimeString();
+        const msg = `<div style="padding:10px; border-bottom:1px solid var(--border)">
+            <span style="color:var(--text-sec); font-size:12px">[${time}]</span> 
+            <strong>${item}</strong>: ${oldV} ➝ <span style="color:var(--primary)">${newV}</span>
+        </div>`;
+        els.logs.insertAdjacentHTML('afterbegin', msg);
+    }
+
+    function showLeaderboard() {
+        els.views.res.style.display = 'none';
+        els.views.lb.style.display = 'block';
+        els.backContainer.style.display = 'none';
+        els.monitorBtn.style.display = 'none';
+        els.username.value = '';
+        history.pushState(null, '', window.location.pathname);
+        stopMonitor();
+    }
+
+    function quickSearch(name) {
+        els.username.value = name;
+        doSearch();
+    }
+
+    function trans(txt) {
+        if (!txt) return txt;
+        for (let k in TRANSLATION) {
+            txt = txt.replace(new RegExp(k, 'g'), TRANSLATION[k]);
+        }
+        return txt.replace(/_/g, ' ');
+    }
+
+    function formatTime(ms, short=false) {
+        const h = Math.floor(ms/3600000);
+        const m = Math.floor((ms%3600000)/60000);
+        if (short) return `${h}h ${m}m`;
+        return `${h}小时 ${m}分钟`;
+    }
+
+    function showLoading(show) { els.loader.style.display = show ? 'block' : 'none'; }
+    function showError(msg) { els.error.textContent = msg; }
+    
+    function switchTab(target) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        target.classList.add('active');
+        document.getElementById('tab-' + target.dataset.tab).classList.add('active');
+    }
+
+    function updateUrl(, u) {
+        const url = `?server=${}&username=${u}`;
+        history.pushState({, u}, '', url);
+    }
+    function handlePopState(e) {
+        if (e.state) {
+            els.username.value = e.state.u;
+            doSearch();
+        } else {
+            showLeaderboard();
+        }
+    }
+
+    // 主题逻辑
+    function initTheme() {
+        const t = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+        updateThemeIcon(t);
+    }
+    function toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        updateThemeIcon(next);
+    }
+    function updateThemeIcon(t) {
+        els.themeBtn.innerHTML = `<span class="material-symbols-rounded">${t==='dark'?'light_mode':'dark_mode'}</span>`;
+    }
+
+</script>
+</body>
+</html>
