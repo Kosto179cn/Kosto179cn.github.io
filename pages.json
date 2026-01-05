@@ -40,14 +40,6 @@
     "theme": "theme-other"
   },
   {
-    "filename": "whitelist.html",
-    "title": "Kosto 管理系统 Pro",
-    "desc": "高级权限管理，配置用户ID及黑名单。",
-    "icon": "fa-shield-alt",
-    "category": "admin",
-    "theme": "theme-admin"
-  },
-  {
     "filename": "config-editor.html",
     "title": "页面配置编辑器 | Kosto Hub",
     "desc": "自动发现的新页面",
