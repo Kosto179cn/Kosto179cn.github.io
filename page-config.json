@@ -63,6 +63,7 @@
     "system.html",
     "whitelist.html",
     "config-editor.html",
-    "versioncheck-editor.html"
+    "versioncheck-editor.html",
+    "Dictionaryeditor.html"
   ]
 }
