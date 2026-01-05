@@ -1,43 +1,11 @@
-name: Generate Pages JSON
-
-on:
-  # 1. 每小时执行一次
-  schedule:
-    - cron: '0 * * * *'
-  # 2. 当仓库中有 html 文件发生变化时执行
-  push:
-    paths:
-      - '**.html'
-  # 3. 允许手动在 Actions 页面触发
-  workflow_dispatch:
-
-permissions:
-  contents: write
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-
-      - name: Generate pages.json script
+- name: Generate pages.json script
         run: |
           cat <<EOF > generate_json.py
           import os
           import json
           import re
 
-          # --- 配置区域：你需要在这里维护你的图标和分类规则 ---
-          # 格式: "文件名": { "icon": "图标", "category": "分类(admin/game/tool/other)", "theme": "颜色主题", "desc": "描述" }
-          # 如果文件在这里有记录，就会使用这里的配置；如果没有，脚本会自动生成默认值。
-          
+          # --- 配置区域 ---
           CONFIG_MAP = {
               "whitelist.html": { 
                   "icon": "fa-shield-alt", "category": "admin", "theme": "theme-admin", 
@@ -73,13 +41,22 @@ jobs:
               }
           }
           
-          # 需要排除的文件
-          EXCLUDE_FILES = ['index.html', '404.html']
+          # -----------------------------------------------------------
+          # 【修改这里】在此列表中添加你想屏蔽的文件名 (必须带 .html 后缀)
+          # -----------------------------------------------------------
+          EXCLUDE_FILES = [
+              'index.html', 
+              'test.html',
+              'status.html',
+              'ts.html',
+              'system.html'
+          ]
 
           pages_data = []
 
           # 扫描当前目录
           for filename in os.listdir('.'):
+              # 逻辑：如果是html文件 且 不在排除列表中，才进行处理
               if filename.endswith('.html') and filename not in EXCLUDE_FILES:
                   
                   # 1. 默认值
@@ -96,7 +73,6 @@ jobs:
                   try:
                       with open(filename, 'r', encoding='utf-8') as f:
                           content = f.read()
-                          # 正则提取 <title>...</title>
                           match = re.search(r'<title>(.*?)</title>', content, re.IGNORECASE)
                           if match:
                               entry['title'] = match.group(1)
@@ -104,13 +80,8 @@ jobs:
                       print(f"Error reading {filename}: {e}")
 
                   # 3. 如果在配置表里有记录，覆盖默认值
-                  # 兼容大小写匹配（有些文件可能是 Servers.html 有些是 servers.html）
-                  found_config = None
                   if filename in CONFIG_MAP:
-                      found_config = CONFIG_MAP[filename]
-                  
-                  if found_config:
-                      entry.update(found_config)
+                      entry.update(CONFIG_MAP[filename])
 
                   pages_data.append(entry)
 
@@ -122,17 +93,3 @@ jobs:
           EOF
 
           python generate_json.py
-
-      - name: Commit and Push
-        run: |
-          git config --global user.name "GitHub Action"
-          git config --global user.email "action@github.com"
-          
-          # 检查 pages.json 是否有变化
-          if [[ -n $(git status --porcelain pages.json) ]]; then
-            git add pages.json
-            git commit -m "Auto-update pages.json via Workflow"
-            git push
-          else
-            echo "No changes in pages.json"
-          fi
