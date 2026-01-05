@@ -62,6 +62,7 @@
     "ts.html",
     "system.html",
     "whitelist.html",
-    "config-editor.html"
+    "config-editor.html",
+    "versioncheck-editor.html"
   ]
 }
