@@ -3,234 +3,663 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>页面配置编辑器</title>
+    <title>Kosto 聚合门户</title>
+    <!-- Bootstrap 5.3 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft Yahei", Arial; }
-        body { padding: 20px; max-width: 1200px; margin: 0 auto; background: #f5f5f5; }
-        .container { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
-        .panel { flex: 1; min-width: 400px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #333; text-align: center; margin-bottom: 20px; }
-        h2 { color: #444; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #0078d7; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; }
-        input, textarea, select { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
-        textarea { height: 120px; resize: vertical; font-family: Consolas, monospace; }
-        button { 
-            background: #0078d7; color: white; border: none; padding: 10px 20px; 
-            border-radius: 4px; cursor: pointer; font-size: 14px; margin: 5px 0;
+        :root {
+            --primary-bg: #f0f2f5;
+            --bilibili-pink: #fb7299;
+            --bilibili-blue: #00aeec;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(255, 255, 255, 0.5);
+            --text-primary: #333;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+            --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+            --shadow-lg: 0 12px 32px rgba(0,0,0,0.12);
+            --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        button:hover { background: #005a9e; }
-        .btn-danger { background: #dc3545; }
-        .btn-danger:hover { background: #b02a37; }
-        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
-        .blacklist-item { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; padding: 8px; background: #f8f9fa; border-radius: 4px; }
-        .config-item { background: #f8f9fa; padding: 15px; margin-bottom: 10px; border-radius: 4px; }
-        #json-preview { 
-            margin-top: 20px; padding: 15px; background: #f8f9fa; 
-            border-radius: 4px; overflow-x: auto; font-family: Consolas, monospace;
-            font-size: 13px; white-space: pre-wrap;
+
+        body {
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            background-attachment: fixed;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding-bottom: 80px;
+            line-height: 1.6;
         }
-        .tips { color: #666; font-size: 12px; margin-top: 5px; }
+
+        /* 顶部导航 */
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            box-shadow: var(--shadow-sm);
+            position: sticky; 
+            top: 0; 
+            z-index: 1000;
+            border-bottom: 1px solid rgba(0,0,0,0.03);
+            padding: 0.8rem 0;
+        }
+
+        .brand-logo {
+            font-weight: 800; 
+            font-size: 1.5rem;
+            background: linear-gradient(45deg, #007bff, #6610f2);
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-link {
+            color: #495057;
+            font-weight: 500;
+            transition: var(--transition-base);
+            padding: 0.5rem 1rem !important;
+        }
+
+        .nav-link:hover {
+            color: #007bff;
+        }
+
+        /* 英雄区域 (B站入口) */
+        .hero-section {
+            background: linear-gradient(120deg, #fff 0%, #fff0f6 100%);
+            border-radius: 28px; 
+            padding: 50px 30px; 
+            margin-top: 30px;
+            box-shadow: 0 15px 40px rgba(251, 114, 153, 0.12);
+            border: 1px solid rgba(251, 114, 153, 0.15);
+            position: relative; 
+            overflow: hidden;
+            transform: translateY(0);
+            transition: var(--transition-base);
+        }
+        
+        .hero-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 45px rgba(251, 114, 153, 0.15);
+        }
+
+        .hero-bg-icon {
+            position: absolute; 
+            right: -40px; 
+            top: -50px; 
+            font-size: 20rem;
+            color: rgba(251, 114, 153, 0.06); 
+            transform: rotate(15deg);
+            z-index: 0; 
+            pointer-events: none;
+        }
+
+        .bilibili-btn {
+            background-color: var(--bilibili-pink); 
+            color: white; 
+            border: none;
+            padding: 14px 40px; 
+            border-radius: 50px; 
+            font-weight: 600;
+            font-size: 1.05rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1; 
+            position: relative; 
+            box-shadow: 0 8px 20px rgba(251, 114, 153, 0.25);
+            letter-spacing: 0.5px;
+        }
+
+        .bilibili-btn:hover {
+            background-color: #e55b80; 
+            transform: translateY(-4px) scale(1.03);
+            color: white; 
+            box-shadow: 0 12px 25px rgba(251, 114, 153, 0.4);
+        }
+
+        /* 区域标题 */
+        .section-title {
+            font-weight: 700; 
+            margin: 50px 0 25px; 
+            position: relative; 
+            padding-left: 20px; 
+            color: #212529;
+            font-size: 1.4rem;
+            display: none; 
+            letter-spacing: -0.3px;
+        }
+        
+        .section-title::before { 
+            content: ''; 
+            position: absolute; 
+            left: 0; 
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px; 
+            height: 28px;
+            border-radius: 5px; 
+        }
+        
+        .section-title.default::before { background: linear-gradient(180deg, #007bff, #0056b3); }
+        .section-title.tools::before { background: linear-gradient(180deg, #20c997, #17a2b8); }
+        .section-title.admin::before { background: linear-gradient(180deg, #6f42c1, #5a32a3); }
+        .section-title.res::before { background: linear-gradient(180deg, #fd7e14, #e86a00); }
+        .section-title.other::before { background: linear-gradient(180deg, #6c757d, #495057); }
+
+        /* 功能卡片样式 */
+        .tool-card {
+            background: var(--card-bg); 
+            border: 1px solid rgba(255,255,255,0.6);
+            border-radius: 20px; 
+            transition: var(--transition-base); 
+            height: 100%;
+            position: relative; 
+            overflow: hidden;
+            backdrop-filter: blur(8px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #007bff, #6610f2);
+            opacity: 0;
+            transition: var(--transition-base);
+        }
+        
+        .tool-card:hover { 
+            transform: translateY(-6px); 
+            box-shadow: var(--shadow-md); 
+            background: #fff;
+        }
+        
+        .tool-card:hover::before {
+            opacity: 1;
+        }
+
+        .card-icon {
+            width: 60px; 
+            height: 60px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            border-radius: 16px; 
+            font-size: 1.8rem; 
+            margin-bottom: 18px; 
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .tool-card:hover .card-icon { 
+            transform: scale(1.15) rotate(8deg); 
+        }
+
+        .card-title { 
+            font-weight: 700; 
+            font-size: 1.15rem; 
+            margin-bottom: 10px; 
+            color: #212529;
+        }
+        
+        .card-text { 
+            color: #6c757d; 
+            font-size: 0.95rem; 
+            line-height: 1.6; 
+            margin-bottom: 20px; 
+        }
+        
+        .stretched-link::after { 
+            position: absolute; 
+            top: 0; 
+            right: 0; 
+            bottom: 0; 
+            left: 0; 
+            z-index: 1; 
+            content: ""; 
+        }
+
+        /* 颜色主题类 */
+        .theme-admin .card-icon { background: rgba(111, 66, 193, 0.1); color: #6f42c1; }
+        .theme-game .card-icon { background: rgba(32, 201, 151, 0.1); color: #20c997; }
+        .theme-tool .card-icon { background: rgba(13, 202, 240, 0.1); color: #0dcaf0; }
+        .theme-edit .card-icon { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+        .theme-warn .card-icon { background: rgba(220, 53, 69, 0.1); color: #dc3545; }
+        .theme-other .card-icon { background: rgba(108, 117, 125, 0.1); color: #6c757d; }
+
+        /* 统计图表容器 */
+        .chart-container {
+            background: white; 
+            border-radius: 24px; 
+            padding: 30px;
+            box-shadow: var(--shadow-sm); 
+            border: 1px solid rgba(0,0,0,0.03);
+            transition: var(--transition-base);
+        }
+        
+        .chart-container:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        /* 加载动画 */
+        #loading-spinner { 
+            text-align: center; 
+            padding: 80px 0; 
+            color: #adb5bd; 
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0; 
+                transform: translate3d(0, 30px, 0); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translate3d(0, 0, 0); 
+            }
+        }
+        
+        .fade-in-up { 
+            animation: fadeInUp 0.6s ease-out forwards; 
+            opacity: 0;
+        }
+
+        footer { 
+            margin-top: 80px; 
+            text-align: center; 
+            color: #adb5bd; 
+            font-size: 0.85rem; 
+        }
+
+        /* 自定义按钮样式 */
+        .btn-outline-secondary {
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-weight: 500;
+            transition: var(--transition-base);
+            border: 1px solid #dee2e6;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #f8f9fa;
+            border-color: #adb5bd;
+            color: #495057;
+        }
+
+        /* 响应式优化 */
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 35px 20px;
+            }
+            
+            .hero-bg-icon {
+                font-size: 15rem;
+                right: -30px;
+                top: -30px;
+            }
+            
+            .bilibili-btn {
+                padding: 12px 30px;
+                font-size: 1rem;
+            }
+            
+            .section-title {
+                font-size: 1.25rem;
+                margin: 35px 0 20px;
+            }
+            
+            .chart-container {
+                padding: 20px;
+            }
+        }
+
+        /* 卡片内渐变按钮 */
+        .card .btn-light {
+            transition: var(--transition-base);
+        }
+        
+        .card .btn-light:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* 版本检查按钮 */
+        #checkVersionBtn {
+            transition: var(--transition-base);
+        }
+        
+        #checkVersionBtn:hover {
+            background-color: #e9f7ef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(32, 201, 151, 0.2);
+        }
     </style>
 </head>
 <body>
-    <h1>页面配置与黑名单管理</h1>
-    
-    <div class="btn-group">
-        <button id="load-config">加载当前配置</button>
-        <button id="save-config">保存配置到文件</button>
-        <button id="preview-json">预览JSON</button>
-    </div>
+
+    <!-- 顶部导航 -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand brand-logo" href="#">
+                <i class="fas fa-cube me-2"></i> Kosto Hub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item me-3">
+                        <span class="badge bg-light text-secondary border shadow-sm">v2.1 Auto</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://github.com/Kosto179cn/Kosto179cn.github.io" target="_blank">
+                            <i class="fab fa-github me-2"></i> GitHub 仓库
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
     <div class="container">
-        <!-- 黑名单配置面板 -->
-        <div class="panel">
-            <h2>黑名单配置（不显示的页面）</h2>
-            <div class="form-group">
-                <label>添加页面到黑名单</label>
-                <input type="text" id="blacklist-input" placeholder="例如：test.html">
-                <button id="add-blacklist">添加</button>
-                <p class="tips">添加后该页面不会出现在pages.json中</p>
+        
+        <!-- Bilibili 专属板块 -->
+        <div class="hero-section text-center">
+            <i class="fab fa-bilibili hero-bg-icon"></i>
+            <div style="position: relative; z-index: 1;">
+                <img src="https://ui-avatars.com/api/?name=Kosto&background=fb7299&color=fff&size=100&rounded=true&bold=true" alt="Avatar" class="mb-4 shadow-md" style="border-radius: 50%; border: 5px solid white; width: 90px;">
+                <h2 class="fw-bold mb-3">Kosto 的 Bilibili 主页</h2>
+                <p class="text-muted mb-5" style="max-width: 600px; margin-left: auto; margin-right: auto;">关注最新动态、脚本发布与技术分享，获取第一手开发资源</p>
+                
+                <div class="d-flex justify-content-center gap-4 flex-wrap">
+                    <a href="https://space.bilibili.com/509510039" target="_blank" class="bilibili-btn">
+                        <i class="fab fa-bilibili me-2"></i> 访问我的主页
+                    </a>
+                    <a href="https://message.bilibili.com/" target="_blank" class="btn btn-outline-secondary" style="background: white;">
+                        <i class="fas fa-envelope me-2"></i> 私信联系
+                    </a>
+                </div>
             </div>
-            <div id="blacklist-container"></div>
         </div>
 
-        <!-- 页面配置面板 -->
-        <div class="panel">
-            <h2>页面信息配置</h2>
-            <div class="form-group">
-                <label>页面文件名</label>
-                <input type="text" id="page-filename" placeholder="例如：whitelist.html">
-            </div>
-            <div class="form-group">
-                <label>图标 (fa-xxx)</label>
-                <input type="text" id="page-icon" placeholder="例如：fa-shield-alt">
-            </div>
-            <div class="form-group">
-                <label>分类</label>
-                <input type="text" id="page-category" placeholder="例如：admin">
-            </div>
-            <div class="form-group">
-                <label>主题</label>
-                <input type="text" id="page-theme" placeholder="例如：theme-admin">
-            </div>
-            <div class="form-group">
-                <label>描述</label>
-                <textarea id="page-desc" placeholder="页面描述信息"></textarea>
-            </div>
-            <button id="add-config">添加/更新页面配置</button>
-            <div id="config-list" class="config-list"></div>
+        <!-- 动态加载指示器 -->
+        <div id="loading-spinner">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+            <div class="mt-3 small">正在同步仓库数据...</div>
         </div>
+
+        <!-- ================= 动态内容容器 ================= -->
+        
+        <!-- 1. 核心管理区 -->
+        <h4 class="section-title admin" id="title-admin">核心管理后台</h4>
+        <div class="row" id="container-admin"></div>
+
+        <!-- 2. 游戏工具区 -->
+        <h4 class="section-title tools" id="title-game">游戏工具箱</h4>
+        <div class="row" id="container-game"></div>
+
+        <!-- 3. 编辑与工具 -->
+        <h4 class="section-title res" id="title-tool">编辑与工具</h4>
+        <div class="row" id="container-tool"></div>
+
+        <!-- 4. 其他发现 (Workflow自动发现的页面) -->
+        <h4 class="section-title other" id="title-other">其他页面</h4>
+        <div class="row" id="container-other"></div>
+
+        <!-- ================= 静态资源与统计 ================= -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <h4 class="section-title res" style="display:block">资源与统计</h4>
+            </div>
+
+            <!-- 统计图表 -->
+            <div class="col-md-8 mb-4">
+                <div class="chart-container h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold m-0"><i class="fas fa-chart-line text-primary me-2"></i>使用趋势</h5>
+                        <span class="badge bg-light text-dark shadow-sm">实时数据</span>
+                    </div>
+                    <div style="height: 280px;">
+                        <canvas id="usageChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 下载与版本 -->
+            <div class="col-md-4 mb-4">
+                <div class="d-flex flex-column gap-4 h-100">
+                    <!-- 脚本下载 -->
+                    <div class="card tool-card h-100 border-0" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color: white;">
+                        <div class="card-body d-flex flex-column justify-content-center align-items-center text-center p-5">
+                            <i class="fas fa-file-code fa-3x mb-4 opacity-80"></i>
+                            <h5 class="fw-bold mb-2">最新脚本下载</h5>
+                            <p class="small opacity-80 mb-4">cloudversion.script.user.js</p>
+                            <a href="cloudversion.script.user.js" target="_blank" class="btn btn-light rounded-pill px-5 py-2 fw-bold text-primary">
+                                <i class="fas fa-download me-2"></i>立即下载
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 版本检查 -->
+                    <div class="card tool-card h-100">
+                        <div class="card-body d-flex flex-column justify-content-center align-items-center text-center p-4">
+                            <i class="fas fa-sync-alt fa-2x text-success mb-3"></i>
+                            <h6 class="fw-bold mb-1">环境检测</h6>
+                            <button id="checkVersionBtn" class="btn btn-sm btn-outline-success rounded-pill px-4 py-2 mt-2 fw-medium">
+                                检查版本
+                            </button>
+                            <div id="versionInfo" class="small mt-3 text-muted" style="font-size: 0.85rem;">等待操作...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="border-top pt-5 pb-3">
+                <p class="mb-3">© 2025 Kosto Studio | Powered by GitHub Workflow</p>
+                <div class="d-flex justify-content-center gap-4 mb-2">
+                    <a href="https://space.bilibili.com/509510039" class="text-secondary text-decoration-none hover:text-primary transition">
+                        <i class="fab fa-bilibili me-1"></i> Bilibili
+                    </a>
+                    <a href="https://github.com/Kosto179cn" class="text-secondary text-decoration-none hover:text-primary transition">
+                        <i class="fab fa-github me-1"></i> GitHub
+                    </a>
+                </div>
+                <p class="text-muted" style="font-size: 0.75rem;">持续更新，感谢你的支持</p>
+            </div>
+        </footer>
+
     </div>
 
-    <!-- JSON预览区域 -->
-    <div class="panel" style="margin-top: 20px;">
-        <h2>配置JSON预览</h2>
-        <div id="json-preview"></div>
-    </div>
-
+    <!-- 脚本逻辑 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        // 全局配置对象
-        let configData = {
-            CONFIG_MAP: {},
-            EXCLUDE_FILES: []
-        };
+        // ================= 核心动态加载逻辑 =================
 
-        // 加载配置
-        document.getElementById('load-config').addEventListener('click', async () => {
+        async function initPage() {
+            const loading = document.getElementById('loading-spinner');
+            
             try {
-                // 读取本地配置文件
-                const response = await fetch('page-config.json');
-                if (response.ok) {
-                    configData = await response.json();
-                    renderBlacklist();
-                    renderConfigList();
-                    alert('配置加载成功！');
-                } else {
-                    alert('配置文件不存在，使用空配置');
-                    configData = { CONFIG_MAP: {}, EXCLUDE_FILES: [] };
+                // 请求 Workflow 生成的静态 JSON 文件
+                // 添加时间戳 ?t=... 强制刷新缓存
+                const response = await fetch('pages.json?t=' + new Date().getTime());
+                
+                if (!response.ok) {
+                    if(response.status === 404) throw new Error('pages.json not found');
+                    throw new Error('Network error');
                 }
-            } catch (e) {
-                alert('加载配置失败：' + e.message);
-                console.error(e);
-            }
-        });
+                
+                const files = await response.json();
 
-        // 渲染黑名单列表
-        function renderBlacklist() {
-            const container = document.getElementById('blacklist-container');
-            container.innerHTML = '';
-            
-            configData.EXCLUDE_FILES.forEach(file => {
-                const item = document.createElement('div');
-                item.className = 'blacklist-item';
-                item.innerHTML = `
-                    <span>${file}</span>
-                    <button class="btn-danger" onclick="removeBlacklist('${file}')">删除</button>
+                // 渲染卡片
+                renderCards(files);
+                
+                loading.style.display = 'none';
+            } catch (error) {
+                console.warn("Pages load error:", error);
+                loading.innerHTML = `
+                    <div class="text-danger my-5">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-3"></i><br>
+                        <strong class="fs-5">数据加载失败</strong><br>
+                        <small class="text-muted">请等待 GitHub Actions 生成 pages.json (约30秒)</small>
+                    </div>`;
+            }
+        }
+
+        function renderCards(files) {
+            // 记录哪些分类有内容
+            const categoriesHasContent = new Set();
+
+            files.forEach((meta, index) => {
+                // 构建卡片 HTML
+                // 使用 style animation-delay 实现交错动画效果
+                const cardHtml = `
+                    <div class="col-md-6 col-lg-3 mb-5 fade-in-up" style="animation-delay: ${index * 0.05}s">
+                        <div class="card tool-card ${meta.theme || 'theme-other'} h-100">
+                            <div class="card-body p-4">
+                                <div class="card-icon"><i class="fas ${meta.icon || 'fa-file'}"></i></div>
+                                <h5 class="card-title">${meta.title}</h5>
+                                <p class="card-text">${meta.desc || '暂无描述'}</p>
+                                <a href="${meta.filename}" class="stretched-link"></a>
+                            </div>
+                        </div>
+                    </div>
                 `;
-                container.appendChild(item);
+
+                // 确定容器 ID
+                const containerId = `container-${meta.category}`;
+                let container = document.getElementById(containerId);
+                
+                // 容错：如果分类不存在，放入 "other"
+                if (!container) container = document.getElementById('container-other');
+                
+                if (container) {
+                    container.innerHTML += cardHtml;
+                    categoriesHasContent.add(meta.category);
+                }
+            });
+
+            // 仅显示有内容的分类标题
+            categoriesHasContent.forEach(cat => {
+                const title = document.getElementById(`title-${cat}`);
+                if (title) title.style.display = 'block';
             });
         }
 
-        // 删除黑名单项
-        function removeBlacklist(file) {
-            configData.EXCLUDE_FILES = configData.EXCLUDE_FILES.filter(item => item !== file);
-            renderBlacklist();
-        }
+        // ================= 统计图表 =================
+        function initCharts() {
+            const ctx = document.getElementById('usageChart').getContext('2d');
+            let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(0, 123, 255, 0.25)');
+            gradient.addColorStop(1, 'rgba(0, 123, 255, 0)');
 
-        // 添加黑名单项
-        document.getElementById('add-blacklist').addEventListener('click', () => {
-            const input = document.getElementById('blacklist-input');
-            const file = input.value.trim();
-            
-            if (!file) {
-                alert('请输入页面文件名');
-                return;
-            }
-            
-            if (!configData.EXCLUDE_FILES.includes(file)) {
-                configData.EXCLUDE_FILES.push(file);
-                renderBlacklist();
-                input.value = '';
-            } else {
-                alert('该文件已在黑名单中');
-            }
-        });
-
-        // 渲染配置列表
-        function renderConfigList() {
-            const container = document.getElementById('config-list');
-            container.innerHTML = '';
-            
-            Object.keys(configData.CONFIG_MAP).forEach(filename => {
-                const config = configData.CONFIG_MAP[filename];
-                const item = document.createElement('div');
-                item.className = 'config-item';
-                item.innerHTML = `
-                    <strong>${filename}</strong>
-                    <p>图标：${config.icon}</p>
-                    <p>分类：${config.category}</p>
-                    <p>主题：${config.theme}</p>
-                    <p>描述：${config.desc}</p>
-                    <button class="btn-danger" onclick="removeConfig('${filename}')">删除</button>
-                `;
-                container.appendChild(item);
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '23:59'],
+                    datasets: [{
+                        label: '活跃趋势',
+                        data: [12, 5, 25, 80, 65, 95, 45], 
+                        borderColor: '#007bff',
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#007bff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#212529',
+                            bodyColor: '#495057',
+                            borderColor: 'rgba(0, 123, 255, 0.1)',
+                            borderWidth: 1,
+                            padding: 12,
+                            boxPadding: 6,
+                            usePointStyle: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return `活跃数: ${context.raw}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { 
+                                borderDash: [5, 5],
+                                color: 'rgba(0,0,0,0.05)'
+                            }, 
+                            ticks: { 
+                                display: false 
+                            } 
+                        },
+                        x: { 
+                            grid: { 
+                                display: false 
+                            },
+                            ticks: {
+                                color: '#6c757d'
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    hover: {
+                        mode: 'nearest',
+                        intersect: true
+                    }
+                }
             });
         }
 
-        // 删除配置项
-        function removeConfig(filename) {
-            delete configData.CONFIG_MAP[filename];
-            renderConfigList();
+        // ================= 版本检查 =================
+        function checkVersion() {
+            const infoEl = document.getElementById('versionInfo');
+            infoEl.innerHTML = '<span class="spinner-border spinner-border-sm text-success"></span> 连接中...';
+
+            fetch('https://raw.githubusercontent.com/Kosto179cn/Kosto.github.io/main/versioncheck.json')
+                .then(res => res.json())
+                .then(data => {
+                    const currentVer = '2025.7.26'; // 假设当前页面版本
+                    const latestVer = data.version;
+                    
+                    if (latestVer !== currentVer) {
+                        infoEl.innerHTML = `<span class="text-warning fw-medium">新版本: ${latestVer}</span><br><small>建议立即更新</small>`;
+                    } else {
+                        infoEl.innerHTML = `<span class="text-success fw-medium">已是最新 (${currentVer})</span><br><small>无需更新</small>`;
+                    }
+                })
+                .catch(err => {
+                    infoEl.innerHTML = `<span class="text-danger fw-medium">检查失败</span><br><small>网络连接问题</small>`;
+                    console.error(err);
+                });
         }
 
-        // 添加/更新配置项
-        document.getElementById('add-config').addEventListener('click', () => {
-            const filename = document.getElementById('page-filename').value.trim();
-            const icon = document.getElementById('page-icon').value.trim();
-            const category = document.getElementById('page-category').value.trim();
-            const theme = document.getElementById('page-theme').value.trim();
-            const desc = document.getElementById('page-desc').value.trim();
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initPage();    // 1. 加载动态页面卡片
+            initCharts();  // 2. 加载图表
             
-            if (!filename) {
-                alert('请输入页面文件名');
-                return;
-            }
-            
-            configData.CONFIG_MAP[filename] = {
-                icon: icon || 'fa-file',
-                category: category || 'other',
-                theme: theme || 'theme-other',
-                desc: desc || '未设置描述'
-            };
-            
-            // 清空表单
-            document.getElementById('page-filename').value = '';
-            document.getElementById('page-icon').value = '';
-            document.getElementById('page-category').value = '';
-            document.getElementById('page-theme').value = '';
-            document.getElementById('page-desc').value = '';
-            
-            renderConfigList();
-            alert('配置已更新！');
-        });
-
-        // 预览JSON
-        document.getElementById('preview-json').addEventListener('click', () => {
-            const preview = document.getElementById('json-preview');
-            preview.textContent = JSON.stringify(configData, null, 2);
-        });
-
-        // 保存配置到文件
-        document.getElementById('save-config').addEventListener('click', () => {
-            const blob = new Blob([JSON.stringify(configData, null, 2)], { type: 'application/json' });
-            const url = 网站.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'page-config.json';
-            a.click();
-            网站.revokeObjectURL(url);
-            alert('配置文件已下载，请替换仓库中的page-config.json文件');
+            document.getElementById('checkVersionBtn').addEventListener('click', checkVersion);
         });
     </script>
 </body>
