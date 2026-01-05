@@ -1,0 +1,59 @@
+{
+  "CONFIG_MAP": {
+    "whitelist.html": {
+      "icon": "fa-shield-alt",
+      "category": "admin",
+      "theme": "theme-admin",
+      "desc": "高级权限管理，配置用户ID及黑名单。"
+    },
+    "ts.html": {
+      "icon": "fa-gavel",
+      "category": "admin",
+      "theme": "theme-warn",
+      "desc": "处理用户投诉，审核违规行为。"
+    },
+    "Dictionaryeditor.html": {
+      "icon": "fa-book",
+      "category": "tool",
+      "theme": "theme-edit",
+      "desc": "在线编辑国服屏蔽字库，支持实时检索。"
+    },
+    "versioncheck-editor.html": {
+      "icon": "fa-code-branch",
+      "category": "tool",
+      "theme": "theme-tool",
+      "desc": "配置脚本版本号及更新日志。"
+    },
+    "Servers.html": {
+      "icon": "fa-server",
+      "category": "game",
+      "theme": "theme-game",
+      "desc": "3D坦克各服快速入口整合。"
+    },
+    "status.html": {
+      "icon": "fa-heartbeat",
+      "category": "game",
+      "theme": "theme-game",
+      "desc": "实时监控在线人数与负载。"
+    },
+    "test.html": {
+      "icon": "fa-flask",
+      "category": "game",
+      "theme": "theme-game",
+      "desc": "Test Server 快速连接与状态。"
+    },
+    "replacement.html": {
+      "icon": "fa-spell-check",
+      "category": "tool",
+      "theme": "theme-edit",
+      "desc": "输入文本测试是否被屏蔽。"
+    }
+  },
+  "EXCLUDE_FILES": [
+    "index.html",
+    "test.html",
+    "status.html",
+    "ts.html",
+    "system.html"
+  ]
+}
