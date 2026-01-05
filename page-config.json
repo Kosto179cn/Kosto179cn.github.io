@@ -47,6 +47,12 @@
       "category": "tool",
       "theme": "theme-edit",
       "desc": "输入文本测试是否被屏蔽。"
+    },
+    "ratings.html": {
+      "icon": "fa-tools",
+      "category": "tool",
+      "theme": "theme-tool",
+      "desc": "查询国服/外服的玩家账号数据"
     }
   },
   "EXCLUDE_FILES": [
@@ -55,6 +61,7 @@
     "status.html",
     "ts.html",
     "system.html",
-    "whitelist.html"
+    "whitelist.html",
+    "config-editor.html"
   ]
 }
