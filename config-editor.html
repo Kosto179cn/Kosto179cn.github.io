@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>页面配置编辑器</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft Yahei", Arial; }
+        body { padding: 20px; max-width: 1200px; margin: 0 auto; background: #f5f5f5; }
+        .container { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
+        .panel { flex: 1; min-width: 400px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; margin-bottom: 20px; }
+        h2 { color: #444; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #0078d7; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; }
+        input, textarea, select { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        textarea { height: 120px; resize: vertical; font-family: Consolas, monospace; }
+        button { 
+            background: #0078d7; color: white; border: none; padding: 10px 20px; 
+            border-radius: 4px; cursor: pointer; font-size: 14px; margin: 5px 0;
+        }
+        button:hover { background: #005a9e; }
+        .btn-danger { background: #dc3545; }
+        .btn-danger:hover { background: #b02a37; }
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        .blacklist-item { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; padding: 8px; background: #f8f9fa; border-radius: 4px; }
+        .config-item { background: #f8f9fa; padding: 15px; margin-bottom: 10px; border-radius: 4px; }
+        #json-preview { 
+            margin-top: 20px; padding: 15px; background: #f8f9fa; 
+            border-radius: 4px; overflow-x: auto; font-family: Consolas, monospace;
+            font-size: 13px; white-space: pre-wrap;
+        }
+        .tips { color: #666; font-size: 12px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <h1>页面配置与黑名单管理</h1>
+    
+    <div class="btn-group">
+        <button id="load-config">加载当前配置</button>
+        <button id="save-config">保存配置到文件</button>
+        <button id="preview-json">预览JSON</button>
+    </div>
+
+    <div class="container">
+        <!-- 黑名单配置面板 -->
+        <div class="panel">
+            <h2>黑名单配置（不显示的页面）</h2>
+            <div class="form-group">
+                <label>添加页面到黑名单</label>
+                <input type="text" id="blacklist-input" placeholder="例如：test.html">
+                <button id="add-blacklist">添加</button>
+                <p class="tips">添加后该页面不会出现在pages.json中</p>
+            </div>
+            <div id="blacklist-container"></div>
+        </div>
+
+        <!-- 页面配置面板 -->
+        <div class="panel">
+            <h2>页面信息配置</h2>
+            <div class="form-group">
+                <label>页面文件名</label>
+                <input type="text" id="page-filename" placeholder="例如：whitelist.html">
+            </div>
+            <div class="form-group">
+                <label>图标 (fa-xxx)</label>
+                <input type="text" id="page-icon" placeholder="例如：fa-shield-alt">
+            </div>
+            <div class="form-group">
+                <label>分类</label>
+                <input type="text" id="page-category" placeholder="例如：admin">
+            </div>
+            <div class="form-group">
+                <label>主题</label>
+                <input type="text" id="page-theme" placeholder="例如：theme-admin">
+            </div>
+            <div class="form-group">
+                <label>描述</label>
+                <textarea id="page-desc" placeholder="页面描述信息"></textarea>
+            </div>
+            <button id="add-config">添加/更新页面配置</button>
+            <div id="config-list" class="config-list"></div>
+        </div>
+    </div>
+
+    <!-- JSON预览区域 -->
+    <div class="panel" style="margin-top: 20px;">
+        <h2>配置JSON预览</h2>
+        <div id="json-preview"></div>
+    </div>
+
+    <script>
+        // 全局配置对象
+        let configData = {
+            CONFIG_MAP: {},
+            EXCLUDE_FILES: []
+        };
+
+        // 加载配置
+        document.getElementById('load-config').addEventListener('click', async () => {
+            try {
+                // 读取本地配置文件
+                const response = await fetch('page-config.json');
+                if (response.ok) {
+                    configData = await response.json();
+                    renderBlacklist();
+                    renderConfigList();
+                    alert('配置加载成功！');
+                } else {
+                    alert('配置文件不存在，使用空配置');
+                    configData = { CONFIG_MAP: {}, EXCLUDE_FILES: [] };
+                }
+            } catch (e) {
+                alert('加载配置失败：' + e.message);
+                console.error(e);
+            }
+        });
+
+        // 渲染黑名单列表
+        function renderBlacklist() {
+            const container = document.getElementById('blacklist-container');
+            container.innerHTML = '';
+            
+            configData.EXCLUDE_FILES.forEach(file => {
+                const item = document.createElement('div');
+                item.className = 'blacklist-item';
+                item.innerHTML = `
+                    <span>${file}</span>
+                    <button class="btn-danger" onclick="removeBlacklist('${file}')">删除</button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // 删除黑名单项
+        function removeBlacklist(file) {
+            configData.EXCLUDE_FILES = configData.EXCLUDE_FILES.filter(item => item !== file);
+            renderBlacklist();
+        }
+
+        // 添加黑名单项
+        document.getElementById('add-blacklist').addEventListener('click', () => {
+            const input = document.getElementById('blacklist-input');
+            const file = input.value.trim();
+            
+            if (!file) {
+                alert('请输入页面文件名');
+                return;
+            }
+            
+            if (!configData.EXCLUDE_FILES.includes(file)) {
+                configData.EXCLUDE_FILES.push(file);
+                renderBlacklist();
+                input.value = '';
+            } else {
+                alert('该文件已在黑名单中');
+            }
+        });
+
+        // 渲染配置列表
+        function renderConfigList() {
+            const container = document.getElementById('config-list');
+            container.innerHTML = '';
+            
+            Object.keys(configData.CONFIG_MAP).forEach(filename => {
+                const config = configData.CONFIG_MAP[filename];
+                const item = document.createElement('div');
+                item.className = 'config-item';
+                item.innerHTML = `
+                    <strong>${filename}</strong>
+                    <p>图标：${config.icon}</p>
+                    <p>分类：${config.category}</p>
+                    <p>主题：${config.theme}</p>
+                    <p>描述：${config.desc}</p>
+                    <button class="btn-danger" onclick="removeConfig('${filename}')">删除</button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // 删除配置项
+        function removeConfig(filename) {
+            delete configData.CONFIG_MAP[filename];
+            renderConfigList();
+        }
+
+        // 添加/更新配置项
+        document.getElementById('add-config').addEventListener('click', () => {
+            const filename = document.getElementById('page-filename').value.trim();
+            const icon = document.getElementById('page-icon').value.trim();
+            const category = document.getElementById('page-category').value.trim();
+            const theme = document.getElementById('page-theme').value.trim();
+            const desc = document.getElementById('page-desc').value.trim();
+            
+            if (!filename) {
+                alert('请输入页面文件名');
+                return;
+            }
+            
+            configData.CONFIG_MAP[filename] = {
+                icon: icon || 'fa-file',
+                category: category || 'other',
+                theme: theme || 'theme-other',
+                desc: desc || '未设置描述'
+            };
+            
+            // 清空表单
+            document.getElementById('page-filename').value = '';
+            document.getElementById('page-icon').value = '';
+            document.getElementById('page-category').value = '';
+            document.getElementById('page-theme').value = '';
+            document.getElementById('page-desc').value = '';
+            
+            renderConfigList();
+            alert('配置已更新！');
+        });
+
+        // 预览JSON
+        document.getElementById('preview-json').addEventListener('click', () => {
+            const preview = document.getElementById('json-preview');
+            preview.textContent = JSON.stringify(configData, null, 2);
+        });
+
+        // 保存配置到文件
+        document.getElementById('save-config').addEventListener('click', () => {
+            const blob = new Blob([JSON.stringify(configData, null, 2)], { type: 'application/json' });
+            const url = 网站.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'page-config.json';
+            a.click();
+            网站.revokeObjectURL(url);
+            alert('配置文件已下载，请替换仓库中的page-config.json文件');
+        });
+    </script>
+</body>
+</html>
