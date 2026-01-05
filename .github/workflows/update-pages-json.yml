@@ -1,0 +1,138 @@
+name: Generate Pages JSON
+
+on:
+  # 1. 每小时执行一次
+  schedule:
+    - cron: '0 * * * *'
+  # 2. 当仓库中有 html 文件发生变化时执行
+  push:
+    paths:
+      - '**.html'
+  # 3. 允许手动在 Actions 页面触发
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Generate pages.json script
+        run: |
+          cat <<EOF > generate_json.py
+          import os
+          import json
+          import re
+
+          # --- 配置区域：你需要在这里维护你的图标和分类规则 ---
+          # 格式: "文件名": { "icon": "图标", "category": "分类(admin/game/tool/other)", "theme": "颜色主题", "desc": "描述" }
+          # 如果文件在这里有记录，就会使用这里的配置；如果没有，脚本会自动生成默认值。
+          
+          CONFIG_MAP = {
+              "whitelist.html": { 
+                  "icon": "fa-shield-alt", "category": "admin", "theme": "theme-admin", 
+                  "desc": "高级权限管理，配置用户ID及黑名单。" 
+              },
+              "ts.html": { 
+                  "icon": "fa-gavel", "category": "admin", "theme": "theme-warn", 
+                  "desc": "处理用户投诉，审核违规行为。" 
+              },
+              "Dictionaryeditor.html": { 
+                  "icon": "fa-book", "category": "tool", "theme": "theme-edit", 
+                  "desc": "在线编辑国服屏蔽字库，支持实时检索。" 
+              },
+              "versioncheck-editor.html": { 
+                  "icon": "fa-code-branch", "category": "tool", "theme": "theme-tool", 
+                  "desc": "配置脚本版本号及更新日志。" 
+              },
+              "Servers.html": { 
+                  "icon": "fa-server", "category": "game", "theme": "theme-game", 
+                  "desc": "3D坦克各服快速入口整合。" 
+              },
+              "status.html": { 
+                  "icon": "fa-heartbeat", "category": "game", "theme": "theme-game", 
+                  "desc": "实时监控在线人数与负载。" 
+              },
+              "test.html": { 
+                  "icon": "fa-flask", "category": "game", "theme": "theme-game", 
+                  "desc": "Test Server 快速连接与状态。" 
+              },
+              "replacement.html": { 
+                  "icon": "fa-spell-check", "category": "tool", "theme": "theme-edit", 
+                  "desc": "输入文本测试是否被屏蔽。" 
+              }
+          }
+          
+          # 需要排除的文件
+          EXCLUDE_FILES = ['index.html', '404.html']
+
+          pages_data = []
+
+          # 扫描当前目录
+          for filename in os.listdir('.'):
+              if filename.endswith('.html') and filename not in EXCLUDE_FILES:
+                  
+                  # 1. 默认值
+                  entry = {
+                      "filename": filename,
+                      "title": filename.replace('.html', ''),
+                      "desc": "自动发现的新页面",
+                      "icon": "fa-file",
+                      "category": "other",
+                      "theme": "theme-other"
+                  }
+
+                  # 2. 尝试读取 HTML 文件内容提取 <title>
+                  try:
+                      with open(filename, 'r', encoding='utf-8') as f:
+                          content = f.read()
+                          # 正则提取 <title>...</title>
+                          match = re.search(r'<title>(.*?)</title>', content, re.IGNORECASE)
+                          if match:
+                              entry['title'] = match.group(1)
+                  except Exception as e:
+                      print(f"Error reading {filename}: {e}")
+
+                  # 3. 如果在配置表里有记录，覆盖默认值
+                  # 兼容大小写匹配（有些文件可能是 Servers.html 有些是 servers.html）
+                  found_config = None
+                  if filename in CONFIG_MAP:
+                      found_config = CONFIG_MAP[filename]
+                  
+                  if found_config:
+                      entry.update(found_config)
+
+                  pages_data.append(entry)
+
+          # 输出 JSON
+          with open('pages.json', 'w', encoding='utf-8') as f:
+              json.dump(pages_data, f, ensure_ascii=False, indent=2)
+              
+          print(f"Generated pages.json with {len(pages_data)} entries.")
+          EOF
+
+          python generate_json.py
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          
+          # 检查 pages.json 是否有变化
+          if [[ -n $(git status --porcelain pages.json) ]]; then
+            git add pages.json
+            git commit -m "Auto-update pages.json via Workflow"
+            git push
+          else
+            echo "No changes in pages.json"
+          fi
