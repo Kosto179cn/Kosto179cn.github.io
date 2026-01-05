@@ -6,7 +6,7 @@
     <title>Kosto 聚合门户</title>
     <!-- Bootstrap 5.3 -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome 图标库 -->
+    <!-- FontAwesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -22,8 +22,7 @@
         }
 
         body {
-            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); 
-            /* 或者用之前的彩色背景: background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); */
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
             background-attachment: fixed;
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             min-height: 100vh;
@@ -36,143 +35,71 @@
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
             box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+            position: sticky; top: 0; z-index: 1000;
             border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
         .brand-logo {
-            font-weight: 800;
-            font-size: 1.5rem;
+            font-weight: 800; font-size: 1.5rem;
             background: linear-gradient(45deg, #007bff, #6610f2);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
         /* 英雄区域 (B站入口) */
         .hero-section {
-            background: white;
-            border-radius: 24px;
-            padding: 40px;
-            margin-top: 30px;
+            background: white; border-radius: 24px; padding: 40px; margin-top: 30px;
             box-shadow: 0 15px 35px rgba(251, 114, 153, 0.1);
             border: 1px solid rgba(251, 114, 153, 0.15);
-            position: relative;
-            overflow: hidden;
+            position: relative; overflow: hidden;
             background: linear-gradient(120deg, #fff 0%, #fff0f6 100%);
         }
         
         .hero-bg-icon {
-            position: absolute;
-            right: -30px;
-            top: -40px;
-            font-size: 18rem;
-            color: rgba(251, 114, 153, 0.08);
-            transform: rotate(15deg);
-            z-index: 0;
-            pointer-events: none;
+            position: absolute; right: -30px; top: -40px; font-size: 18rem;
+            color: rgba(251, 114, 153, 0.08); transform: rotate(15deg);
+            z-index: 0; pointer-events: none;
         }
 
         .bilibili-btn {
-            background-color: var(--bilibili-pink);
-            color: white;
-            border: none;
-            padding: 12px 35px;
-            border-radius: 50px;
-            font-weight: 600;
+            background-color: var(--bilibili-pink); color: white; border: none;
+            padding: 12px 35px; border-radius: 50px; font-weight: 600;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 1;
-            position: relative;
-            box-shadow: 0 5px 15px rgba(251, 114, 153, 0.3);
+            z-index: 1; position: relative; box-shadow: 0 5px 15px rgba(251, 114, 153, 0.3);
         }
 
         .bilibili-btn:hover {
-            background-color: #e55b80;
-            transform: translateY(-3px) scale(1.02);
-            color: white;
-            box-shadow: 0 8px 20px rgba(251, 114, 153, 0.5);
+            background-color: #e55b80; transform: translateY(-3px) scale(1.02);
+            color: white; box-shadow: 0 8px 20px rgba(251, 114, 153, 0.5);
         }
 
-        /* 区域标题 */
+        /* 区域标题 (默认隐藏，JS有内容时显示) */
         .section-title {
-            font-weight: 700;
-            margin: 40px 0 20px;
-            position: relative;
-            padding-left: 15px;
-            color: #495057;
+            font-weight: 700; margin: 40px 0 20px; position: relative; padding-left: 15px; color: #495057;
+            display: none; 
         }
-        .section-title::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 5px;
-            bottom: 5px;
-            width: 5px;
-            border-radius: 5px;
-            background: #007bff;
-        }
+        .section-title::before { content: ''; position: absolute; left: 0; top: 5px; bottom: 5px; width: 5px; border-radius: 5px; background: #007bff; }
         .section-title.tools::before { background: #20c997; } /* 绿色 */
         .section-title.admin::before { background: #6f42c1; } /* 紫色 */
         .section-title.res::before { background: #fd7e14; } /* 橙色 */
+        .section-title.other::before { background: #6c757d; } /* 灰色 */
 
-        /* 功能卡片通用样式 */
+        /* 功能卡片样式 */
         .tool-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 16px;
-            transition: all 0.3s ease;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(5px);
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 16px; transition: all 0.3s ease; height: 100%;
+            position: relative; overflow: hidden; backdrop-filter: blur(5px);
         }
-
-        .tool-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
-            background: #fff;
-        }
+        .tool-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); background: #fff; }
 
         .card-icon {
-            width: 56px;
-            height: 56px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 14px;
-            font-size: 1.6rem;
-            margin-bottom: 15px;
-            transition: transform 0.3s;
+            width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;
+            border-radius: 14px; font-size: 1.6rem; margin-bottom: 15px; transition: transform 0.3s;
         }
-        
-        .tool-card:hover .card-icon {
-            transform: scale(1.1) rotate(5deg);
-        }
+        .tool-card:hover .card-icon { transform: scale(1.1) rotate(5deg); }
 
-        .card-title {
-            font-weight: 700;
-            font-size: 1.1rem;
-            margin-bottom: 8px;
-        }
-
-        .card-text {
-            color: #6c757d;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            margin-bottom: 20px;
-        }
-
-        .stretched-link::after {
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            z-index: 1;
-            content: "";
-        }
+        .card-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 8px; }
+        .card-text { color: #6c757d; font-size: 0.9rem; line-height: 1.5; margin-bottom: 20px; }
+        .stretched-link::after { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 1; content: ""; }
 
         /* 颜色主题类 */
         .theme-admin .card-icon { background: rgba(111, 66, 193, 0.1); color: #6f42c1; }
@@ -180,22 +107,25 @@
         .theme-tool .card-icon { background: rgba(13, 202, 240, 0.1); color: #0dcaf0; }
         .theme-edit .card-icon { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
         .theme-warn .card-icon { background: rgba(220, 53, 69, 0.1); color: #dc3545; }
+        .theme-other .card-icon { background: rgba(108, 117, 125, 0.1); color: #6c757d; }
 
         /* 统计图表容器 */
         .chart-container {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.03);
-            border: 1px solid rgba(0,0,0,0.05);
+            background: white; border-radius: 20px; padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.05);
         }
 
-        footer {
-            margin-top: 60px;
-            text-align: center;
-            color: #adb5bd;
-            font-size: 0.85rem;
+        /* 加载动画 */
+        #loading-spinner { text-align: center; padding: 60px 0; color: #adb5bd; }
+        
+        /* 动画效果 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translate3d(0, 20px, 0); }
+            to { opacity: 1; transform: translate3d(0, 0, 0); }
         }
+        .fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+
+        footer { margin-top: 60px; text-align: center; color: #adb5bd; font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -212,7 +142,7 @@
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
                 <ul class="navbar-nav align-items-center">
                     <li class="nav-item me-3">
-                        <span class="badge bg-light text-secondary border">v2.0 Pro</span>
+                        <span class="badge bg-light text-secondary border">v2.1 Auto</span>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="https://github.com/Kosto179cn/Kosto179cn.github.io" target="_blank">
@@ -245,116 +175,34 @@
             </div>
         </div>
 
-        <div class="row">
-            <!-- 核心管理区 -->
+        <!-- 动态加载指示器 -->
+        <div id="loading-spinner">
+            <div class="spinner-border text-primary" role="status"></div>
+            <div class="mt-2 small">正在同步仓库数据...</div>
+        </div>
+
+        <!-- ================= 动态内容容器 ================= -->
+        
+        <!-- 1. 核心管理区 -->
+        <h4 class="section-title admin" id="title-admin">核心管理后台</h4>
+        <div class="row" id="container-admin"></div>
+
+        <!-- 2. 游戏工具区 -->
+        <h4 class="section-title tools" id="title-game">游戏工具箱</h4>
+        <div class="row" id="container-game"></div>
+
+        <!-- 3. 编辑与工具 -->
+        <h4 class="section-title res" id="title-tool">编辑与工具</h4>
+        <div class="row" id="container-tool"></div>
+
+        <!-- 4. 其他发现 (Workflow自动发现的页面) -->
+        <h4 class="section-title other" id="title-other">其他页面</h4>
+        <div class="row" id="container-other"></div>
+
+        <!-- ================= 静态资源与统计 ================= -->
+        <div class="row mt-5">
             <div class="col-12">
-                <h4 class="section-title admin">核心管理后台</h4>
-            </div>
-            
-            <!-- 白名单管理 -->
-            <div class="col-md-6 col-lg-3 mb-4">
-                <div class="card tool-card theme-admin h-100">
-                    <div class="card-body">
-                        <div class="card-icon"><i class="fas fa-shield-alt"></i></div>
-                        <h5 class="card-title">白名单管理 Pro</h5>
-                        <p class="card-text">高级权限管理，配置用户ID、军团及黑名单。</p>
-                        <a href="whitelist.html" class="stretched-link"></a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 投诉审批 -->
-            <div class="col-md-6 col-lg-3 mb-4">
-                <div class="card tool-card theme-warn h-100">
-                    <div class="card-body">
-                        <div class="card-icon"><i class="fas fa-gavel"></i></div>
-                        <h5 class="card-title">投诉审批系统</h5>
-                        <p class="card-text">处理用户投诉，审核违规行为。</p>
-                        <a href="ts.html" class="stretched-link"></a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 字典编辑 -->
-            <div class="col-md-6 col-lg-3 mb-4">
-                <div class="card tool-card theme-edit h-100">
-                    <div class="card-body">
-                        <div class="card-icon"><i class="fas fa-book"></i></div>
-                        <h5 class="card-title">屏蔽词字典编辑</h5>
-                        <p class="card-text">在线编辑国服屏蔽字库，支持实时检索。</p>
-                        <a href="Dictionaryeditor.html" class="stretched-link"></a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 版本控制 -->
-            <div class="col-md-6 col-lg-3 mb-4">
-                <div class="card tool-card theme-tool h-100">
-                    <div class="card-body">
-                        <div class="card-icon"><i class="fas fa-code-branch"></i></div>
-                        <h5 class="card-title">版本更新发布</h5>
-                        <p class="card-text">配置脚本版本号、更新日志及下载链接。</p>
-                        <a href="versioncheck-editor.html" class="stretched-link"></a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 游戏工具区 -->
-            <div class="col-12">
-                <h4 class="section-title tools">游戏工具箱</h4>
-            </div>
-
-            <!-- 服务器列表 -->
-            <div class="col-md-6 col-lg-3 mb-4">
-                <div class="card tool-card theme-game h-100">
-                    <div class="card-body">
-                        <div class="card-icon"><i class="fas fa-server"></i></div>
-                        <h5 class="card-title">服务器列表</h5>
-                        <p class="card-text">3D坦克国服、外服及测试服快速入口。</p>
-                        <a href="Servers.html" class="stretched-link"></a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 服务器状态 -->
-            <div class="col-md-6 col-lg-3 mb-4">
-                <div class="card tool-card theme-game h-100">
-                    <div class="card-body">
-                        <div class="card-icon"><i class="fas fa-heartbeat"></i></div>
-                        <h5 class="card-title">服务器状态</h5>
-                        <p class="card-text">实时监控各服务器在线人数与负载。</p>
-                        <a href="status.html" class="stretched-link"></a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 测试服 -->
-            <div class="col-md-6 col-lg-3 mb-4">
-                <div class="card tool-card theme-game h-100">
-                    <div class="card-body">
-                        <div class="card-icon"><i class="fas fa-flask"></i></div>
-                        <h5 class="card-title">测试服务器</h5>
-                        <p class="card-text">Test Server 快速连接与状态检测。</p>
-                        <a href="test.html" class="stretched-link"></a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 屏蔽词测试 -->
-            <div class="col-md-6 col-lg-3 mb-4">
-                <div class="card tool-card theme-edit h-100">
-                    <div class="card-body">
-                        <div class="card-icon"><i class="fas fa-spell-check"></i></div>
-                        <h5 class="card-title">屏蔽词测试</h5>
-                        <p class="card-text">输入文本测试是否会被系统屏蔽。</p>
-                        <a href="replacement.html" class="stretched-link"></a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 资源与统计 -->
-            <div class="col-12">
-                <h4 class="section-title res">资源与统计</h4>
+                <h4 class="section-title res" style="display:block">资源与统计</h4>
             </div>
 
             <!-- 统计图表 -->
@@ -398,12 +246,11 @@
                     </div>
                 </div>
             </div>
-
         </div>
 
         <footer>
             <div class="border-top pt-4">
-                <p class="mb-2">© 2025 Kosto Studio | Powered by GitHub Pages</p>
+                <p class="mb-2">© 2025 Kosto Studio | Powered by GitHub Workflow</p>
                 <div class="d-flex justify-content-center gap-3">
                     <a href="https://space.bilibili.com/509510039" class="text-secondary text-decoration-none"><i class="fab fa-bilibili"></i> Bilibili</a>
                     <a href="https://github.com/Kosto179cn" class="text-secondary text-decoration-none"><i class="fab fa-github"></i> GitHub</a>
@@ -416,11 +263,81 @@
     <!-- 脚本逻辑 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        // 1. 初始化图表
-        document.addEventListener('DOMContentLoaded', function() {
-            const ctx = document.getElementById('usageChart').getContext('2d');
+        // ================= 核心动态加载逻辑 =================
+
+        async function initPage() {
+            const loading = document.getElementById('loading-spinner');
             
-            // 创建渐变填充
+            try {
+                // 请求 Workflow 生成的静态 JSON 文件
+                // 添加时间戳 ?t=... 强制刷新缓存
+                const response = await fetch('pages.json?t=' + new Date().getTime());
+                
+                if (!response.ok) {
+                    if(response.status === 404) throw new Error('pages.json not found');
+                    throw new Error('Network error');
+                }
+                
+                const files = await response.json();
+
+                // 渲染卡片
+                renderCards(files);
+                
+                loading.style.display = 'none';
+            } catch (error) {
+                console.warn("Pages load error:", error);
+                loading.innerHTML = `
+                    <div class="text-danger my-4">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-2"></i><br>
+                        <strong>数据加载失败</strong><br>
+                        <small class="text-muted">请等待 GitHub Actions 生成 pages.json (约30秒)</small>
+                    </div>`;
+            }
+        }
+
+        function renderCards(files) {
+            // 记录哪些分类有内容
+            const categoriesHasContent = new Set();
+
+            files.forEach((meta, index) => {
+                // 构建卡片 HTML
+                // 使用 style animation-delay 实现交错动画效果
+                const cardHtml = `
+                    <div class="col-md-6 col-lg-3 mb-4 fade-in-up" style="animation-delay: ${index * 0.05}s">
+                        <div class="card tool-card ${meta.theme || 'theme-other'} h-100">
+                            <div class="card-body">
+                                <div class="card-icon"><i class="fas ${meta.icon || 'fa-file'}"></i></div>
+                                <h5 class="card-title">${meta.title}</h5>
+                                <p class="card-text">${meta.desc || '暂无描述'}</p>
+                                <a href="${meta.filename}" class="stretched-link"></a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // 确定容器 ID
+                const containerId = `container-${meta.category}`;
+                let container = document.getElementById(containerId);
+                
+                // 容错：如果分类不存在，放入 "other"
+                if (!container) container = document.getElementById('container-other');
+                
+                if (container) {
+                    container.innerHTML += cardHtml;
+                    categoriesHasContent.add(meta.category);
+                }
+            });
+
+            // 仅显示有内容的分类标题
+            categoriesHasContent.forEach(cat => {
+                const title = document.getElementById(`title-${cat}`);
+                if (title) title.style.display = 'block';
+            });
+        }
+
+        // ================= 统计图表 =================
+        function initCharts() {
+            const ctx = document.getElementById('usageChart').getContext('2d');
             let gradient = ctx.createLinearGradient(0, 0, 0, 300);
             gradient.addColorStop(0, 'rgba(0, 123, 255, 0.2)');
             gradient.addColorStop(1, 'rgba(0, 123, 255, 0)');
@@ -430,8 +347,8 @@
                 data: {
                     labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '23:59'],
                     datasets: [{
-                        label: '活跃用户',
-                        data: [12, 5, 25, 80, 65, 95, 45], // 模拟数据
+                        label: '活跃趋势',
+                        data: [12, 5, 25, 80, 65, 95, 45], 
                         borderColor: '#007bff',
                         backgroundColor: gradient,
                         borderWidth: 2,
@@ -445,24 +362,16 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
-                        y: { 
-                            beginAtZero: true,
-                            grid: { borderDash: [5, 5] },
-                            ticks: { display: false }
-                        },
-                        x: {
-                            grid: { display: false }
-                        }
+                        y: { beginAtZero: true, grid: { borderDash: [5, 5] }, ticks: { display: false } },
+                        x: { grid: { display: false } }
                     }
                 }
             });
-        });
+        }
 
-        // 2. 版本检查逻辑
+        // ================= 版本检查 =================
         function checkVersion() {
             const infoEl = document.getElementById('versionInfo');
             infoEl.innerHTML = '<span class="spinner-border spinner-border-sm text-success"></span> 连接中...';
@@ -473,7 +382,7 @@
                     const currentVer = '2025.7.26'; // 假设当前页面版本
                     const latestVer = data.version;
                     
-                    if (isNewer(latestVer, currentVer)) {
+                    if (latestVer !== currentVer) {
                         infoEl.innerHTML = `<span class="text-warning">新版本: ${latestVer}</span>`;
                     } else {
                         infoEl.innerHTML = `<span class="text-success">已是最新 (${currentVer})</span>`;
@@ -485,12 +394,13 @@
                 });
         }
 
-        function isNewer(latest, current) {
-            // 简单比较逻辑
-            return latest !== current; 
-        }
-
-        document.getElementById('checkVersionBtn').addEventListener('click', checkVersion);
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initPage();    // 1. 加载动态页面卡片
+            initCharts();  // 2. 加载图表
+            
+            document.getElementById('checkVersionBtn').addEventListener('click', checkVersion);
+        });
     </script>
 </body>
 </html>
