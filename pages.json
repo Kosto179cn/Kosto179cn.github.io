@@ -1,0 +1,74 @@
+[
+  {
+    "filename": "test.html",
+    "title": "3D坦克测试服务器",
+    "desc": "Test Server 快速连接与状态。",
+    "icon": "fa-flask",
+    "category": "game",
+    "theme": "theme-game"
+  },
+  {
+    "filename": "system.html",
+    "title": "T-Node System Monitor",
+    "desc": "自动发现的新页面",
+    "icon": "fa-file",
+    "category": "other",
+    "theme": "theme-other"
+  },
+  {
+    "filename": "versioncheck-editor.html",
+    "title": "版本控制文件编辑器 - Kosto",
+    "desc": "配置脚本版本号及更新日志。",
+    "icon": "fa-code-branch",
+    "category": "tool",
+    "theme": "theme-tool"
+  },
+  {
+    "filename": "Servers.html",
+    "title": "3D坦克服务器列表",
+    "desc": "3D坦克各服快速入口整合。",
+    "icon": "fa-server",
+    "category": "game",
+    "theme": "theme-game"
+  },
+  {
+    "filename": "replacement.html",
+    "title": "屏蔽词测试工具",
+    "desc": "输入文本测试是否被屏蔽。",
+    "icon": "fa-spell-check",
+    "category": "tool",
+    "theme": "theme-edit"
+  },
+  {
+    "filename": "ts.html",
+    "title": "Kosto投诉信息审批系统",
+    "desc": "处理用户投诉，审核违规行为。",
+    "icon": "fa-gavel",
+    "category": "admin",
+    "theme": "theme-warn"
+  },
+  {
+    "filename": "Dictionaryeditor.html",
+    "title": "国服屏蔽词管理 Pro",
+    "desc": "在线编辑国服屏蔽字库，支持实时检索。",
+    "icon": "fa-book",
+    "category": "tool",
+    "theme": "theme-edit"
+  },
+  {
+    "filename": "status.html",
+    "title": "3D坦克服务器状态页面",
+    "desc": "实时监控在线人数与负载。",
+    "icon": "fa-heartbeat",
+    "category": "game",
+    "theme": "theme-game"
+  },
+  {
+    "filename": "whitelist.html",
+    "title": "Kosto 管理系统 Pro",
+    "desc": "高级权限管理，配置用户ID及黑名单。",
+    "icon": "fa-shield-alt",
+    "category": "admin",
+    "theme": "theme-admin"
+  }
+]
