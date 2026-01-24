@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -139,14 +140,6 @@
         gap: 15px;
     }
 
-    /* 头部工具栏容器：包含搜索框和按钮 */
-    .header-tools {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-
     .card-title {
         font-size: 1.25rem;
         font-weight: 600;
@@ -154,7 +147,6 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        white-space: nowrap;
     }
 
     /* 表格样式 */
@@ -260,23 +252,12 @@
             flex-direction: column;
             align-items: flex-start;
         }
-
-        .header-tools {
+        
+        .card-header-custom .action-buttons {
             width: 100%;
-            justify-content: space-between;
-        }
-        
-        .header-tools .input-group {
-            width: 100% !important;
-            max-width: none !important;
-            margin-bottom: 10px;
-        }
-        
-        .header-tools .action-buttons {
             display: flex;
             gap: 10px;
-            width: 100%;
-            justify-content: flex-end;
+            overflow-x: auto;
         }
         
         .hidden-mobile {
@@ -341,9 +322,6 @@
             </div>
             
             <div class="d-flex gap-3 align-items-center">
-                <a href="index.html" class="btn btn-outline-secondary btn-sm">
-                    <i class="fas fa-home"></i> <span class="d-none d-md-inline">主页</span>
-                </a>
                 <div class="dropdown">
                     <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-cog"></i> 设置
@@ -433,7 +411,7 @@
                     <div class="card-title text-primary"><i class="fas fa-list-alt"></i> 在线用户列表</div>
                     <div class="input-group" style="max-width: 300px;">
                         <span class="input-group-text bg-light border-0"><i class="fas fa-search"></i></span>
-                        <input type="text" data-target="onlineTableBody" class="form-control bg-light border-0 table-search-input" placeholder="搜索 ID/指纹...">
+                        <input type="text" id="onlineSearchInput" class="form-control bg-light border-0" placeholder="搜索 ID/指纹...">
                     </div>
                 </div>
                 <div class="table-responsive">
@@ -465,15 +443,10 @@
             <div class="content-card">
                 <div class="card-header-custom">
                     <div class="card-title"><i class="fas fa-id-card"></i> 白名单用户 ID</div>
-                    <div class="header-tools">
-                        <div class="input-group input-group-sm" style="width: 200px;">
-                            <span class="input-group-text bg-light border-0"><i class="fas fa-search"></i></span>
-                            <input type="text" data-target="tanknamesTableBody" class="form-control bg-light border-0 table-search-input" placeholder="搜索 ID...">
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-outline-danger btn-sm" onclick="batchManager.toggle('tanknames')"><i class="fas fa-tasks"></i> 批量</button>
-                            <button class="btn btn-primary btn-sm" onclick="itemManager.showAddModal(CONSTANTS.INDEX.TANKNAMES, '添加白名单ID')"><i class="fas fa-plus"></i> 添加</button>
-                        </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-outline-danger btn-sm" onclick="batchManager.toggle('tanknames')"><i class="fas fa-tasks"></i> 批量</button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="batchImportManager.showModal(CONSTANTS.INDEX.TANKNAMES, '白名单ID')"><i class="fas fa-file-import"></i> 导入</button>
+                        <button class="btn btn-primary btn-sm" onclick="itemManager.showAddModal(CONSTANTS.INDEX.TANKNAMES, '添加白名单ID')"><i class="fas fa-plus"></i> 添加</button>
                     </div>
                 </div>
                 
@@ -502,15 +475,10 @@
             <div class="content-card">
                 <div class="card-header-custom">
                     <div class="card-title"><i class="fas fa-users-cog"></i> 白名单军团</div>
-                    <div class="header-tools">
-                        <div class="input-group input-group-sm" style="width: 200px;">
-                            <span class="input-group-text bg-light border-0"><i class="fas fa-search"></i></span>
-                            <input type="text" data-target="groupsTableBody" class="form-control bg-light border-0 table-search-input" placeholder="搜索 军团...">
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-outline-danger btn-sm" onclick="batchManager.toggle('groups')"><i class="fas fa-tasks"></i> 批量</button>
-                            <button class="btn btn-primary btn-sm" onclick="itemManager.showAddModal(CONSTANTS.INDEX.GROUPS, '添加军团')"><i class="fas fa-plus"></i> 添加</button>
-                        </div>
+                    <div class="action-buttons">
+                         <button class="btn btn-outline-danger btn-sm" onclick="batchManager.toggle('groups')"><i class="fas fa-tasks"></i> 批量</button>
+                         <button class="btn btn-outline-primary btn-sm" onclick="batchImportManager.showModal(CONSTANTS.INDEX.GROUPS, '白名单军团')"><i class="fas fa-file-import"></i> 导入</button>
+                         <button class="btn btn-primary btn-sm" onclick="itemManager.showAddModal(CONSTANTS.INDEX.GROUPS, '添加军团')"><i class="fas fa-plus"></i> 添加</button>
                     </div>
                 </div>
                  <!-- 批量操作栏 -->
@@ -537,7 +505,10 @@
             <div class="content-card">
                 <div class="card-header-custom">
                     <div class="card-title"><i class="fas fa-code"></i> 开发者 ID</div>
-                    <button class="btn btn-primary btn-sm" onclick="itemManager.showAddModal(CONSTANTS.INDEX.OURS, '添加开发者')"><i class="fas fa-plus"></i> 添加</button>
+                    <div>
+                        <button class="btn btn-outline-primary btn-sm" onclick="batchImportManager.showModal(CONSTANTS.INDEX.OURS, '开发者')"><i class="fas fa-file-import"></i> 导入</button>
+                        <button class="btn btn-primary btn-sm" onclick="itemManager.showAddModal(CONSTANTS.INDEX.OURS, '添加开发者')"><i class="fas fa-plus"></i> 添加</button>
+                    </div>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-custom table-hover">
@@ -553,15 +524,13 @@
             <div class="content-card border-danger" style="border-top: 4px solid var(--danger-color);">
                 <div class="card-header-custom">
                     <div class="card-title text-danger"><i class="fas fa-ban"></i> 黑名单用户</div>
-                    <div class="header-tools">
-                        <div class="input-group input-group-sm" style="width: 200px;">
-                            <span class="input-group-text bg-light border-0"><i class="fas fa-search"></i></span>
-                            <input type="text" data-target="blacklistTableBody" class="form-control bg-light border-0 table-search-input" placeholder="搜索 黑名单...">
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-outline-danger btn-sm" onclick="batchManager.toggle('blacklist')"><i class="fas fa-tasks"></i> 批量</button>
-                            <button class="btn btn-danger btn-sm" onclick="itemManager.showAddBlacklistModal()"><i class="fas fa-plus"></i> 添加黑名单</button>
-                        </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                         <button class="btn btn-outline-danger btn-sm" onclick="batchManager.toggle('blacklist')"><i class="fas fa-tasks"></i> 批量删除</button>
+                         <button class="btn btn-outline-primary btn-sm" onclick="blacklistBatchImport.showIdModal()"><i class="fas fa-id-card"></i> 导入ID</button>
+                         <button class="btn btn-outline-primary btn-sm" onclick="blacklistBatchImport.showNameModal()"><i class="fas fa-user"></i> 导入名称</button>
+                         <button class="btn btn-outline-primary btn-sm" onclick="blacklistBatchImport.showCorpModal()"><i class="fas fa-users"></i> 导入军团</button>
+                         <button class="btn btn-outline-primary btn-sm" onclick="blacklistBatchImport.showFingerprintModal()"><i class="fas fa-fingerprint"></i> 导入指纹</button>
+                         <button class="btn btn-danger btn-sm" onclick="itemManager.showAddBlacklistModal()"><i class="fas fa-plus"></i> 添加</button>
                     </div>
                 </div>
                  <!-- 批量操作栏 -->
@@ -597,15 +566,10 @@
              <div class="content-card">
                 <div class="card-header-custom">
                     <div class="card-title"><i class="fas fa-fingerprint"></i> 用户指纹数据</div>
-                     <div class="header-tools">
-                        <div class="input-group input-group-sm" style="width: 200px;">
-                            <span class="input-group-text bg-light border-0"><i class="fas fa-search"></i></span>
-                            <input type="text" data-target="usersTableBody" class="form-control bg-light border-0 table-search-input" placeholder="搜索 指纹/用户...">
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-outline-danger btn-sm" onclick="batchManager.toggle('users')"><i class="fas fa-tasks"></i> 批量</button>
-                            <button class="btn btn-primary btn-sm" onclick="itemManager.showAddUserModal()"><i class="fas fa-plus"></i> 添加用户</button>
-                        </div>
+                     <div>
+                        <button class="btn btn-outline-danger btn-sm" onclick="batchManager.toggle('users')"><i class="fas fa-tasks"></i> 批量</button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="batchImportManager.showObjectModal(CONSTANTS.INDEX.USERS, '指纹库', 'users')"><i class="fas fa-file-import"></i> 导入</button>
+                        <button class="btn btn-primary btn-sm" onclick="itemManager.showAddUserModal()"><i class="fas fa-plus"></i> 添加用户</button>
                     </div>
                 </div>
                  <!-- 批量操作栏 -->
@@ -634,11 +598,8 @@
                     <div class="content-card">
                         <div class="card-header-custom">
                             <div class="card-title"><i class="fas fa-globe-americas"></i> 外服白名单军团</div>
-                            <div class="header-tools">
-                                <div class="input-group input-group-sm" style="width: 200px;">
-                                    <span class="input-group-text bg-light border-0"><i class="fas fa-search"></i></span>
-                                    <input type="text" data-target="foreignGroupsTableBody" class="form-control bg-light border-0 table-search-input" placeholder="搜索...">
-                                </div>
+                            <div>
+                                <button class="btn btn-outline-primary btn-sm" onclick="batchImportManager.showModal(CONSTANTS.INDEX.FOREIGN_GROUPS, '外服军团')"><i class="fas fa-file-import"></i> 导入</button>
                                 <button class="btn btn-primary btn-sm" onclick="itemManager.showAddModal(CONSTANTS.INDEX.FOREIGN_GROUPS, '添加外服军团')"><i class="fas fa-plus"></i> 添加</button>
                             </div>
                         </div>
@@ -653,11 +614,8 @@
                      <div class="content-card">
                         <div class="card-header-custom">
                             <div class="card-title"><i class="fas fa-passport"></i> 外服白名单ID</div>
-                            <div class="header-tools">
-                                <div class="input-group input-group-sm" style="width: 200px;">
-                                    <span class="input-group-text bg-light border-0"><i class="fas fa-search"></i></span>
-                                    <input type="text" data-target="foreignTanknamesTableBody" class="form-control bg-light border-0 table-search-input" placeholder="搜索...">
-                                </div>
+                            <div>
+                                <button class="btn btn-outline-primary btn-sm" onclick="batchImportManager.showModal(CONSTANTS.INDEX.FOREIGN_TANKNAMES, '外服ID')"><i class="fas fa-file-import"></i> 导入</button>
                                 <button class="btn btn-primary btn-sm" onclick="itemManager.showAddModal(CONSTANTS.INDEX.FOREIGN_TANKNAMES, '添加外服ID')"><i class="fas fa-plus"></i> 添加</button>
                             </div>
                         </div>
@@ -672,11 +630,11 @@
                      <div class="content-card border-danger" style="border-top: 4px solid #f72585;">
                         <div class="card-header-custom">
                             <div class="card-title text-danger"><i class="fas fa-ban"></i> 外服黑名单</div>
-                            <div class="header-tools">
-                                <div class="input-group input-group-sm" style="width: 200px;">
-                                    <span class="input-group-text bg-light border-0"><i class="fas fa-search"></i></span>
-                                    <input type="text" data-target="foreignBlacklistTableBody" class="form-control bg-light border-0 table-search-input" placeholder="搜索...">
-                                </div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button class="btn btn-outline-primary btn-sm" onclick="blacklistBatchImport.showIdModal(true)"><i class="fas fa-id-card"></i> 导入ID</button>
+                                <button class="btn btn-outline-primary btn-sm" onclick="blacklistBatchImport.showNameModal(true)"><i class="fas fa-user"></i> 导入名称</button>
+                                <button class="btn btn-outline-primary btn-sm" onclick="blacklistBatchImport.showCorpModal(true)"><i class="fas fa-users"></i> 导入军团</button>
+                                <button class="btn btn-outline-primary btn-sm" onclick="blacklistBatchImport.showFingerprintModal(true)"><i class="fas fa-fingerprint"></i> 导入指纹</button>
                                 <button class="btn btn-danger btn-sm" onclick="itemManager.showAddBlacklistModal(true)"><i class="fas fa-plus"></i> 添加</button>
                             </div>
                         </div>
@@ -696,7 +654,10 @@
             <div class="content-card">
                 <div class="card-header-custom">
                     <div class="card-title"><i class="fas fa-bomb"></i> 自爆程序标志 (SS)</div>
-                    <button class="btn btn-warning btn-sm" onclick="itemManager.showAddModal(CONSTANTS.INDEX.SS, '添加标志')"><i class="fas fa-plus"></i> 添加</button>
+                    <div>
+                        <button class="btn btn-outline-primary btn-sm" onclick="batchImportManager.showModal(CONSTANTS.INDEX.SS, 'SS标志')"><i class="fas fa-file-import"></i> 导入</button>
+                        <button class="btn btn-warning btn-sm" onclick="itemManager.showAddModal(CONSTANTS.INDEX.SS, '添加标志')"><i class="fas fa-plus"></i> 添加</button>
+                    </div>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-custom">
@@ -831,6 +792,132 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-danger btn-sm" id="btnQuickBlock">快速拉黑</button>
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 批量导入模态框 -->
+<div class="modal fade" id="batchImportModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="batchImportTitle">批量导入</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info small py-2" id="batchImportHint">
+                    <i class="fas fa-info-circle"></i> 支持分隔符：空格、逗号(,)、分号(;)、竖线(|)、换行符。会自动过滤空行。
+                </div>
+                <textarea class="form-control" id="batchImportInput" rows="10" placeholder="在此处粘贴内容...&#10;例如：&#10;ID1, ID2, ID3&#10;ID4; ID5"></textarea>
+                <input type="hidden" id="batchImportIndex">
+                <input type="hidden" id="batchImportType" value="simple">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="batchImportManager.execute()">
+                    <i class="fas fa-file-import"></i> 开始导入
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 黑名单批量导入模态框 - ID -->
+<div class="modal fade" id="blIdImportModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">批量导入黑名单 ID</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info small py-2">
+                    <i class="fas fa-info-circle"></i> 每行一个 ID，支持逗号、空格、换行等分隔符
+                </div>
+                <textarea class="form-control" id="blIdImportInput" rows="10" placeholder="在此处粘贴 ID...&#10;例如：&#10;12345&#10;67890&#10;12345, 67890"></textarea>
+                <input type="hidden" id="blIdImportForeign" value="false">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" onclick="blacklistBatchImport.execute('id')">
+                    <i class="fas fa-file-import"></i> 导入 ID
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 黑名单批量导入模态框 - 名称 -->
+<div class="modal fade" id="blNameImportModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">批量导入黑名单名称</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info small py-2">
+                    <i class="fas fa-info-circle"></i> 每行一个名称，支持逗号、空格、换行等分隔符
+                </div>
+                <textarea class="form-control" id="blNameImportInput" rows="10" placeholder="在此处粘贴名称...&#10;例如：&#10;张三&#10;李四&#10;张三, 李四"></textarea>
+                <input type="hidden" id="blNameImportForeign" value="false">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" onclick="blacklistBatchImport.execute('name')">
+                    <i class="fas fa-file-import"></i> 导入名称
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 黑名单批量导入模态框 - 军团 -->
+<div class="modal fade" id="blCorpImportModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">批量导入黑名单军团</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info small py-2">
+                    <i class="fas fa-info-circle"></i> 每行一个军团，支持逗号、空格、换行等分隔符（会自动添加 []）
+                </div>
+                <textarea class="form-control" id="blCorpImportInput" rows="10" placeholder="在此处粘贴军团...&#10;例如：&#10;VPA&#10;ABC&#10;VPA, ABC"></textarea>
+                <input type="hidden" id="blCorpImportForeign" value="false">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" onclick="blacklistBatchImport.execute('corp')">
+                    <i class="fas fa-file-import"></i> 导入军团
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 黑名单批量导入模态框 - 指纹 -->
+<div class="modal fade" id="blFingerprintImportModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">批量导入黑名单指纹</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info small py-2">
+                    <i class="fas fa-info-circle"></i> 每行一个指纹，支持逗号、空格、换行等分隔符
+                </div>
+                <textarea class="form-control" id="blFingerprintImportInput" rows="10" placeholder="在此处粘贴指纹...&#10;例如：&#10;abc123&#10;def456&#10;abc123, def456"></textarea>
+                <input type="hidden" id="blFingerprintImportForeign" value="false">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-danger" onclick="blacklistBatchImport.execute('fingerprint')">
+                    <i class="fas fa-file-import"></i> 导入指纹
+                </button>
             </div>
         </div>
     </div>
@@ -1376,6 +1463,194 @@
         }
     };
 
+    // ================= 批量导入管理 =================
+    const batchImportManager = {
+        // 打开简单导入模态框（单值列表）
+        showModal: (arrayIndex, title) => {
+            document.getElementById('batchImportTitle').innerText = '批量导入：' + title;
+            document.getElementById('batchImportHint').innerHTML = '<i class="fas fa-info-circle"></i> 支持分隔符：空格、逗号(,)、分号(;)、竖线(|)、换行符。会自动过滤空行。';
+            document.getElementById('batchImportInput').value = '';
+            document.getElementById('batchImportIndex').value = arrayIndex;
+            document.getElementById('batchImportType').value = 'simple';
+            new bootstrap.Modal(document.getElementById('batchImportModal')).show();
+        },
+
+        // 打开对象导入模态框（黑名单、用户库）
+        showObjectModal: (arrayIndex, title, type) => {
+            document.getElementById('batchImportTitle').innerText = '批量导入：' + title;
+            const hint = type === 'blacklist' 
+                ? '<i class="fas fa-info-circle"></i> CSV 格式：ID,名称,军团,指纹（每行一条，用逗号分隔）<br><small>例如：12345,用户名,[军团名],abc123</small>'
+                : '<i class="fas fa-info-circle"></i> CSV 格式：指纹ID,用户名（每行一条，用逗号分隔）<br><small>例如：abc123,用户名</small>';
+            document.getElementById('batchImportHint').innerHTML = hint;
+            document.getElementById('batchImportInput').value = '';
+            document.getElementById('batchImportIndex').value = arrayIndex;
+            document.getElementById('batchImportType').value = type;
+            new bootstrap.Modal(document.getElementById('batchImportModal')).show();
+        },
+
+        // 执行导入
+        execute: () => {
+            const index = parseInt(document.getElementById('batchImportIndex').value);
+            const type = document.getElementById('batchImportType').value;
+            const rawText = document.getElementById('batchImportInput').value;
+            
+            if (!rawText.trim()) return Notify.show('内容不能为空', 'warning');
+
+            let addedCount = 0;
+
+            if (type === 'simple') {
+                // 简单导入：单值列表
+                const items = rawText.split(/[,\s;|\n\r\t]+/).filter(item => item.trim() !== '');
+
+                if (items.length === 0) return Notify.show('未识别到有效内容', 'warning');
+
+                if (!appState.whitelistData[index]) appState.whitelistData[index] = [];
+
+                items.forEach(item => {
+                    let cleanItem = item.trim();
+                    
+                    if (index === CONSTANTS.INDEX.GROUPS || index === CONSTANTS.INDEX.FOREIGN_GROUPS) {
+                        if (!cleanItem.startsWith('[')) cleanItem = '[' + cleanItem;
+                        if (!cleanItem.endsWith(']')) cleanItem = cleanItem + ']';
+                    }
+
+                    appState.whitelistData[index].push(cleanItem);
+                    addedCount++;
+                });
+            } else if (type === 'blacklist') {
+                // 黑名单导入：CSV 格式 ID,名称,军团,指纹
+                const lines = rawText.split('\n').filter(line => line.trim() !== '');
+
+                if (!appState.whitelistData[index]) appState.whitelistData[index] = [];
+
+                lines.forEach(line => {
+                    const parts = line.split(',').map(p => p.trim());
+                    if (parts.length === 0 || (parts.length === 1 && parts[0] === '')) return;
+
+                    const item = {
+                        id: parts[0] || '',
+                        name: parts[1] || '',
+                        corp: parts[2] || '',
+                        fingerprint: parts[3] || '',
+                        blockedAt: new Date().toISOString()
+                    };
+
+                    // 自动处理军团格式
+                    if (item.corp && (!item.corp.startsWith('[') || !item.corp.endsWith(']'))) {
+                        item.corp = `[${item.corp}]`;
+                    }
+
+                    // 至少有一个字段就不算空
+                    if (item.id || item.name || item.corp || item.fingerprint) {
+                        appState.whitelistData[index].push(item);
+                        addedCount++;
+                    }
+                });
+            } else if (type === 'users') {
+                // 用户指纹库导入：CSV 格式 指纹ID,用户名
+                const lines = rawText.split('\n').filter(line => line.trim() !== '');
+
+                if (!appState.whitelistData[index]) appState.whitelistData[index] = [];
+
+                lines.forEach(line => {
+                    const parts = line.split(',').map(p => p.trim());
+                    if (parts.length < 2 || !parts[0] || !parts[1]) return;
+
+                    const item = {
+                        id: parts[0],
+                        name: parts[1]
+                    };
+
+                    appState.whitelistData[index].push(item);
+                    addedCount++;
+                });
+            }
+
+            if (addedCount === 0) return Notify.show('未识别到有效内容', 'warning');
+
+            bootstrap.Modal.getInstance(document.getElementById('batchImportModal')).hide();
+            Render.all();
+            DataManager.saveAll();
+            Notify.show(`成功导入 ${addedCount} 条数据`, 'success');
+        }
+    };
+
+    // ================= 黑名单批量导入管理 =================
+    const blacklistBatchImport = {
+        // 打开 ID 导入模态框
+        showIdModal: (isForeign = false) => {
+            document.getElementById('blIdImportForeign').value = isForeign;
+            document.getElementById('blIdImportInput').value = '';
+            new bootstrap.Modal(document.getElementById('blIdImportModal')).show();
+        },
+
+        // 打开名称导入模态框
+        showNameModal: (isForeign = false) => {
+            document.getElementById('blNameImportForeign').value = isForeign;
+            document.getElementById('blNameImportInput').value = '';
+            new bootstrap.Modal(document.getElementById('blNameImportModal')).show();
+        },
+
+        // 打开军团导入模态框
+        showCorpModal: (isForeign = false) => {
+            document.getElementById('blCorpImportForeign').value = isForeign;
+            document.getElementById('blCorpImportInput').value = '';
+            new bootstrap.Modal(document.getElementById('blCorpImportModal')).show();
+        },
+
+        // 打开指纹导入模态框
+        showFingerprintModal: (isForeign = false) => {
+            document.getElementById('blFingerprintImportForeign').value = isForeign;
+            document.getElementById('blFingerprintImportInput').value = '';
+            new bootstrap.Modal(document.getElementById('blFingerprintImportModal')).show();
+        },
+
+        // 执行导入
+        execute: (field) => {
+            const isForeign = document.getElementById(`bl${field.charAt(0).toUpperCase() + field.slice(1)}ImportForeign`).value === 'true';
+            const arrayIndex = isForeign ? CONSTANTS.INDEX.FOREIGN_BLACKLIST : CONSTANTS.INDEX.BLACKLIST;
+            const inputId = `bl${field.charAt(0).toUpperCase() + field.slice(1)}ImportInput`;
+            const rawText = document.getElementById(inputId).value;
+
+            if (!rawText.trim()) return Notify.show('内容不能为空', 'warning');
+
+            const items = rawText.split(/[,\s;|\n\r\t]+/).filter(item => item.trim() !== '');
+
+            if (items.length === 0) return Notify.show('未识别到有效内容', 'warning');
+
+            let addedCount = 0;
+
+            if (!appState.whitelistData[arrayIndex]) appState.whitelistData[arrayIndex] = [];
+
+            items.forEach(item => {
+                const cleanItem = item.trim();
+                const newItem = {
+                    id: '',
+                    name: '',
+                    corp: '',
+                    fingerprint: '',
+                    blockedAt: new Date().toISOString()
+                };
+
+                newItem[field] = cleanItem;
+
+                // 特殊处理军团格式
+                if (field === 'corp' && (!cleanItem.startsWith('[') || !cleanItem.endsWith(']'))) {
+                    newItem[field] = `[${cleanItem}]`;
+                }
+
+                appState.whitelistData[arrayIndex].push(newItem);
+                addedCount++;
+            });
+
+            const modalId = `bl${field.charAt(0).toUpperCase() + field.slice(1)}ImportModal`;
+            bootstrap.Modal.getInstance(document.getElementById(modalId)).hide();
+            Render.all();
+            DataManager.saveAll();
+            Notify.show(`成功导入 ${addedCount} 条${field === 'id' ? 'ID' : field === 'name' ? '名称' : field === 'corp' ? '军团' : '指纹'}数据`, 'success');
+        }
+    };
+
     // ================= 批量管理 =================
     const batchManager = {
         toggle: (type) => {
@@ -1427,25 +1702,15 @@
             document.getElementById('btnSaveUserItem').onclick = itemManager.saveUser;
             document.getElementById('btnSaveBlacklist').onclick = itemManager.saveBlacklist;
             
-            // 通用搜索功能绑定 (使用事件委托或初始化时绑定)
-            // 这里我们使用一种简单的方法，因为搜索框是静态HTML存在的
-            const bindSearch = () => {
-                document.querySelectorAll('.table-search-input').forEach(input => {
-                    input.addEventListener('input', function(e) {
-                        const term = e.target.value.toLowerCase();
-                        const targetId = this.dataset.target;
-                        const tbody = document.getElementById(targetId);
-                        if(!tbody) return;
-                        
-                        const rows = tbody.querySelectorAll('tr');
-                        rows.forEach(row => {
-                            const text = row.innerText.toLowerCase();
-                            row.style.display = text.includes(term) ? '' : 'none';
-                        });
-                    });
+            // 搜索功能
+            document.getElementById('onlineSearchInput').addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                const rows = document.querySelectorAll('#onlineTableBody tr');
+                rows.forEach(row => {
+                    const text = row.innerText.toLowerCase();
+                    row.style.display = text.includes(term) ? '' : 'none';
                 });
-            };
-            bindSearch();
+            });
 
             // 全选功能绑定
             ['tanknames', 'groups', 'users', 'blacklist'].forEach(type => {
