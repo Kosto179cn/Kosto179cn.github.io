@@ -333,17 +333,56 @@
 
         // ================= 身份验证核心逻辑 =================
 
+        // ================= 工具函数 =================
+        const Utils = {
+            // 兼容型解密函数：
+            // 1. 尝试按"JSON + Base64"解密 (字典网页的逻辑)
+            // 2. 失败则尝试按"纯 Base64"解密 (结合版网页的逻辑)
+            // 3. 再失败则返回原值 (明文)
+            decodeTokenSafe: (str) => {
+                if (!str) return '';
+                try {
+                    // 第一步：尝试 Base64 解码
+                    const rawDecoded = atob(str);
+                    
+                    // 第二步：尝试解析 JSON (针对字典网页的 {"token":..., "salt":...} 结构)
+                    if (rawDecoded.startsWith('{') && rawDecoded.includes('"token"')) {
+                        try {
+                            const json = JSON.parse(rawDecoded);
+                            if (json.token) return json.token;
+                        } catch(e) { /* 不是 JSON，继续往下走 */ }
+                    }
+                    
+                    // 如果不是 JSON，那说明是纯 Base64 (针对结合版网页)
+                    return rawDecoded;
+
+                } catch (e) {
+                    // 如果 atob 报错，说明根本不是 Base64，直接返回明文
+                    return str;
+                }
+            }
+        };
+
         async function checkAdminToken() {
-            const ghToken = localStorage.getItem('githubToken');
+            // 读取本地存储
+            const rawGitee = localStorage.getItem('giteeToken');
+            const rawGithub = localStorage.getItem('githubToken'); // 字典网页用的是这个 Key
 
-            console.log('[调试] 检查 GitHub Token:', {
-                hasToken: !!ghToken
-            });
+            // 1. 验证 GitHub (字典网页生成的 Token)
+            if (rawGithub) {
+                const token = Utils.decodeTokenSafe(rawGithub);
+                // 去掉可能存在的空格
+                const result = await verifyGitHub(token.trim());
+                if (result.isValid) return result;
+            }
 
-            // 只检查 GitHub
-            if (ghToken) return await verifyGitHub(ghToken);
+            // 2. 验证 Gitee
+            if (rawGitee) {
+                const token = Utils.decodeTokenSafe(rawGitee);
+                const result = await verifyGitee(token.trim());
+                if (result.isValid) return result;
+            }
 
-            console.warn('[调试] 未找到 GitHub Token');
             return { isValid: false };
         }
 
