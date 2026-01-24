@@ -335,50 +335,50 @@
 
         async function checkAdminToken() {
             const ghToken = localStorage.getItem('githubToken');
-            const gtToken = localStorage.getItem('giteeToken');
 
-            // 优先检查 GitHub，其次 Gitee
+            console.log('[调试] 检查 GitHub Token:', {
+                hasToken: !!ghToken
+            });
+
+            // 只检查 GitHub
             if (ghToken) return await verifyGitHub(ghToken);
-            if (gtToken) return await verifyGitee(gtToken);
 
+            console.warn('[调试] 未找到 GitHub Token');
             return { isValid: false };
         }
 
         // 验证 GitHub Token
         async function verifyGitHub(token) {
             try {
+                console.log('[调试] 验证 GitHub Token...');
+
                 const response = await fetch('https://api.github.com/user', {
                     headers: {
-                        'Authorization': `token ${token}`,
+                        'Authorization': `Bearer ${token}`,
                         'Accept': 'application/vnd.github.v3+json'
                     }
                 });
 
+                console.log('[调试] GitHub API 响应状态:', response.status);
+
                 if (response.status === 200) {
                     const data = await response.json();
+                    console.log('[调试] GitHub 用户信息:', { login: data.login, name: data.name });
+
                     // 核心安全检查：验证用户名是否在白名单内
                     if (ALLOWED_ADMINS.includes(data.login)) {
+                        console.log('[调试] ✓ 验证通过，用户:', data.login);
                         return { isValid: true, platform: 'GitHub', user: data.login };
                     } else {
-                        console.warn(`Token有效，但用户 ${data.login} 不是管理员`);
+                        console.warn(`[调试] ✗ Token有效，但用户 ${data.login} 不是管理员`);
+                        console.warn(`[调试] 允许的管理员列表:`, ALLOWED_ADMINS);
                     }
+                } else {
+                    console.warn('[调试] ✗ GitHub API 返回非200状态:', response.status);
                 }
-            } catch (e) { console.error("GitHub 验证出错:", e); }
-            return { isValid: false };
-        }
-
-        // 验证 Gitee Token
-        async function verifyGitee(token) {
-            try {
-                const response = await fetch(`https://gitee.com/api/v5/user?access_token=${token}`);
-
-                if (response.status === 200) {
-                    const data = await response.json();
-                    if (ALLOWED_ADMINS.includes(data.login)) {
-                        return { isValid: true, platform: 'Gitee', user: data.login };
-                    }
-                }
-            } catch (e) { console.error("Gitee 验证出错:", e); }
+            } catch (e) {
+                console.error("[调试] GitHub 验证出错:", e);
+            }
             return { isValid: false };
         }
 
