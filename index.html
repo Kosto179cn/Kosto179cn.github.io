@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -263,41 +264,159 @@
     <!-- 脚本逻辑 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
+        // ================= 配置区域 =================
+
+        // 允许的管理员用户名 (必须修改为你自己的 GitHub/Gitee 用户名)
+        // 只有 Token 有效且属于这些用户之一，才会加载管理员数据
+        const ALLOWED_ADMINS = ['Kosto179cn'];
+
+        // 管理员数据文件名 (建议文件名复杂一点，防止被猜到)
+        const ADMIN_DATA_FILE = 'admin_data.json';
+
+        // ===========================================
+
         // ================= 核心动态加载逻辑 =================
+
+        // 全局标记：是否为管理员模式
+        let isAdminMode = false;
 
         async function initPage() {
             const loading = document.getElementById('loading-spinner');
-            
-            try {
-                // 请求 Workflow 生成的静态 JSON 文件
-                // 添加时间戳 ?t=... 强制刷新缓存
-                const response = await fetch('pages.json?t=' + new Date().getTime());
-                
-                if (!response.ok) {
-                    if(response.status === 404) throw new Error('pages.json not found');
-                    throw new Error('Network error');
-                }
-                
-                const files = await response.json();
 
-                // 渲染卡片
-                renderCards(files);
-                
-                loading.style.display = 'none';
-            } catch (error) {
-                console.warn("Pages load error:", error);
-                loading.innerHTML = `
-                    <div class="text-danger my-4">
-                        <i class="fas fa-exclamation-triangle fa-2x mb-2"></i><br>
-                        <strong>数据加载失败</strong><br>
-                        <small class="text-muted">请等待 GitHub Actions 生成 pages.json (约30秒)</small>
-                    </div>`;
+            let files = [];
+
+            // 步骤 A: 加载公共数据 (pages.json)
+            try {
+                // 加时间戳 ?t=... 防止缓存
+                const publicResp = await fetch('pages.json?t=' + Date.now());
+                if (publicResp.ok) files = await publicResp.json();
+            } catch (e) {
+                console.error("公共数据加载失败:", e);
             }
+
+            // 步骤 B: 静默检查管理员身份
+            const adminIdentity = await checkAdminToken();
+
+            // 步骤 C: 如果验证通过，加载管理员数据
+            if (adminIdentity.isValid) {
+                console.log(`[系统] 身份验证通过: ${adminIdentity.user} (${adminIdentity.platform})`);
+
+                // 设置管理员模式标记
+                isAdminMode = true;
+
+                // 改变 UI 状态 (例如显示 Admin 版本号)
+                showAdminBadge(adminIdentity.user);
+
+                try {
+                    const adminResp = await fetch(ADMIN_DATA_FILE + '?t=' + Date.now());
+                    if (adminResp.ok) {
+                        const adminFiles = await adminResp.json();
+                        // 将管理员数据合并到总数据中
+                        files = files.concat(adminFiles);
+                    } else {
+                        console.warn("找不到管理员数据文件");
+                    }
+                } catch (e) {
+                    console.warn("加载管理员数据出错");
+                }
+            } else {
+                // 验证失败或无 Token，静默失败，只显示普通内容
+                console.log("[系统] 访客模式");
+            }
+
+            // 步骤 D: 渲染卡片
+            renderCards(files);
+
+            // 隐藏加载动画
+            if (loading) loading.style.display = 'none';
+        }
+
+        // ================= 身份验证核心逻辑 =================
+
+        async function checkAdminToken() {
+            const ghToken = localStorage.getItem('githubToken');
+            const gtToken = localStorage.getItem('giteeToken');
+
+            // 优先检查 GitHub，其次 Gitee
+            if (ghToken) return await verifyGitHub(ghToken);
+            if (gtToken) return await verifyGitee(gtToken);
+
+            return { isValid: false };
+        }
+
+        // 验证 GitHub Token
+        async function verifyGitHub(token) {
+            try {
+                const response = await fetch('https://api.github.com/user', {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (response.status === 200) {
+                    const data = await response.json();
+                    // 核心安全检查：验证用户名是否在白名单内
+                    if (ALLOWED_ADMINS.includes(data.login)) {
+                        return { isValid: true, platform: 'GitHub', user: data.login };
+                    } else {
+                        console.warn(`Token有效，但用户 ${data.login} 不是管理员`);
+                    }
+                }
+            } catch (e) { console.error("GitHub 验证出错:", e); }
+            return { isValid: false };
+        }
+
+        // 验证 Gitee Token
+        async function verifyGitee(token) {
+            try {
+                const response = await fetch(`https://gitee.com/api/v5/user?access_token=${token}`);
+
+                if (response.status === 200) {
+                    const data = await response.json();
+                    if (ALLOWED_ADMINS.includes(data.login)) {
+                        return { isValid: true, platform: 'Gitee', user: data.login };
+                    }
+                }
+            } catch (e) { console.error("Gitee 验证出错:", e); }
+            return { isValid: false };
+        }
+
+        // ================= 辅助功能：显示管理员标记 =================
+
+        function showAdminBadge(username) {
+            // 找到导航栏的版本徽章，改成红色 Admin 样式
+            const badge = document.querySelector('.navbar .badge');
+            if (badge) {
+                badge.className = 'badge bg-danger border'; // 变红
+                badge.innerHTML = `<i class="fas fa-user-secret"></i> ${username}`;
+            }
+            // 给 Body 加个 class，方便你写 CSS 做特殊处理
+            document.body.classList.add('admin-mode');
         }
 
         function renderCards(files) {
-            // 记录哪些分类有内容
-            const categoriesHasContent = new Set();
+            // 清空容器 (防止重复渲染)
+            document.querySelectorAll('[id^="container-"]').forEach(el => el.innerHTML = '');
+
+            // 如果是管理员模式，直接显示所有分类标签
+            if (isAdminMode) {
+                console.log('[系统] 管理员模式：显示所有分类');
+                document.querySelectorAll('[id^="title-"]').forEach(title => {
+                    title.style.display = 'block';
+                });
+            } else {
+                // 访客模式：记录哪些分类有内容
+                const categoriesHasContent = new Set();
+                files.forEach(meta => {
+                    if (meta.category) categoriesHasContent.add(meta.category);
+                });
+                // 仅显示有内容的分类标题
+                categoriesHasContent.forEach(cat => {
+                    const title = document.getElementById(`title-${cat}`);
+                    if (title) title.style.display = 'block';
+                });
+            }
 
             files.forEach((meta, index) => {
                 // 构建卡片 HTML
@@ -318,20 +437,13 @@
                 // 确定容器 ID
                 const containerId = `container-${meta.category}`;
                 let container = document.getElementById(containerId);
-                
+
                 // 容错：如果分类不存在，放入 "other"
                 if (!container) container = document.getElementById('container-other');
-                
+
                 if (container) {
                     container.innerHTML += cardHtml;
-                    categoriesHasContent.add(meta.category);
                 }
-            });
-
-            // 仅显示有内容的分类标题
-            categoriesHasContent.forEach(cat => {
-                const title = document.getElementById(`title-${cat}`);
-                if (title) title.style.display = 'block';
             });
         }
 
