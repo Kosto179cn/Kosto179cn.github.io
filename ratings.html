@@ -660,6 +660,15 @@
         const srv = els.server.value;
         if (!user) return showError('请输入玩家昵称');
 
+        // === 修改开始：禁用按钮并更新文案 ===
+        const originalText = els.fetchBtn.textContent; // 保存原始文字
+        els.fetchBtn.disabled = true;                  // 禁用按钮
+        els.fetchBtn.textContent = '查询中...';        // 更改文字
+        els.fetchBtn.innerHTML = '<span class="material-symbols-rounded" style="font-size:18px; animation:spin 1s linear infinite; margin-right:5px">sync</span> 查询中...'; // (可选) 加个转圈图标更酷
+
+        document.activeElement.blur(); // 在手机端收起键盘，优化体验
+        // === 修改结束 ===
+
         stopMonitor();
         showLoading(true);
         showError(''); 
@@ -679,6 +688,11 @@
             showError(e.message);
         } finally {
             showLoading(false);
+            
+            // === 修改开始：恢复按钮状态 ===
+            els.fetchBtn.disabled = false;
+            els.fetchBtn.textContent = originalText; // 恢复原始文字
+            // === 修改结束 ===
         }
     }
 
@@ -1043,9 +1057,9 @@
         document.getElementById('tab-' + target.dataset.tab).classList.add('active');
     }
 
-    function updateUrl(, u) {
-        const url = `?server=${}&username=${u}`;
-        history.pushState({, u}, '', url);
+    function updateUrl(s, u) {
+        const url = `?server=${s}&username=${u}`;
+        history.pushState({s, u}, '', url);
     }
     function handlePopState(e) {
         if (e.state) {
