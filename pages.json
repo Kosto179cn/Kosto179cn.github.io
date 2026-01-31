@@ -10,10 +10,10 @@
   {
     "filename": "replacement.html",
     "title": "屏蔽词测试工具",
-    "desc": "输入文本测试是否被屏蔽。",
-    "icon": "fa-spell-check",
-    "category": "tool",
-    "theme": "theme-edit"
+    "desc": "屏蔽词替换 网页版",
+    "icon": "fa-search",
+    "category": "admin",
+    "theme": "theme-admin"
   },
   {
     "filename": "ratings.html",
