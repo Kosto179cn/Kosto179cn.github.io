@@ -93,6 +93,7 @@
             max-width: 1000px;
             margin: 0 auto;
             animation: fadeIn 0.4s ease-out;
+            padding-bottom: 80px;
         }
 
         .view-section.active {
@@ -110,6 +111,12 @@
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 20px;
             width: 100%;
+        }
+        
+        /* Compact grid for downloads */
+        .grid-compact {
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
         }
 
         .card {
@@ -144,17 +151,36 @@
             margin-bottom: 15px;
             color: var(--primary-color);
         }
+        
+        .card-icon img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+        }
 
         .card-title {
             font-size: 18px;
             font-weight: 500;
             margin: 0;
+            line-height: 1.3;
         }
 
         .card-sub {
             font-size: 12px;
             opacity: 0.7;
             margin-top: 5px;
+        }
+
+        /* --- Section Divider --- */
+        .section-header {
+            width: 100%;
+            margin: 25px 0 15px 0;
+            font-size: 14px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 5px;
         }
 
         /* --- Status Page Specifics --- */
@@ -270,6 +296,8 @@
             max-width: 400px;
             position: relative;
             box-shadow: 0 0 20px rgba(118, 255, 51, 0.2);
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .modal-close {
@@ -303,6 +331,9 @@
             border-radius: 6px;
             font-weight: bold;
             cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            display: block;
         }
 
         /* --- Loading Spinner --- */
@@ -330,7 +361,6 @@
 
     <!-- Header -->
     <div class="header">
-        <!-- Back button logic: If in sub-view, go to home. If in home, go to index.html -->
         <button class="header-btn" id="navBackBtn">
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>
             返回
@@ -351,11 +381,17 @@
                 <div class="card-sub">官方服务器</div>
             </a>
             
-            <a href="https://tankionline.com/play?resources=https://s-de.eu.tankionline.com" class="card" id="linkWaifu">
+            <div class="card" onclick="app.navigate('global')">
                 <div class="card-icon">🇪🇺</div>
-                <div class="card-title">外服 (EU)</div>
-                <div class="card-sub">国际服务器</div>
-            </a>
+                <div class="card-title">外服中心</div>
+                <div class="card-sub">Global / 客户端 / 平台</div>
+            </div>
+
+            <div class="card" onclick="app.navigate('classic')">
+                <div class="card-icon">🎮</div>
+                <div class="card-title">经典版</div>
+                <div class="card-sub">Classic Tanki</div>
+            </div>
 
             <div class="card" onclick="app.navigate('test')">
                 <div class="card-icon">🧪</div>
@@ -382,11 +418,93 @@
         </div>
     </div>
 
-    <!-- 2. PARTNERS VIEW -->
+    <!-- 2. GLOBAL VIEW (NEW) -->
+    <div id="view-global" class="view-section">
+        <div class="section-header">网页客户端</div>
+        <div class="grid-container">
+            <a href="https://tankionline.com/play/" class="card" id="linkWaifu">
+                <div class="card-icon">🌐</div>
+                <div class="card-title">网页版</div>
+                <div class="card-sub">官方网站</div>
+            </a>
+        </div>
+
+        <div class="section-header">PC 客户端下载</div>
+        <div class="grid-container grid-compact">
+            <a href="https://tankionline.com/desktop/TankiOnlineSetup.exe" class="card">
+                <div class="card-icon">🪟</div>
+                <div class="card-title">Windows</div>
+                <div class="card-sub">Win 10/11</div>
+            </a>
+            <a href="https://tankionline.com/desktop/TankiOnlineSetup-win7-x64.exe" class="card">
+                <div class="card-icon">🏢</div>
+                <div class="card-title">Windows 7/8</div>
+                <div class="card-sub">旧版</div>
+            </a>
+            <a href="https://tankionline.com/desktop/TankiOnlineSetup.dmg" class="card">
+                <div class="card-icon">🍎</div>
+                <div class="card-title">macOS</div>
+            </a>
+            <a href="https://tankionline.com/desktop/TankiOnlineSetup-linux-x86_64.AppImage" class="card">
+                <div class="card-icon">🐧</div>
+                <div class="card-title">Linux</div>
+            </a>
+        </div>
+
+        <div class="section-header">游戏平台</div>
+        <div class="grid-container grid-compact">
+            <a href="https://store.steampowered.com/app/562010/Tanki_Online/" class="card">
+                <div class="card-icon">🚂</div>
+                <div class="card-title">Steam</div>
+            </a>
+            <a href="https://vkplay.ru/app/21879" class="card">
+                <div class="card-icon">🔵</div>
+                <div class="card-title">VK Play</div>
+            </a>
+            <a href="https://ok.ru/game/tankionline_official" class="card">
+                <div class="card-icon">🆗</div>
+                <div class="card-title">OK.ru</div>
+            </a>
+            <a href="https://www.nintendo.com/us/store/products/tanki-online-switch/" class="card">
+                <div class="card-icon">🔴</div>
+                <div class="card-title">Switch</div>
+            </a>
+        </div>
+
+        <div class="section-header">移动端</div>
+        <div class="grid-container grid-compact">
+            <a href="https://play.google.com/store/apps/details?id=com.tankionline.mobile.production" class="card">
+                <div class="card-icon">🤖</div>
+                <div class="card-title">Google Play</div>
+            </a>
+            <a href="https://apps.apple.com/us/app/tanki-online-pvp-tank-battle/id6737538964" class="card">
+                <div class="card-icon">🍏</div>
+                <div class="card-title">App Store</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- 3. CLASSIC VIEW (NEW) -->
+    <div id="view-classic" class="view-section">
+        <div class="grid-container">
+            <a href="https://tankiclassic.com/play/" class="card">
+                <div class="card-icon">🏛️</div>
+                <div class="card-title">网页版</div>
+                <div class="card-sub">Official Website</div>
+            </a>
+            <a href="https://store.steampowered.com/app/3872910/Tanki_Classic/" class="card">
+                <div class="card-icon">🚂</div>
+                <div class="card-title">Steam</div>
+                <div class="card-sub">Classic on Steam</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- 4. PARTNERS VIEW -->
     <div id="view-partners" class="view-section">
         <div class="options-panel">
             <button class="action-btn" style="background: transparent; border: 1px solid var(--primary-color); color: white;" onclick="document.getElementById('mobileModal').style.display='flex'">
-                📱 下载手机端平台
+                📱 下载手机端渠道
             </button>
         </div>
         <div class="grid-container">
@@ -396,13 +514,16 @@
             </a>
             <a href="http://web.7k7k.com/stat/game.php?target=3dtk" class="card">
                 <div class="card-title">7k7k</div>
-                <div class="card-sub">暂不支持全屏</div>
+                <div class="card-sub">需Flash/微端</div>
             </a>
             <a href="https://udblogin.yy.com/login.do?game=TKRJ&webyygame&hideNav=1&server=s1" class="card">
                 <div class="card-title">YY游戏</div>
             </a>
             <a href="http://wan.baidu.com/game?gameId=23699359" class="card">
                 <div class="card-title">百度游戏</div>
+            </a>
+            <a href="http://web.gamersky.com/Games/236.html" class="card">
+                <div class="card-title">游民星空</div>
             </a>
             <a href="https://wans.ixinyou.com/games/tank/" class="card">
                 <div class="card-title">心游</div>
@@ -414,10 +535,13 @@
             <a href="https://wan.ludashi.com/yeyou/tk3d?s=1" class="card">
                 <div class="card-title">鲁大师</div>
             </a>
+            <a href="https://appgallery.huawei.com/app/C101972055" class="card">
+                <div class="card-title">华为应用市场</div>
+            </a>
         </div>
     </div>
 
-    <!-- 3. TEST SERVER VIEW -->
+    <!-- 5. TEST SERVER VIEW -->
     <div id="view-test" class="view-section">
         <div class="options-panel">
             <div class="grid-container" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 15px;">
@@ -432,6 +556,10 @@
                 <label class="checkbox-wrapper">
                     <input type="checkbox" id="optChinaBuild">
                     <span class="checkbox-custom"></span> 国服界面
+                </label>
+                <label class="checkbox-wrapper">
+                    <input type="checkbox" id="optNewWindow">
+                    <span class="checkbox-custom"></span> 新窗口打开
                 </label>
             </div>
             <button class="action-btn" onclick="testScanner.start()">🔄 重新扫描</button>
@@ -451,7 +579,7 @@
         </div>
     </div>
 
-    <!-- 4. STATUS VIEW -->
+    <!-- 6. STATUS VIEW -->
     <div id="view-status" class="view-section">
         <div class="status-display">
             <h2>国服实时数据</h2>
@@ -503,7 +631,9 @@
                 <a href="https://h5coml.vivo.com.cn/h5coml/appdetail_h5/browser_v2/index.html?appId=2900145" class="header-btn" style="justify-content:center">vivo 商店</a>
                 <a href="https://app.mi.com/details?id=com.tankionline.mi" class="header-btn" style="justify-content:center">小米商店</a>
                 <a href="https://store.oppomobile.com/" class="header-btn" style="justify-content:center">OPPO 商店</a>
-                <a href="https://www.ldmnq.com/app/8762.html" class="header-btn" style="justify-content:center">雷电模拟器</a>
+                <a href="https://www.honor.com/cn/tech/honor-app-market/" class="header-btn" style="justify-content:center">荣耀应用市场</a>
+                <a href="https://a.4399.cn/game-id-162288.html" class="header-btn" style="justify-content:center">4399 游戏盒</a>
+                <a href="https://www.ldmnq.com/app/8762/" class="header-btn" style="justify-content:center">雷电模拟器</a>
             </div>
         </div>
     </div>
@@ -531,7 +661,7 @@
                 });
 
                 // Test Server Options Listeners
-                ['optLockLocale', 'optSkipKey', 'optChinaBuild'].forEach(id => {
+                ['optLockLocale', 'optSkipKey', 'optChinaBuild', 'optNewWindow'].forEach(id => {
                     document.getElementById(id).addEventListener('change', testScanner.updateLinks);
                 });
 
@@ -553,8 +683,15 @@
                 else statusMonitor.stop();
 
                 // Update Header
-                const titles = { 'home': '服务器中心', 'partners': '联运平台', 'test': '测试服务器', 'status': '国服监控' };
-                document.getElementById('pageTitle').innerText = titles[viewId];
+                const titles = { 
+                    'home': '服务器中心', 
+                    'partners': '联运平台', 
+                    'test': '测试服务器', 
+                    'status': '国服监控',
+                    'global': '外服中心',
+                    'classic': '经典版'
+                };
+                document.getElementById('pageTitle').innerText = titles[viewId] || 'Server Center';
             },
 
             handleBack: () => {
@@ -567,6 +704,7 @@
 
             updateWaifuLink: (isChinese) => {
                 const link = document.getElementById('linkWaifu');
+                if(!link) return;
                 const url = new URL(link.href);
                 if (isChinese) url.searchParams.set('locale', 'zh');
                 else url.searchParams.delete('locale');
@@ -587,7 +725,6 @@
             isRunning: false,
             
             start: async () => {
-                // Avoid restarting if already populated, unless forced (logic simplified here)
                 const container = document.getElementById('testResults');
                 container.innerHTML = ''; 
                 document.getElementById('testLoader').style.display = 'flex';
@@ -597,10 +734,8 @@
                 const promises = [];
                 let found = 0;
 
-                // Create check function
                 const check = async (i, type) => {
                     const isDeploy = type === 'Deploy';
-                    // Construct URLs
                     const checkUrl = isDeploy 
                         ? `https://balancer.public-deploy${i}.test-eu.tankionline.com/balancer`
                         : `https://balancer.review-${i}-public.test-ru.tankionline.com/balancer`;
@@ -612,7 +747,6 @@
                     try {
                         const res = await fetch(checkUrl, { method: 'HEAD' });
                         if (res.ok || res.status === 503) {
-                            // Fetch stats
                             const statsRes = await fetch(checkUrl);
                             const data = await statsRes.json();
                             const online = Object.values(data.nodes).reduce((s, n) => s + n.online, 0);
@@ -623,12 +757,10 @@
                         }
                     } catch (e) { /* ignore */ }
                     
-                    // Update progress
                     const progEl = document.getElementById('scanProgress');
                     progEl.innerText = parseInt(progEl.innerText) + 1;
                 };
 
-                // Launch checks
                 for (let i = 1; i <= 10; i++) {
                     promises.push(check(i, 'Deploy'));
                     promises.push(check(i, 'Review'));
@@ -639,17 +771,15 @@
                 document.getElementById('testLoader').style.display = 'none';
                 if (found === 0) document.getElementById('testNoServers').style.display = 'block';
                 
-                // Initial link update based on options
                 testScanner.updateLinks();
             },
 
             renderCard: (name, url, online, battles) => {
                 const card = document.createElement('a');
-                card.className = 'card server-item test-link'; // class 'test-link' for mass updates
+                card.className = 'card server-item test-link';
                 card.href = url;
-                card.dataset.baseUrl = url; // Store original URL
+                card.dataset.baseUrl = url;
                 
-                // Color code based on type
                 const icon = name.includes('Deploy') ? '🚀' : '🛠️';
                 
                 card.innerHTML = `
@@ -669,6 +799,7 @@
                 const lock = document.getElementById('optLockLocale').checked;
                 const skip = document.getElementById('optSkipKey').checked;
                 const china = document.getElementById('optChinaBuild').checked;
+                const newWindow = document.getElementById('optNewWindow').checked;
                 const mobile = china && /Mobi|Android/i.test(navigator.userAgent);
 
                 links.forEach(link => {
@@ -676,11 +807,20 @@
                     if (skip) url.searchParams.set('skipEntranceAnyKey', 'true');
                     if (china) {
                         url.searchParams.set('isChinaBuild', 'true');
-                        url.searchParams.delete('skipEntranceAnyKey'); // China build usually conflicts
+                        url.searchParams.delete('skipEntranceAnyKey');
                     }
                     if (lock) url.searchParams.set('locale', 'zh');
                     if (mobile) url.searchParams.set('distribution', 'generic_mobile_china');
-                    
+
+                    // 设置新窗口打开
+                    if (newWindow) {
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                    } else {
+                        link.target = '';
+                        link.rel = '';
+                    }
+
                     link.href = url.toString();
                 });
             }
