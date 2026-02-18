@@ -232,6 +232,12 @@
                 <button class="btn btn-ghost btn-sm" onclick="toggleSecrets()" title="Toggle Masking">
                     <i class="fas fa-low-vision" id="eyeIcon"></i> Masking
                 </button>
+
+                <!-- 【新增】自动清理按钮 -->
+                <button class="btn btn-warning btn-sm" onclick="autoCleanExpired()" style="background: #f59e0b; color: white;">
+                    <i class="fas fa-broom"></i> Clean Expired
+                </button>
+
                 <button class="btn btn-primary btn-sm" onclick="exportData()">
                     <i class="fas fa-file-export"></i> Export Log
                 </button>
@@ -755,6 +761,67 @@
         const input = document.getElementById('giteeToken');
         input.type = input.type === 'password' ? 'text' : 'password';
         icon.className = input.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+    }
+
+    // --- 新增：自动清理过期 Token 逻辑 ---
+    async function autoCleanExpired() {
+        if (!state.originalData || state.originalData.length === 0) {
+            return showToast('No data loaded', 'error');
+        }
+
+        const now = Date.now();
+
+        // 1. 筛选符合条件的 ID
+        const candidates = state.originalData.filter(item => {
+            const hasPass = !!item.Password;
+            const hasKey = !!item.Key;
+            const hasToken = !!item.Token;
+
+            // 条件A: 必须只有 Token，且没有密码和Key
+            const isTokenOnly = hasToken && !hasPass && !hasKey;
+
+            if (!isTokenOnly) return false;
+
+            // 条件B: 检查时间是否超过 5 分钟
+            if (!item.LastUpdate) return true; // 如果没有时间，视为过期垃圾数据
+
+            const lastTime = new Date(item.LastUpdate).getTime();
+            if (isNaN(lastTime)) return true; // 时间格式错误，视为过期
+
+            const diffMinutes = (now - lastTime) / 60000;
+            return diffMinutes > 5; // 大于5分钟
+        });
+
+        const count = candidates.length;
+
+        // 2. 交互反馈
+        if (count === 0) {
+            return showToast('No expired token-only sessions found.', 'success');
+        }
+
+        // 3. 确认删除
+        if (!confirm(`Found ${count} expired sessions (Token only & >5 mins).\nDelete them now?`)) {
+            return;
+        }
+
+        // 4. 调用现有的批量删除函数
+        const idsToDelete = candidates.map(item => item._id);
+
+        // 临时禁用按钮防止重复点击
+        const btn = document.querySelector('button[onclick="autoCleanExpired()"]');
+        const originText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Cleaning...`;
+
+        try {
+            await performDelete(idsToDelete);
+            // performDelete 内部已经处理了 UI 刷新和 Toast 提示
+        } catch (e) {
+            showToast('Auto clean failed', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originText;
+        }
     }
 
     function escapeHtml(str) {
