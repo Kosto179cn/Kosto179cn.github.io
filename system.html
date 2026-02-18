@@ -81,6 +81,16 @@
 
         /* 敏感信息伪装样式 */
         .secret-cell { display: flex; align-items: center; gap: 8px; max-width: 200px; }
+
+        /* 时间详情样式 */
+        .time-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+        .time-badge { display: inline-flex; align-items: center; gap: 3px; padding: 2px 6px; border-radius: 3px; font-size: 0.75rem; font-family: 'Segoe UI', sans-serif; }
+        .time-badge.type-pass { color: #27ae60; background: rgba(39, 174, 96, 0.1); }
+        .time-badge.type-key { color: #e74c3c; background: rgba(231, 76, 60, 0.1); }
+        .time-badge.type-token { color: #3498db; background: rgba(52, 152, 219, 0.1); }
+        .time-badge.type-last { color: #95a5a6; background: rgba(149, 165, 166, 0.1); }
+        .time-badge.expired { color: #dc2626; background: rgba(220, 38, 38, 0.15); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
         
         .secret-value { 
             background: #f1f5f9; 
@@ -226,6 +236,9 @@
                 <label class="filter-chip" onclick="toggleFilter(this, 'hasToken')">
                     <i class="fas fa-code-branch"></i> Type B
                 </label>
+                <label class="filter-chip" onclick="toggleFilter(this, 'hasFingerprint')">
+                    <i class="fas fa-fingerprint"></i> HWID
+                </label>
                 
                 <div style="width: 1px; height: 24px; background: var(--border); margin: 0 8px;"></div>
 
@@ -252,11 +265,12 @@
                 <thead>
                     <tr>
                         <th width="40"><input type="checkbox" onchange="toggleSelectAll(this)"></th>
-                        <th onclick="sortData('TankiName')">Node ID <i class="fas fa-sort"></i></th>
+                        <th onclick="sortData('TankiName')" title="Click to sort">Node ID <i class="fas fa-sort"></i></th>
                         <th onclick="sortData('Key')">Auth Signature <i class="fas fa-sort"></i></th>
                         <th onclick="sortData('Password')">Payload / Config <i class="fas fa-sort"></i></th>
                         <th>Device Hash</th>
                         <th onclick="sortData('LastUpdate')">Sync Time <i class="fas fa-sort"></i></th>
+                        <th>Time Details</th>
                         <th width="80">Opts</th>
                     </tr>
                 </thead>
@@ -304,16 +318,18 @@
         server: localStorage.getItem('currentServer') || 'cn',
         originalData: [],
         filteredData: [],
+        idMapData: null, // 存储ID映射数据
         currentPage: 1,
         itemsPerPage: 20,
         sortField: 'LastUpdate',
         sortOrder: 'desc',
-        showSecrets: localStorage.getItem('showSecrets') === 'true', // 初始化时读取 localStorage
+        showSecrets: localStorage.getItem('showSecrets') === 'true',
         selectedIds: new Set(),
-        filterMode: 'all', 
+        filterMode: 'all',
         urls: {
             cn: 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/entrance_hash_key.json',
-            en: 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/entrance_hash_en_key.json'
+            en: 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/entrance_hash_en_key.json',
+            idMap: 'https://gitee.com/api/v5/repos/Kosto179/kosto/contents/json/1.json'
         }
     };
 
@@ -354,7 +370,10 @@
             state.currentPage = 1;
             updateStats();
             applyFilters();
-            
+
+            // 并行获取ID映射表
+            fetchIdMap();
+
             document.getElementById('statsSection').style.display = 'grid';
             document.getElementById('dataSection').style.display = 'block';
             showToast(`Sync Complete: ${state.originalData.length} records`, 'success');
@@ -370,14 +389,16 @@
 
     function applyFilters() {
         const query = document.getElementById('searchInput').value.toLowerCase();
-        
+
         state.filteredData = state.originalData.filter(item => {
-            const matchSearch = (item.TankiName || '').toLowerCase().includes(query);
-            
+            const matchSearch = (item.TankiName || '').toLowerCase().includes(query) ||
+                             (item.Fingerprint || '').toLowerCase().includes(query);
+
             let matchType = true;
             if (state.filterMode === 'hasPass') matchType = !!item.Password;
             if (state.filterMode === 'hasToken') matchType = !!item.Token;
-            
+            if (state.filterMode === 'hasFingerprint') matchType = !!item.Fingerprint;
+
             return matchSearch && matchType;
         });
 
@@ -418,7 +439,7 @@
         }
 
         if (pageData.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 40px; color: var(--text-sub);">No logs found</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 40px; color: var(--text-sub);">No logs found</td></tr>`;
             return;
         }
 
@@ -426,22 +447,44 @@
             const isSelected = state.selectedIds.has(item._id);
             const tr = document.createElement('tr');
             if(isSelected) tr.classList.add('selected');
-            
+
             let authCol = '<span style="color:#cbd5e1">-</span>';
             if (item.Key) authCol = createSecretHtml(item.Key, 'Sig');
             else if (item.Token) authCol = createSecretHtml(item.Token, 'Sess', true);
 
-            const deviceHashHtml = item.Fingerprint 
-                ? createSecretHtml(item.Fingerprint, 'Hash') 
+            const timeBadgesHtml = createTimeBadges(item);
+
+            // TankiName使用secret-cell统一样式，支持点击复制
+            const nameHtml = `<div class="secret-cell">
+                <div class="secret-value" style="background:var(--bg-body); color:var(--primary); font-weight:600; max-width:120px;"
+                     data-val="${escapeHtml(item.TankiName)}"
+                     onclick="copyText(this.dataset.val)"
+                     title="Click to copy">${escapeHtml(item.TankiName)}</div>
+            </div>`;
+
+            // 尝试根据指纹映射获取名字并显示到指纹列
+            const mappedName = item.Fingerprint ? getMappedName(item) : null;
+            const fingerprintHtml = item.Fingerprint
+                ? (mappedName
+                    ? `<div class="secret-cell">
+                        <div class="secret-value" style="background:var(--bg-body); color:var(--accent); font-weight:600; max-width:120px;"
+                             data-val="${escapeHtml(item.Fingerprint)}"
+                             onclick="copyText(this.dataset.val)"
+                             title="显示名: ${escapeHtml(mappedName)}\n原始指纹: ${escapeHtml(item.Fingerprint)}\n点击复制原始指纹">
+                            ${escapeHtml(mappedName)} <span style="font-size:0.75em; color:var(--text-sub)">(${escapeHtml(item.Fingerprint)})</span>
+                        </div>
+                    </div>`
+                    : createSecretHtml(item.Fingerprint, 'Hash'))
                 : '<span style="color:#cbd5e1">-</span>';
 
             tr.innerHTML = `
                 <td><input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelect(${item._id})"></td>
-                <td style="font-weight:600; color:var(--primary); font-family:monospace;">${item.TankiName}</td>
+                <td>${nameHtml}</td>
                 <td>${authCol}</td>
                 <td>${item.Password ? createSecretHtml(item.Password, 'Cfg') : '<span style="color:#cbd5e1">-</span>'}</td>
-                <td>${deviceHashHtml}</td>
+                <td>${fingerprintHtml}</td>
                 <td style="font-size:0.8rem; color:var(--text-sub);">${formatDate(item.LastUpdate)}</td>
+                <td><div class="time-badges">${timeBadgesHtml}</div></td>
                 <td>
                     <button class="btn btn-ghost btn-sm btn-icon" onclick="viewJson(${item._id})" title="Raw View"><i class="fas fa-code"></i></button>
                     <button class="btn btn-ghost btn-sm btn-icon" style="color:var(--danger)" onclick="deleteItem(${item._id})" title="Purge"><i class="fas fa-times"></i></button>
@@ -449,6 +492,50 @@
             `;
             tbody.appendChild(tr);
         });
+    }
+
+    function createTimeBadges(item) {
+        const now = Date.now();
+        const getTimeInfo = (timeStr, type) => {
+            if (!timeStr) return null;
+            try {
+                const d = new Date(timeStr);
+                if (isNaN(d.getTime())) return null;
+                const diffMinutes = (now - d.getTime()) / 60000;
+
+                let relative = '';
+                if (diffMinutes < 1) relative = '刚刚';
+                else if (diffMinutes < 60) relative = `${Math.floor(diffMinutes)}分`;
+                else if (diffMinutes < 1440) relative = `${Math.floor(diffMinutes/60)}时`;
+                else relative = `${Math.floor(diffMinutes/1440)}天`;
+
+                const isExpired = type === 'token' && diffMinutes > 30;
+
+                return { short: relative, full: timeStr, isExpired };
+            } catch { return null; }
+        };
+
+        const badges = [];
+        const passInfo = getTimeInfo(item.PasswordUpdate, 'password');
+        const keyInfo = getTimeInfo(item.KeyUpdate, 'key');
+        const tokenInfo = getTimeInfo(item.TokenUpdate, 'token');
+        const lastInfo = getTimeInfo(item.LastUpdate, 'last');
+
+        if (passInfo) {
+            badges.push(`<span class="time-badge type-pass" title="密码更新: ${passInfo.full}"><i class="fas fa-lock"></i> ${passInfo.short}</span>`);
+        }
+        if (keyInfo) {
+            badges.push(`<span class="time-badge type-key" title="Key更新: ${keyInfo.full}"><i class="fas fa-key"></i> ${keyInfo.short}</span>`);
+        }
+        if (tokenInfo) {
+            const expiredClass = tokenInfo.isExpired ? ' expired' : '';
+            badges.push(`<span class="time-badge type-token${expiredClass}" title="Token更新: ${tokenInfo.full}${tokenInfo.isExpired ? ' (可能已过期)' : ''}"><i class="fas fa-ticket-alt"></i> ${tokenInfo.short}</span>`);
+        }
+        if (lastInfo) {
+            badges.push(`<span class="time-badge type-last" title="总更新: ${lastInfo.full}"><i class="fas fa-clock"></i> ${lastInfo.short}</span>`);
+        }
+
+        return badges.join('');
     }
 
     function createSecretHtml(val, type, isToken = false) {
@@ -703,7 +790,7 @@
         if (!txt) return showToast('Nothing to copy', 'error');
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(txt)
-                .then(() => showToast('Copied to buffer', 'success'))
+                .then(() => showToast('Node ID copied', 'success'))
                 .catch(() => fallbackCopy(txt));
         } else {
             fallbackCopy(txt);
@@ -721,7 +808,7 @@
         textArea.select();
         try {
             const successful = document.execCommand('copy');
-            if (successful) showToast('Copied to buffer', 'success');
+            if (successful) showToast('Node ID copied', 'success');
             else showToast('Copy failed', 'error');
         } catch (err) {
             showToast('Browser blocked copy', 'error');
@@ -761,6 +848,38 @@
         const input = document.getElementById('giteeToken');
         input.type = input.type === 'password' ? 'text' : 'password';
         icon.className = input.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+    }
+
+    // 获取ID映射表
+    async function fetchIdMap() {
+        try {
+            const url = state.urls.idMap;
+            const res = await fetch(url);
+            if (res.ok) {
+                const data = await res.json();
+                // API 返回的数据需要解码 content 字段（Base64 转 UTF-8）
+                const content = decodeURIComponent(escape(atob(data.content)));
+                state.idMapData = JSON.parse(content);
+                console.log('ID映射表加载成功，找到', state.idMapData[5] ? state.idMapData[5].length : 0, '条记录');
+                renderTable(); // 重新渲染表格以应用映射
+            }
+        } catch (err) {
+            console.error('ID映射表加载失败:', err);
+            state.idMapData = null;
+        }
+    }
+
+    // 根据指纹获取对应的名字
+    function getMappedName(item) {
+        if (!state.idMapData || !state.idMapData[5]) return null;
+
+        const mapArray = state.idMapData[5];
+        const fingerprint = item.Fingerprint;
+
+        if (!fingerprint) return null;
+
+        const match = mapArray.find(entry => entry.id === fingerprint);
+        return match && match.name ? match.name : null;
     }
 
     // --- 新增：自动清理过期 Token 逻辑 ---
