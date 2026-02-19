@@ -1350,9 +1350,8 @@
 
     function escapeHtml(str) {
     if (!str) return '';
-        var  = String(str); // 手动删除旧行，重新输入这一行
+        var  = String(str);
         return 
-            .replace(/&/g, "&amp;")
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")
