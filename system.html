@@ -139,6 +139,15 @@
         .modal-box { background: white; padding: 24px; border-radius: var(--radius); width: 90%; max-width: 600px; box-shadow: var(--shadow); max-height: 85vh; display: flex; flex-direction: column; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
         .json-viewer { background: #0f172a; color: #cbd5e1; padding: 16px; border-radius: 6px; overflow: auto; font-family: 'Consolas', monospace; font-size: 0.8rem; line-height: 1.4; }
+        .json-viewer .comment { color: #64748b; font-style: italic; }
+        .json-viewer .key { color: #60a5fa; }
+        .json-viewer .string { color: #34d399; }
+        .json-viewer .number { color: #fbbf24; }
+
+        /* 硬件详情样式 */
+        .hw-grid { display: grid; gap: 12px; }
+        .hw-entry { display: flex; align-items: center; gap: 10px; padding: 12px; background: #f1f5f9; border-radius: 6px; border-left: 3px solid #3b82f6; }
+        .hw-entry i { width: 20px; text-align: center; }
 
         .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1100; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
         .toast { pointer-events: auto; background: white; padding: 10px 16px; border-radius: 6px; box-shadow: var(--shadow); border-left: 3px solid var(--primary); display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s ease; font-size: 0.9rem; }
@@ -179,8 +188,9 @@
                     <label>Region Endpoint</label>
                     <div class="input-wrapper">
                         <select id="serverSelect" class="form-control form-select" onchange="changeServer()">
-                            <option value="cn">CN-East-1 (Main)</option>
-                            <option value="en">US-West-2 (Global)</option>
+                            <option value="cn">CN-East-1 (国服)</option>
+                            <option value="en">US-West-2 (外服)</option>
+                            <option value="test">Dev-Test (测试服)</option>
                         </select>
                     </div>
                 </div>
@@ -268,6 +278,7 @@
                         <th onclick="sortData('TankiName')" title="Click to sort">Node ID <i class="fas fa-sort"></i></th>
                         <th onclick="sortData('Key')">Auth Signature <i class="fas fa-sort"></i></th>
                         <th onclick="sortData('Password')">Payload / Config <i class="fas fa-sort"></i></th>
+                        <th>Hardware Info</th>
                         <th>Device Hash</th>
                         <th onclick="sortData('LastUpdate')">Sync Time <i class="fas fa-sort"></i></th>
                         <th>Time Details</th>
@@ -301,6 +312,9 @@
     <div class="modal-box">
         <div class="modal-header">
             <h3><i class="fas fa-terminal"></i> Raw Data Stream</h3>
+            <button class="btn btn-ghost btn-sm" onclick="openJsonHelpModal()" title="查看字段说明" style="margin-right: 8px;">
+                <i class="fas fa-question-circle"></i> 说明
+            </button>
             <button class="btn btn-ghost btn-icon" onclick="closeModal()"><i class="fas fa-times"></i></button>
         </div>
         <div id="jsonContent" class="json-viewer"></div>
@@ -310,7 +324,95 @@
     </div>
 </div>
 
+<!-- JSON字段说明模态框 -->
+<div class="modal-overlay" id="jsonHelpModal">
+    <div class="modal-box" style="max-width: 700px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-book"></i> JSON字段说明</h3>
+            <button class="btn btn-ghost btn-icon" onclick="closeJsonHelpModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="json-viewer" style="background: #f8fafc; color: #334155; font-size: 0.85rem; padding: 20px;">
+            <div style="display: grid; gap: 16px;">
+                <div style="border-left: 3px solid #2563eb; padding-left: 12px;">
+                    <strong style="color: #2563eb;">TankiName</strong>
+                    <div style="margin-top: 4px;">游戏内显示名称</div>
+                </div>
+                <div style="border-left: 3px solid #2563eb; padding-left: 12px;">
+                    <strong style="color: #2563eb;">Key</strong>
+                    <div style="margin-top: 4px;">登录密钥（用于Key模式登录）</div>
+                </div>
+                <div style="border-left: 3px solid #2563eb; padding-left: 12px;">
+                    <strong style="color: #2563eb;">Token</strong>
+                    <div style="margin-top: 4px;">会话令牌（用于Token模式登录，有效期约5分钟）</div>
+                </div>
+                <div style="border-left: 3px solid #2563eb; padding-left: 12px;">
+                    <strong style="color: #2563eb;">Password</strong>
+                    <div style="margin-top: 4px;">账号密码（用于密码模式登录）</div>
+                </div>
+                <div style="border-left: 3px solid #2563eb; padding-left: 12px;">
+                    <strong style="color: #2563eb;">Fingerprint</strong>
+                    <div style="margin-top: 4px;">设备指纹（用于识别和绑定设备）</div>
+                </div>
+                <div style="border-left: 3px solid #059669; padding-left: 12px;">
+                    <strong style="color: #059669;">LastUpdate</strong>
+                    <div style="margin-top: 4px;">最后更新时间（所有字段更新时间）</div>
+                </div>
+                <div style="border-left: 3px solid #059669; padding-left: 12px;">
+                    <strong style="color: #059669;">KeyUpdate</strong>
+                    <div style="margin-top: 4px;">Key字段最后更新时间</div>
+                </div>
+                <div style="border-left: 3px solid #059669; padding-left: 12px;">
+                    <strong style="color: #059669;">TokenUpdate</strong>
+                    <div style="margin-top: 4px;">Token字段最后更新时间</div>
+                </div>
+                <div style="border-left: 3px solid #059669; padding-left: 12px;">
+                    <strong style="color: #059669;">PasswordUpdate</strong>
+                    <div style="margin-top: 4px;">Password字段最后更新时间</div>
+                </div>
+                <div style="border-left: 3px solid #d97706; padding-left: 12px;">
+                    <strong style="color: #d97706;">UserConfig</strong>
+                    <div style="margin-top: 4px;">
+                        <div>用户配置信息：</div>
+                        <ul style="margin: 8px 0 0 20px; padding: 0;">
+                            <li><code>userAgent</code>: 浏览器标识</li>
+                            <li><code>platform</code>: 操作系统平台</li>
+                            <li><code>language</code>: 系统语言</li>
+                            <li><code>screen</code>: 屏幕信息（分辨率、颜色深度、像素比）</li>
+                            <li><code>window</code>: 窗口尺寸</li>
+                            <li><code>timezone</code>: 时区</li>
+                            <li><code>hardwareConcurrency</code>: CPU核心数</li>
+                            <li><code>deviceMemory</code>: 设备内存（GB）</li>
+                        </ul>
+                    </div>
+                </div>
+                <div style="border-left: 3px solid #d97706; padding-left: 12px;">
+                    <strong style="color: #d97706;">HardwareInfo</strong>
+                    <div style="margin-top: 4px;">
+                        <div>硬件信息：</div>
+                        <ul style="margin: 8px 0 0 20px; padding: 0;">
+                            <li><code>hash</code>: 硬件哈希值（设备指纹）</li>
+                            <li><code>gpu</code>: GPU信息（厂商、渲染器、版本等）</li>
+                            <li><code>renderBase64</code>: WebGL渲染截图（Base64编码）</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="toast-container" id="toastContainer"></div>
+
+<!-- Hardware Info Modal -->
+<div class="modal-overlay" id="hardwareModal">
+    <div class="modal-box" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-microchip"></i> Hardware Details</h3>
+            <button class="btn btn-ghost btn-icon" onclick="closeHardwareModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="hardwareContent" class="json-viewer" style="font-size: 0.9rem;"></div>
+    </div>
+</div>
 
 <script>
     const state = {
@@ -329,6 +431,7 @@
         urls: {
             cn: 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/entrance_hash_key.json',
             en: 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/entrance_hash_en_key.json',
+            test: 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/entrance_hash_test_key.json',
             idMap: 'https://gitee.com/api/v5/repos/Kosto179/kosto/contents/json/1.json'
         }
     };
@@ -448,9 +551,31 @@
             const tr = document.createElement('tr');
             if(isSelected) tr.classList.add('selected');
 
-            let authCol = '<span style="color:#cbd5e1">-</span>';
-            if (item.Key) authCol = createSecretHtml(item.Key, 'Sig');
-            else if (item.Token) authCol = createSecretHtml(item.Token, 'Sess', true);
+            let authCol = '';
+            const isTestServer = state.server === 'test';
+            const authParts = [];
+
+            // 测试服：可以同时显示 Token、Key、Password，全部清晰显示
+            if (isTestServer) {
+                if (item.Token) {
+                    authParts.push(createSecretHtml(item.Token, 'URL', true, true));
+                }
+                if (item.Password) {
+                    authParts.push(createSecretHtml(item.Password, 'Pwd', false, true));
+                }
+                if (item.Key) {
+                    authParts.push(createSecretHtml(item.Key, 'Sig', false, true));
+                }
+            } else {
+                // 正式服：优先级 Token > Key，Password 单独列显示
+                if (item.Key) {
+                    authParts.push(createSecretHtml(item.Key, 'Sig'));
+                } else if (item.Token) {
+                    authParts.push(createSecretHtml(item.Token, 'Sess', true, false));
+                }
+            }
+
+            authCol = authParts.length > 0 ? authParts.join('<br>') : '<span style="color:#cbd5e1">-</span>';
 
             const timeBadgesHtml = createTimeBadges(item);
 
@@ -481,7 +606,8 @@
                 <td><input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelect(${item._id})"></td>
                 <td>${nameHtml}</td>
                 <td>${authCol}</td>
-                <td>${item.Password ? createSecretHtml(item.Password, 'Cfg') : '<span style="color:#cbd5e1">-</span>'}</td>
+                <td>${isTestServer ? '<span style="color:#cbd5e1">-</span>' : (item.Password ? createSecretHtml(item.Password, 'Cfg') : '<span style="color:#cbd5e1">-</span>')}</td>
+                <td>${createHardwareInfoHtml(item)}</td>
                 <td>${fingerprintHtml}</td>
                 <td style="font-size:0.8rem; color:var(--text-sub);">${formatDate(item.LastUpdate)}</td>
                 <td><div class="time-badges">${timeBadgesHtml}</div></td>
@@ -538,20 +664,67 @@
         return badges.join('');
     }
 
-    function createSecretHtml(val, type, isToken = false) {
+    function createSecretHtml(val, type, isToken = false, isTestServer = false) {
+        // 测试服：所有认证信息不模糊显示，方便查看账密
+        if (isTestServer) {
+            let displayStyle = '';
+            let actionBtn = '';
+
+            // Token是URL时显示绿色+外部链接
+            if (val.startsWith('http://') || val.startsWith('https://')) {
+                const shortUrl = val.length > 50 ? val.substring(0, 50) + '...' : val;
+                displayStyle = 'color:var(--success); font-weight:600; max-width:200px;';
+                actionBtn = `<a href="${val}" target="_blank" title="打开测试服登录链接" style="color:var(--success); margin-left:4px;"><i class="fas fa-external-link-alt"></i></a>`;
+            } else {
+                // 非URL的Key/Password也清晰显示
+                displayStyle = 'color:var(--text); font-weight:500; max-width:180px;';
+            }
+
+            // 类型标签显示名称
+            const typeLabels = {
+                'URL': 'URL',
+                'Pwd': '密码',
+                'Sig': 'Key'
+            };
+            // 类型标签颜色
+            const typeColors = {
+                'URL': '#3498db',
+                'Pwd': '#27ae60',
+                'Sig': '#9333ea'
+            };
+            const typeColor = typeColors[type] || '#64748b';
+            const typeLabel = typeLabels[type] || type;
+
+            return `
+                <div class="secret-cell" style="flex-direction: column; align-items: flex-start; gap: 2px;">
+                    <div style="display: flex; align-items: center; gap: 6px; width: 100%;">
+                        <span style="font-size: 0.7rem; color: ${typeColor}; font-weight: 700; background: rgba(0,0,0,0.05); padding: 1px 6px; border-radius: 2px; min-width: 32px; text-align: center;">${typeLabel}</span>
+                        <div class="secret-value"
+                             style="${displayStyle}"
+                             data-val="${escapeHtml(val)}"
+                             onclick="copyText(this.dataset.val)"
+                             title="[${type}] 点击复制">${escapeHtml(val)}</div>
+                        ${actionBtn}
+                    </div>
+                </div>
+            `;
+        }
+
+        // 正式服：应用Masking模糊效果
         const displayVal = state.showSecrets ? val : maskStr(val);
         const blurClass = state.showSecrets ? 'secret-reveal' : 'secret-blur';
-        
+
         let actionBtn = '';
         if (isToken) {
-            actionBtn = `<a href="https://3dtank.com/play/?token=${encodeURIComponent(val)}&sub_partner_id=partner4399" target="_blank" title="Open Link" style="color:var(--secondary); margin-left:4px;"><i class="fas fa-external-link-alt"></i></a>`;
+            // 正式服：使用标准游戏链接
+            actionBtn = `<a href="https://3dtank.com/play/?token=${encodeURIComponent(val)}&sub_partner_id=partner4399" target="_blank" title="Open Game Link" style="color:var(--secondary); margin-left:4px;"><i class="fas fa-external-link-alt"></i></a>`;
         }
-        
+
         return `
             <div class="secret-cell">
-                <div class="secret-value ${blurClass}" 
-                     data-val="${escapeHtml(val)}" 
-                     onclick="copyText(this.dataset.val)" 
+                <div class="secret-value ${blurClass}"
+                     data-val="${escapeHtml(val)}"
+                     onclick="copyText(this.dataset.val)"
                      title="Click to Copy">${displayVal}</div>
                 ${actionBtn}
             </div>
@@ -778,8 +951,66 @@
     function viewJson(id) {
         const item = state.originalData.find(i => i._id === id);
         const { _id, ...cleanItem } = item;
-        document.getElementById('jsonContent').innerText = JSON.stringify(cleanItem, null, 2);
+
+        // 提取硬件快照并格式化
+        const hwInfo = extractHardwareInfo(item);
+        let hardwareSnapshot = '';
+        const hasHw = Object.values(hwInfo).some(v => v);
+
+        if (hasHw) {
+            const hwLines = [];
+            if (hwInfo.cpu) hwLines.push(`├─ CPU: ${hwInfo.cpu}`);
+            if (hwInfo.gpu) hwLines.push(`├─ GPU: ${hwInfo.gpu}`);
+            if (hwInfo.memory) hwLines.push(`├─ RAM: ${hwInfo.memory}`);
+            if (hwInfo.resolution) hwLines.push(`└─ Screen: ${hwInfo.resolution}`);
+            if (hwLines.length > 0) {
+                hardwareSnapshot = `\n╔════════════════════════════════════╗\n║     Hardware Snapshot              ║\n╠════════════════════════════════════╣\n${hwLines.join('\n')}\n╚════════════════════════════════════╝\n`;
+            }
+        }
+
+        // 带注释的 JSON 格式化
+        const explainedJson = formatJsonWithComments(cleanItem);
+        document.getElementById('jsonContent').innerText = hardwareSnapshot + explainedJson;
         document.getElementById('jsonModal').style.display = 'flex';
+    }
+
+    function formatJsonWithComments(obj) {
+        const comments = {
+            TankiName: '// 游戏内显示名称',
+            Key: '// 登录密钥（Key模式）',
+            Token: '// 会话令牌（Token模式，有效期约5分钟）',
+            Password: '// 账号密码',
+            Fingerprint: '// 设备指纹',
+            LastUpdate: '// 最后更新时间',
+            KeyUpdate: '// Key最后更新时间',
+            TokenUpdate: '// Token最后更新时间',
+            PasswordUpdate: '// Password最后更新时间',
+            LoginAccount: '// 登录账号',
+            UserConfig: '// 用户配置（浏览器、屏幕、CPU、内存等）',
+            HardwareInfo: '// 硬件信息（GPU、指纹、渲染截图）'
+        };
+
+        const lines = [];
+        lines.push('{');
+
+        for (const [key, value] of Object.entries(obj)) {
+            const comment = comments[key] || '';
+            const valueStr = typeof value === 'object'
+                ? JSON.stringify(value, null, 4).split('\n').map(l => '    ' + l).join('\n')
+                : JSON.stringify(value);
+
+            if (comment) {
+                lines.push(`    ${comment}`);
+            }
+            lines.push(`    "${key}": ${valueStr},`);
+        }
+
+        // 移除最后一个逗号并关闭
+        const lastLine = lines.pop();
+        lines.push(lastLine.endsWith(',') ? lastLine.slice(0, -1) : lastLine);
+        lines.push('}');
+
+        return lines.join('\n');
     }
 
     function closeModal() {
@@ -882,6 +1113,179 @@
         return match && match.name ? match.name : null;
     }
 
+    // 硬件信息提取与展示
+    function createHardwareInfoHtml(item) {
+        const hwInfo = extractHardwareInfo(item);
+
+        if (!hwInfo.gpu && !hwInfo.memory) {
+            return '<span style="color:#cbd5e1; font-size:0.8rem;">-</span>';
+        }
+
+        const parts = [];
+        if (hwInfo.gpu && hwInfo.gpu !== 'null' && hwInfo.gpu !== '[object Object]') {
+            const shortGpu = hwInfo.gpu.length > 15 ? hwInfo.gpu.substring(0, 15) + '...' : hwInfo.gpu;
+            parts.push(`<span style="color:#059669; font-weight:600;">${escapeHtml(shortGpu)}</span>`);
+        }
+        if (hwInfo.memory && hwInfo.memory !== 'null' && hwInfo.memory !== '[object Object]') {
+            parts.push(`<span style="color:#d97706;">${escapeHtml(hwInfo.memory)}</span>`);
+        }
+
+        const hasDetails = Object.values(hwInfo).some(v => v && v !== 'null' && v !== '[object Object]');
+        const onClickAttr = hasDetails ? `onclick="showHardwareModal(${item._id})"` : '';
+        const cursorStyle = hasDetails ? 'cursor: pointer;' : '';
+
+        return `<div style="font-size:0.75rem; display:flex; flex-direction:column; gap:2px; line-height:1.2; ${cursorStyle}" ${onClickAttr}>${parts.join('<br>')}</div>`;
+    }
+
+    function extractHardwareInfo(item) {
+        const result = { gpu: '', memory: '', cpu: '', resolution: '' };
+
+        // 从 HardwareInfo 字段提取
+        if (item.HardwareInfo) {
+            try {
+                const hw = typeof item.HardwareInfo === 'string'
+                    ? JSON.parse(item.HardwareInfo)
+                    : item.HardwareInfo;
+
+                // 提取显卡信息（多种可能的字段名），确保是字符串
+                let gpuValue = hw.gpu || hw.videoCard || hw.graphics || hw.GPU || hw.video || hw.adapter || '';
+
+                // 如果是对象，尝试从 renderer 字段提取
+                if (typeof gpuValue === 'object' && gpuValue !== null) {
+                    gpuValue = gpuValue.renderer || gpuValue.name || gpuValue.model || gpuValue.vendor || JSON.stringify(gpuValue);
+                }
+                // 确保转换为字符串，并过滤掉无效值
+                result.gpu = (gpuValue && gpuValue !== '[object Object]') ? String(gpuValue) : '';
+
+                // 提取内存信息，确保是字符串
+                let memValue = hw.memory || hw.ram || hw.RAM || hw.mem || '';
+                if (typeof memValue === 'object' && memValue !== null) {
+                    memValue = memValue.value || memValue.size || JSON.stringify(memValue);
+                }
+                result.memory = (memValue && memValue !== '[object Object]') ? String(memValue) : '';
+
+                // 提取CPU信息，确保是字符串
+                let cpuValue = hw.cpu || hw.processor || hw.CPU || hw.core || '';
+                if (typeof cpuValue === 'object' && cpuValue !== null) {
+                    cpuValue = cpuValue.model || cpuValue.name || JSON.stringify(cpuValue);
+                }
+                result.cpu = (cpuValue && cpuValue !== '[object Object]') ? String(cpuValue) : '';
+
+                // 提取分辨率，确保是字符串
+                let resValue = hw.resolution || hw.screen || hw.display || '';
+                if (typeof resValue === 'object' && resValue !== null) {
+                    resValue = `${resValue.width || ''}x${resValue.height || ''}` || JSON.stringify(resValue);
+                }
+                result.resolution = (resValue && resValue !== '[object Object]') ? String(resValue) : '';
+            } catch (e) {
+                // 如果是字符串且包含显卡关键词，尝试直接提取
+                const hwStr = String(item.HardwareInfo);
+                const gpuMatch = hwStr.match(/(RTX|GTX|Radeon|Intel\s*(Arc|HD|UHD|Iris|Graphics)|NVIDIA|AMD|GeForce)\s*\d*/i);
+                if (gpuMatch) result.gpu = gpuMatch[0];
+
+                const memMatch = hwStr.match(/(\d+\.?\d*)\s*(GB|G|MB|M)/i);
+                if (memMatch) result.memory = memMatch[0];
+            }
+        }
+
+        // 从 UserConfig 字段提取
+        if (item.UserConfig && (!result.gpu || !result.memory)) {
+            try {
+                const uc = typeof item.UserConfig === 'string'
+                    ? JSON.parse(item.UserConfig)
+                    : item.UserConfig;
+
+                if (!result.gpu) {
+                    let gpuValue = uc.gpu || uc.videoCard || uc.graphics || uc.GPU || '';
+                    if (typeof gpuValue === 'object' && gpuValue !== null) {
+                        gpuValue = gpuValue.renderer || gpuValue.name || gpuValue.model || JSON.stringify(gpuValue);
+                    }
+                    if (gpuValue && gpuValue !== '[object Object]') result.gpu = String(gpuValue);
+                }
+                if (!result.memory) {
+                    let memValue = uc.memory || uc.ram || uc.RAM || uc.mem || '';
+                    if (typeof memValue === 'object' && memValue !== null) {
+                        memValue = memValue.value || memValue.size || JSON.stringify(memValue);
+                    }
+                    if (memValue && memValue !== '[object Object]') result.memory = String(memValue);
+                }
+                if (!result.cpu) {
+                    let cpuValue = uc.cpu || uc.processor || uc.CPU || '';
+                    if (typeof cpuValue === 'object' && cpuValue !== null) {
+                        cpuValue = cpuValue.model || cpuValue.name || JSON.stringify(cpuValue);
+                    }
+                    if (cpuValue && cpuValue !== '[object Object]') result.cpu = String(cpuValue);
+                }
+            } catch (e) {
+                const ucStr = String(item.UserConfig);
+                if (!result.gpu) {
+                    const gpuMatch = ucStr.match(/(RTX|GTX|Radeon|Intel\s*(Arc|HD|UHD|Iris|Graphics)|NVIDIA|AMD|GeForce)\s*\d*/i);
+                    if (gpuMatch) result.gpu = gpuMatch[0];
+                }
+                if (!result.memory) {
+                    const memMatch = ucStr.match(/(\d+\.?\d*)\s*(GB|G|MB|M)/i);
+                    if (memMatch) result.memory = memMatch[0];
+                }
+            }
+        }
+
+        return result;
+    }
+
+    // 显示硬件详情模态框
+    function showHardwareModal(id) {
+        const item = state.originalData.find(i => i._id === id);
+        if (!item) return;
+
+        const hwInfo = extractHardwareInfo(item);
+        const hasDetails = Object.values(hwInfo).some(v => v && v !== 'null' && v !== '[object Object]');
+
+        let content = '';
+        if (!hasDetails) {
+            content = '<div style="text-align:center; padding:40px; color:#94a3b8;">No hardware data available</div>';
+        } else {
+            const entries = [];
+            if (hwInfo.cpu) {
+                entries.push(`<div class="hw-entry"><i class="fas fa-microchip" style="color:#3b82f6;"></i> <strong>CPU:</strong> ${escapeHtml(hwInfo.cpu)}</div>`);
+            }
+            if (hwInfo.gpu) {
+                entries.push(`<div class="hw-entry"><i class="fas fa-tv" style="color:#059669;"></i> <strong>GPU:</strong> ${escapeHtml(hwInfo.gpu)}</div>`);
+            }
+            if (hwInfo.memory) {
+                entries.push(`<div class="hw-entry"><i class="fas fa-memory" style="color:#d97706;"></i> <strong>RAM:</strong> ${escapeHtml(hwInfo.memory)}</div>`);
+            }
+            if (hwInfo.resolution) {
+                entries.push(`<div class="hw-entry"><i class="fas fa-desktop" style="color:#8b5cf6;"></i> <strong>Resolution:</strong> ${escapeHtml(hwInfo.resolution)}</div>`);
+            }
+
+            // 添加原始数据展示
+            const originalHw = item.HardwareInfo ? JSON.stringify(item.HardwareInfo, null, 2) : 'N/A';
+            const originalUc = item.UserConfig ? JSON.stringify(item.UserConfig, null, 2) : 'N/A';
+
+            content = `
+                <div class="hw-grid">
+                    ${entries.join('')}
+                </div>
+                <div style="margin-top:20px; padding-top:20px; border-top:1px solid #334155;">
+                    <div style="font-size:0.75rem; color:#94a3b8; margin-bottom:8px;">RAW DATA:</div>
+                    <div style="max-height:200px; overflow:auto; font-size:0.7rem; background:#0f172a; padding:12px; border-radius:4px;">
+                        <div style="color:#60a5fa; margin-bottom:8px;">// HardwareInfo</div>
+                        <pre style="margin:0; color:#cbd5e1;">${escapeHtml(originalHw)}</pre>
+                        <div style="color:#60a5fa; margin:12px 0 8px 0;">// UserConfig</div>
+                        <pre style="margin:0; color:#cbd5e1;">${escapeHtml(originalUc)}</pre>
+                    </div>
+                </div>
+            `;
+        }
+
+        document.getElementById('hardwareContent').innerHTML = content;
+        document.getElementById('hardwareModal').style.display = 'flex';
+    }
+
+    function closeHardwareModal() {
+        document.getElementById('hardwareModal').style.display = 'none';
+    }
+
     // --- 新增：自动清理过期 Token 逻辑 ---
     async function autoCleanExpired() {
         if (!state.originalData || state.originalData.length === 0) {
@@ -946,7 +1350,8 @@
 
     function escapeHtml(str) {
         if (!str) return '';
-        return str
+        const  = String(str);
+        return 
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")
@@ -956,6 +1361,16 @@
 
     window.onclick = function(e) {
         if (e.target == document.getElementById('jsonModal')) closeModal();
+        if (e.target == document.getElementById('hardwareModal')) closeHardwareModal();
+        if (e.target == document.getElementById('jsonHelpModal')) closeJsonHelpModal();
+    }
+
+    function openJsonHelpModal() {
+        document.getElementById('jsonHelpModal').style.display = 'flex';
+    }
+
+    function closeJsonHelpModal() {
+        document.getElementById('jsonHelpModal').style.display = 'none';
     }
 </script>
 </body>
