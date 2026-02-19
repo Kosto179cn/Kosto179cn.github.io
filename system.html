@@ -86,7 +86,7 @@
         .time-badges { display: flex; flex-wrap: wrap; gap: 4px; }
         .time-badge { display: inline-flex; align-items: center; gap: 3px; padding: 2px 6px; border-radius: 3px; font-size: 0.75rem; font-family: 'Segoe UI', sans-serif; }
         .time-badge.type-pass { color: #27ae60; background: rgba(39, 174, 96, 0.1); }
-        .time-badge.type-key { color: #e74c3c; background: rgba(231, 76, 60, 0.1); }
+        .time-badge.type-key { color: #9333ea; background: rgba(147, 51, 234, 0.1); }
         .time-badge.type-token { color: #3498db; background: rgba(52, 152, 219, 0.1); }
         .time-badge.type-last { color: #95a5a6; background: rgba(149, 165, 166, 0.1); }
         .time-badge.expired { color: #dc2626; background: rgba(220, 38, 38, 0.15); animation: pulse 2s infinite; }
@@ -509,7 +509,7 @@
                 else if (diffMinutes < 1440) relative = `${Math.floor(diffMinutes/60)}时`;
                 else relative = `${Math.floor(diffMinutes/1440)}天`;
 
-                const isExpired = type === 'token' && diffMinutes > 30;
+                const isExpired = type === 'token' && diffMinutes > 5;
 
                 return { short: relative, full: timeStr, isExpired };
             } catch { return null; }
@@ -909,6 +909,7 @@
 
             const diffMinutes = (now - lastTime) / 60000;
             return diffMinutes > 5; // 大于5分钟
+
         });
 
         const count = candidates.length;
@@ -919,7 +920,7 @@
         }
 
         // 3. 确认删除
-        if (!confirm(`Found ${count} expired sessions (Token only & >5 mins).\nDelete them now?`)) {
+        if (!confirm(`Found ${count} expired sessions (Token only & ≥5 mins).\nToken expires in 5 minutes. Delete them now?`)) {
             return;
         }
 
