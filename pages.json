@@ -8,19 +8,19 @@
     "theme": "theme-game"
   },
   {
-    "filename": "ratings.html",
-    "title": "Kosto 战绩查询 | 3D坦克",
-    "desc": "查询国服/外服的玩家账号数据",
-    "icon": "fa-tools",
-    "category": "tool",
-    "theme": "theme-tool"
-  },
-  {
     "filename": "replacement.html",
     "title": "屏蔽词测试工具",
     "desc": "屏蔽词替换 网页版",
     "icon": "fa-search",
     "category": "admin",
     "theme": "theme-admin"
+  },
+  {
+    "filename": "ratings.html",
+    "title": "Kosto 战绩查询 | 3D坦克",
+    "desc": "查询国服/外服的玩家账号数据",
+    "icon": "fa-tools",
+    "category": "tool",
+    "theme": "theme-tool"
   }
 ]
