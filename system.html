@@ -42,7 +42,7 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
-body { font-family: 'Segoe UI', 'Roboto', monospace, sans-serif; background: var(--bg-body); color: var(--text-main); line-height: 1.5; padding-bottom: 60px; transition: background 0.3, color 0.3; }
+body { font-family: 'Segoe UI', 'Roboto', monospace, sans-serif; background: var(--bg-body); color: var(--text-main); line-height: 1.5; padding-bottom: 60px; transition: background 0.3s, color 0.3s; }
 
 /* --- 布局 --- */
 .container { max-width: 1440px; margin: 0 auto; padding: 24px; }
@@ -167,7 +167,7 @@ text-shadow: none;
 .hw-entry i { width: 20px; text-align: center; }
 
 .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1100; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-.toast { pointer-events: auto; background: var(--bg-card); padding: 10px 16px; border-radius: 6px; box-shadow: var(--shadow); border-left: 3px solid var(--primary); display: flex; align-items: center; gap: 10px; animation: slideIn 0.3 ease; font-size: 0.9rem; }
+.toast { pointer-events: auto; background: var(--bg-card); padding: 10px 16px; border-radius: 6px; box-shadow: var(--shadow); border-left: 3px solid var(--primary); display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s ease; font-size: 0.9rem; }
 .toast.success { border-color: var(--success); }
 .toast.error { border-color: var(--danger); }
 @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -186,7 +186,7 @@ text-shadow: none;
 <h1><i class="fas fa-server"></i> T-Node System Monitor</h1>
 <div class="header-actions">
 <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" id="themeToggle" title="切换主题">
-<i class="fas fa-moon"></i>
+    <i class="fas fa-moon"></i>
 </button>
 <span style="font-size: 0.8rem; color: var(--text-sub); font-family: monospace;">v2.5.4-stable</span>
 </div>
@@ -196,32 +196,32 @@ text-shadow: none;
 <div class="card">
 <form id="loginForm" onsubmit="event.preventDefault(); fetchData();">
 <div class="login-grid">
-<div class="form-group">
-<label>API Access Key</label>
-<div class="input-wrapper">
-<i class="fas fa-terminal"></i>
-<input type="password" id="giteeToken" class="form-control" placeholder="Authentication Key..." autocomplete="off">
-<i class="fas fa-eye" style="left: auto; right: 12px; cursor: pointer; pointer-events: auto;" onclick="toggleTokenVisibility(this)"></i>
-</div>
-</div>
-<div class="form-group">
-<label>Region Endpoint</label>
-<div class="input-wrapper">
-<select id="serverSelect" class="form-control form-select" onchange="changeServer()">
-<option value="cn">CN-East-1 (国服)</option>
-<option value="en">US-West-2 (外服)</option>
-<option value="test">Dev-Test (测试服)</option>
-</select>
-</div>
-</div>
-<div class="form-group" style="display: flex; gap: 10px;">
-<button type="submit" class="btn btn-primary" id="fetchBtn" style="flex: 1;">
-<i class="fas fa-network-wired"></i> Connect
-</button>
-<button type="button" class="btn btn-ghost" onclick="saveToken()" title="Cache Credentials">
-<i class="fas fa-save"></i>
-</button>
-</div>
+    <div class="form-group">
+        <label>API Access Key</label>
+        <div class="input-wrapper">
+            <i class="fas fa-terminal"></i>
+            <input type="password" id="giteeToken" class="form-control" placeholder="Authentication Key..." autocomplete="off">
+            <i class="fas fa-eye" style="left: auto; right: 12px; cursor: pointer; pointer-events: auto;" onclick="toggleTokenVisibility(this)"></i>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Region Endpoint</label>
+        <div class="input-wrapper">
+            <select id="serverSelect" class="form-control form-select" onchange="changeServer()">
+                <option value="cn">CN-East-1 (国服)</option>
+                <option value="en">US-West-2 (外服)</option>
+                <option value="test">Dev-Test (测试服)</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group" style="display: flex; gap: 10px;">
+        <button type="submit" class="btn btn-primary" id="fetchBtn" style="flex: 1;">
+            <i class="fas fa-network-wired"></i> Connect
+        </button>
+        <button type="button" class="btn btn-ghost" onclick="saveToken()" title="Cache Credentials">
+            <i class="fas fa-save"></i>
+        </button>
+    </div>
 </div>
 </form>
 </div>
@@ -250,77 +250,77 @@ text-shadow: none;
 <div class="card" id="dataSection" style="display:none;">
 <div class="toolbar">
 <div class="search-box">
-<div class="input-wrapper">
-<i class="fas fa-search"></i>
-<input type="text" id="searchInput" class="form-control" placeholder="Search Node ID..." oninput="handleSearch()">
-</div>
+    <div class="input-wrapper">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" class="form-control" placeholder="Search Node ID..." oninput="handleSearch()">
+    </div>
 </div>
 
 <div class="filters">
-<label class="filter-chip active" onclick="toggleFilter(this, 'all')">
-<i class="fas fa-border-all"></i> All
-</label>
-<label class="filter-chip" onclick="toggleFilter(this, 'hasPass')">
-<i class="fas fa-cube"></i> Type A
-</label>
-<label class="filter-chip" onclick="toggleFilter(this, 'hasToken')">
-<i class="fas fa-code-branch"></i> Type B
-</label>
-<label class="filter-chip" onclick="toggleFilter(this, 'hasFingerprint')">
-<i class="fas fa-fingerprint"></i> HWID
-</label>
+    <label class="filter-chip active" onclick="toggleFilter(this, 'all')">
+        <i class="fas fa-border-all"></i> All
+    </label>
+    <label class="filter-chip" onclick="toggleFilter(this, 'hasPass')">
+        <i class="fas fa-cube"></i> Type A
+    </label>
+    <label class="filter-chip" onclick="toggleFilter(this, 'hasToken')">
+        <i class="fas fa-code-branch"></i> Type B
+    </label>
+    <label class="filter-chip" onclick="toggleFilter(this, 'hasFingerprint')">
+        <i class="fas fa-fingerprint"></i> HWID
+    </label>
+    
+    <div style="width: 1px; height: 24px; background: var(--border); margin: 0 8px;"></div>
 
-<div style="width: 1px; height: 24px; background: var(--border); margin: 0 8px;"></div>
+    <button class="btn btn-ghost btn-sm" onclick="toggleSecrets()" title="Toggle Masking">
+        <i class="fas fa-low-vision" id="eyeIcon"></i> Masking
+    </button>
 
-<button class="btn btn-ghost btn-sm" onclick="toggleSecrets()" title="Toggle Masking">
-<i class="fas fa-low-vision" id="eyeIcon"></i> Masking
-</button>
+    <!-- 【新增】自动清理按钮 -->
+    <button class="btn btn-warning btn-sm" onclick="autoCleanExpired()" style="background: var(--warning); color: white;">
+        <i class="fas fa-broom"></i> Clean Expired
+    </button>
 
-<!-- 【新增】自动清理按钮 -->
-<button class="btn btn-warning btn-sm" onclick="autoCleanExpired()" style="background: var(--warning); color: white;">
-<i class="fas fa-broom"></i> Clean Expired
-</button>
-
-<button class="btn btn-primary btn-sm" onclick="exportData()">
-<i class="fas fa-file-export"></i> Export Log
-</button>
-<button class="btn btn-danger btn-sm" id="batchDeleteBtn" style="display:none;" onclick="batchDelete()">
-<i class="fas fa-eraser"></i> Purge (<span id="selectCount">0</span>)
-</button>
+    <button class="btn btn-primary btn-sm" onclick="exportData()">
+        <i class="fas fa-file-export"></i> Export Log
+    </button>
+    <button class="btn btn-danger btn-sm" id="batchDeleteBtn" style="display:none;" onclick="batchDelete()">
+        <i class="fas fa-eraser"></i> Purge (<span id="selectCount">0</span>)
+    </button>
 </div>
 </div>
 
 <div class="table-container">
 <table id="dataTable">
-<thead>
-<tr>
-<th width="40"><input type="checkbox" onchange="toggleSelectAll(this)"></th>
-<th onclick="sortData('TankiName')" title="Click to sort">Node ID <i class="fas fa-sort"></i></th>
-<th onclick="sortData('Key')">Auth Signature <i class="fas fa-sort"></i></th>
-<th onclick="sortData('Password')" id="passwordColumn">Payload / Config <i class="fas fa-sort"></i></th>
-<th>Hardware Info</th>
-<th>Device Hash</th>
-<th onclick="sortData('LastUpdate')">Sync Time <i class="fas fa-sort"></i></th>
-<th>Time Details</th>
-<th width="80">Opts</th>
-</tr>
-</thead>
-<tbody id="dataBody">
-<!-- JS Render -->
-</tbody>
+    <thead>
+        <tr>
+            <th width="40"><input type="checkbox" onchange="toggleSelectAll(this)"></th>
+            <th onclick="sortData('TankiName')" title="Click to sort">Node ID <i class="fas fa-sort"></i></th>
+            <th onclick="sortData('Key')">Auth Signature <i class="fas fa-sort"></i></th>
+            <th onclick="sortData('Password')" id="passwordColumn">Payload / Config <i class="fas fa-sort"></i></th>
+            <th>Hardware Info</th>
+            <th>Device Hash</th>
+            <th onclick="sortData('LastUpdate')">Sync Time <i class="fas fa-sort"></i></th>
+            <th>Time Details</th>
+            <th width="80">Opts</th>
+        </tr>
+    </thead>
+    <tbody id="dataBody">
+        <!-- JS Render -->
+    </tbody>
 </table>
 </div>
 
 <!-- 分页 -->
 <div class="pagination">
 <div class="page-info">
-<span>Total <span id="totalFilterCount">0</span> records</span>
-<select id="pageSize" onchange="changePageSize()" class="form-select" style="border: 1px solid var(--border); border-radius: 4px; padding: 2px; margin-left: 8px; font-size: 0.8rem;">
-<option value="10">10</option>
-<option value="20" selected>20</option>
-<option value="50">50</option>
-<option value="100">100</option>
-</select>
+    <span>Total <span id="totalFilterCount">0</span> records</span>
+    <select id="pageSize" onchange="changePageSize()" class="form-select" style="border: 1px solid var(--border); border-radius: 4px; padding: 2px; margin-left: 8px; font-size: 0.8rem;">
+        <option value="10">10</option>
+        <option value="20" selected>20</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+    </select>
 </div>
 <div class="page-controls" id="pageControls"></div>
 </div>
@@ -333,7 +333,7 @@ text-shadow: none;
 <div class="modal-header">
 <h3><i class="fas fa-terminal"></i> Raw Data Stream</h3>
 <button class="btn btn-ghost btn-sm" onclick="openJsonHelpModal()" title="查看字段说明" style="margin-right: 8px;">
-<i class="fas fa-question-circle"></i> 说明
+    <i class="fas fa-question-circle"></i> 说明
 </button>
 <button class="btn btn-ghost btn-icon" onclick="closeModal()"><i class="fas fa-times"></i></button>
 </div>
@@ -353,69 +353,69 @@ text-shadow: none;
 </div>
 <div class="json-viewer" style="background: var(--bg-body); color: var(--text-main); font-size: 0.85rem; padding: 20px;">
 <div style="display: grid; gap: 16px;">
-<div style="border-left: 3px solid var(--primary); padding-left: 12px;">
-<strong style="color: var(--primary);">TankiName</strong>
-<div style="margin-top: 4px;">游戏内显示名称</div>
-</div>
-<div style="border-left: 3px solid var(--primary); padding-left: 12px;">
-<strong style="color: var(--primary);">Key</strong>
-<div style="margin-top: 4px;">登录密钥（用于Key模式登录）</div>
-</div>
-<div style="border-left: 3px solid var(--primary); padding-left: 12px;">
-<strong style="color: var(--primary);">Token</strong>
-<div style="margin-top: 4px;">会话令牌（用于Token模式登录，有效期约5分钟）</div>
-</div>
-<div style="border-left: 3px solid var(--primary); padding-left: 12px;">
-<strong style="color: var(--primary);">Password</strong>
-<div style="margin-top: 4px;">账号密码（用于密码模式登录）</div>
-</div>
-<div style="border-left: 3px solid var(--primary); padding-left: 12px;">
-<strong style="color: var(--primary);">Fingerprint</strong>
-<div style="margin-top: 4px;">设备指纹（用于识别和绑定设备）</div>
-</div>
-<div style="border-left: 3px solid var(--success); padding-left: 12px;">
-<strong style="color: var(--success);">LastUpdate</strong>
-<div style="margin-top: 4px;">最后更新时间（所有字段更新时间）</div>
-</div>
-<div style="border-left: 3px solid var(--success); padding-left: 12px;">
-<strong style="color: var(--success);">KeyUpdate</strong>
-<div style="margin-top: 4px;">Key字段最后更新时间</div>
-</div>
-<div style="border-left: 3px solid var(--success); padding-left: 12px;">
-<strong style="color: var(--success);">TokenUpdate</strong>
-<div style="margin-top: 4px;">Token字段最后更新时间</div>
-</div>
-<div style="border-left: 3px solid var(--success); padding-left: 12px;">
-<strong style="color: var(--success);">PasswordUpdate</strong>
-<div style="margin-top: 4px;">Password字段最后更新时间</div>
-</div>
-<div style="border-left: 3px solid var(--warning); padding-left: 12px;">
-<strong style="color: var(--warning);">UserConfig</strong>
-<div style="margin-top: 4px;">
-<div>用户配置信息：</div>
-<ul style="margin: 8px 0 0 20px; padding: 0;">
-<li><code>userAgent</code>: 浏览器标识</li>
-<li><code>platform</code>: 操作系统平台</li>
-<li><code>language</code>: 系统语言</li>
-<li><code>screen</code>: 屏幕信息（分辨率、颜色深度、像素比）</li>
-<li><code>window</code>: 窗口尺寸</li>
-<li><code>timezone</code>: 时区</li>
-<li><code>hardwareConcurrency</code>: CPU核心数</li>
-<li><code>deviceMemory</code>: 设备内存（GB）</li>
-</ul>
-</div>
-</div>
-<div style="border-left: 3px solid var(--warning); padding-left: 12px;">
-<strong style="color: var(--warning);">HardwareInfo</strong>
-<div style="margin-top: 4px;">
-<div>硬件信息：</div>
-<ul style="margin: 8px 0 0 20px; padding: 0;">
-<li><code>hash</code>: 硬件哈希值（设备指纹）</li>
-<li><code>gpu</code>: GPU信息（厂商、渲染器、版本等）</li>
-<li><code>renderBase64</code>: WebGL渲染截图（Base64编码）</li>
-</ul>
-</div>
-</div>
+    <div style="border-left: 3px solid var(--primary); padding-left: 12px;">
+        <strong style="color: var(--primary);">TankiName</strong>
+        <div style="margin-top: 4px;">游戏内显示名称</div>
+    </div>
+    <div style="border-left: 3px solid var(--primary); padding-left: 12px;">
+        <strong style="color: var(--primary);">Key</strong>
+        <div style="margin-top: 4px;">登录密钥（用于Key模式登录）</div>
+    </div>
+    <div style="border-left: 3px solid var(--primary); padding-left: 12px;">
+        <strong style="color: var(--primary);">Token</strong>
+        <div style="margin-top: 4px;">会话令牌（用于Token模式登录，有效期约5分钟）</div>
+    </div>
+    <div style="border-left: 3px solid var(--primary); padding-left: 12px;">
+        <strong style="color: var(--primary);">Password</strong>
+        <div style="margin-top: 4px;">账号密码（用于密码模式登录）</div>
+    </div>
+    <div style="border-left: 3px solid var(--primary); padding-left: 12px;">
+        <strong style="color: var(--primary);">Fingerprint</strong>
+        <div style="margin-top: 4px;">设备指纹（用于识别和绑定设备）</div>
+    </div>
+    <div style="border-left: 3px solid var(--success); padding-left: 12px;">
+        <strong style="color: var(--success);">LastUpdate</strong>
+        <div style="margin-top: 4px;">最后更新时间（所有字段更新时间）</div>
+    </div>
+    <div style="border-left: 3px solid var(--success); padding-left: 12px;">
+        <strong style="color: var(--success);">KeyUpdate</strong>
+        <div style="margin-top: 4px;">Key字段最后更新时间</div>
+    </div>
+    <div style="border-left: 3px solid var(--success); padding-left: 12px;">
+        <strong style="color: var(--success);">TokenUpdate</strong>
+        <div style="margin-top: 4px;">Token字段最后更新时间</div>
+    </div>
+    <div style="border-left: 3px solid var(--success); padding-left: 12px;">
+        <strong style="color: var(--success);">PasswordUpdate</strong>
+        <div style="margin-top: 4px;">Password字段最后更新时间</div>
+    </div>
+    <div style="border-left: 3px solid var(--warning); padding-left: 12px;">
+        <strong style="color: var(--warning);">UserConfig</strong>
+        <div style="margin-top: 4px;">
+            <div>用户配置信息：</div>
+            <ul style="margin: 8px 0 0 20px; padding: 0;">
+                <li><code>userAgent</code>: 浏览器标识</li>
+                <li><code>platform</code>: 操作系统平台</li>
+                <li><code>language</code>: 系统语言</li>
+                <li><code>screen</code>: 屏幕信息（分辨率、颜色深度、像素比）</li>
+                <li><code>window</code>: 窗口尺寸</li>
+                <li><code>timezone</code>: 时区</li>
+                <li><code>hardwareConcurrency</code>: CPU核心数</li>
+                <li><code>deviceMemory</code>: 设备内存（GB）</li>
+            </ul>
+        </div>
+    </div>
+    <div style="border-left: 3px solid var(--warning); padding-left: 12px;">
+        <strong style="color: var(--warning);">HardwareInfo</strong>
+        <div style="margin-top: 4px;">
+            <div>硬件信息：</div>
+            <ul style="margin: 8px 0 0 20px; padding: 0;">
+                <li><code>hash</code>: 硬件哈希值（设备指纹）</li>
+                <li><code>gpu</code>: GPU信息（厂商、渲染器、版本等）</li>
+                <li><code>renderBase64</code>: WebGL渲染截图（Base64编码）</li>
+            </ul>
+        </div>
+    </div>
 </div>
 </div>
 </div>
@@ -432,26 +432,26 @@ text-shadow: none;
 </div>
 <div style="display: flex; flex-direction: column; gap: 16px;">
 <div>
-<label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase;">设备指纹</label>
-<div id="editMappingHash" style="padding: 10px; background: var(--bg-body); border-radius: 6px; font-family: 'Consolas', monospace; font-size: 0.85rem; color: var(--text-main); word-break: break-all;"></div>
+    <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase;">设备指纹</label>
+    <div id="editMappingHash" style="padding: 10px; background: var(--bg-body); border-radius: 6px; font-family: 'Consolas', monospace; font-size: 0.85rem; color: var(--text-main); word-break: break-all;"></div>
 </div>
 <div>
-<label for="editMappingName" style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase;">备注名称</label>
-<input type="text" id="editMappingName" class="form-control" placeholder="输入设备备注名称..." style="padding: 10px 12px;">
+    <label for="editMappingName" style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase;">备注名称</label>
+    <input type="text" id="editMappingName" class="form-control" placeholder="输入设备备注名称..." style="padding: 10px 12px;">
 </div>
 <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-body); border-radius: 6px;">
-<span style="font-size: 0.85rem; font-weight: 600; color: var(--text-sub);">启用状态</span>
-<div style="flex: 1;"></div>
-<label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-<input type="checkbox" id="editMappingStatus" style="width: 18px; height: 18px; cursor: pointer;">
-<span id="editMappingStatusText" style="font-size: 0.85rem; color: var(--text-main);">启用</span>
-</label>
+    <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-sub);">启用状态</span>
+    <div style="flex: 1;"></div>
+    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+        <input type="checkbox" id="editMappingStatus" style="width: 18px; height: 18px; cursor: pointer;">
+        <span id="editMappingStatusText" style="font-size: 0.85rem; color: var(--text-main);">启用</span>
+    </label>
 </div>
 <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px;">
-<button class="btn btn-ghost" onclick="closeEditMappingModal()">取消</button>
-<button class="btn btn-primary" onclick="saveMapping()">
-<i class="fas fa-save"></i> 保存
-</button>
+    <button class="btn btn-ghost" onclick="closeEditMappingModal()">取消</button>
+    <button class="btn btn-primary" onclick="saveMapping()">
+        <i class="fas fa-save"></i> 保存
+    </button>
 </div>
 </div>
 </div>
@@ -545,9 +545,9 @@ const data = await res.json();
 const content = JSON.parse(decodeURIComponent(escape(atob(data.content)))); 
 
 state.originalData = content.map((item, index) => ({
-...item, 
-_id: index, 
-LastUpdate: item.LastUpdate || '' 
+    ...item, 
+    _id: index, 
+    LastUpdate: item.LastUpdate || '' 
 }));
 
 state.selectedIds.clear();
@@ -578,7 +578,7 @@ state.filteredData = state.originalData.filter(item => {
 // 优先使用 HardwareInfo.hash，其次使用 Fingerprint
 const deviceHash = item.HardwareInfo?.hash || item.Fingerprint;
 const matchSearch = (item.TankiName || '').toLowerCase().includes(query) ||
-(deviceHash || '').toLowerCase().includes(query);
+                (deviceHash || '').toLowerCase().includes(query);
 
 let matchType = true;
 if (state.filterMode === 'hasPass') matchType = !!item.Password;
@@ -590,9 +590,9 @@ return matchSearch && matchType;
 
 state.filteredData.sort((a, b) => {
 if (state.sortField === 'LastUpdate') {
-const timeA = new Date(a.LastUpdate).getTime() || 0;
-const timeB = new Date(b.LastUpdate).getTime() || 0;
-return state.sortOrder === 'asc' ? timeA - timeB : timeB - timeA;
+    const timeA = new Date(a.LastUpdate).getTime() || 0;
+    const timeB = new Date(b.LastUpdate).getTime() || 0;
+    return state.sortOrder === 'asc' ? timeA - timeB : timeB - timeA;
 }
 let valA = (a[state.sortField] || '').toString().toLowerCase();
 let valB = (b[state.sortField] || '').toString().toLowerCase();
@@ -640,22 +640,22 @@ const authParts = [];
 
 // 测试服：可以同时显示 Token、Key、Password，全部清晰显示
 if (isTestServer) {
-if (item.Token) {
-authParts.push(createSecretHtml(item.Token, 'URL', true, true));
-}
-if (item.Password) {
-authParts.push(createSecretHtml(item.Password, 'Pwd', false, true));
-}
-if (item.Key) {
-authParts.push(createSecretHtml(item.Key, 'Sig', false, true));
-}
+    if (item.Token) {
+        authParts.push(createSecretHtml(item.Token, 'URL', true, true));
+    }
+    if (item.Password) {
+        authParts.push(createSecretHtml(item.Password, 'Pwd', false, true));
+    }
+    if (item.Key) {
+        authParts.push(createSecretHtml(item.Key, 'Sig', false, true));
+    }
 } else {
-// 正式服：优先级 Token > Key，Password 单独列显示
-if (item.Key) {
-authParts.push(createSecretHtml(item.Key, 'Sig'));
-} else if (item.Token) {
-authParts.push(createSecretHtml(item.Token, 'Sess', true, false));
-}
+    // 正式服：优先级 Token > Key，Password 单独列显示
+    if (item.Key) {
+        authParts.push(createSecretHtml(item.Key, 'Sig'));
+    } else if (item.Token) {
+        authParts.push(createSecretHtml(item.Token, 'Sess', true, false));
+    }
 }
 
 authCol = authParts.length > 0 ? authParts.join('<br>') : '<span style="color:#cbd5e1">-</span>';
@@ -664,10 +664,10 @@ const timeBadgesHtml = createTimeBadges(item);
 
 // TankiName使用secret-cell统一样式，支持点击复制
 const nameHtml = `<div class="secret-cell">
-<div class="secret-value" style="background:var(--bg-body); color:var(--primary); font-weight:600; max-width:120px;"
-data-val="${escapeHtml(item.TankiName)}"
-onclick="copyText(this.dataset.val)"
-title="Click to copy">${escapeHtml(item.TankiName)}</div>
+    <div class="secret-value" style="background:var(--bg-body); color:var(--primary); font-weight:600; max-width:120px;"
+        data-val="${escapeHtml(item.TankiName)}"
+        onclick="copyText(this.dataset.val)"
+        title="Click to copy">${escapeHtml(item.TankiName)}</div>
 </div>`;
 
 // --- 修改开始：带状态颜色区分版 ---
@@ -678,70 +678,70 @@ const mapping = deviceHash ? getMappedName(item) : null; // 获取映射对象
 let fingerprintHtml = '<span style="color:#cbd5e1">-</span>';
 
 if (deviceHash) {
-let contentHtml = '';
-let btnText = '';
-let btnColor = '';
+    let contentHtml = '';
+    let btnText = '';
+    let btnColor = '';
 
-if (mapping) {
-// --- 有备注：根据状态判断颜色 ---
-const isEnabled = mapping.status === 1;
-const nameColor = isEnabled ? '#10b981' : '#ef4444'; // 启用=绿色，禁用=红色
-const statusIcon = isEnabled ? '<i class="fas fa-check-circle" style="font-size:0.75rem;"></i>' : '<i class="fas fa-ban" style="font-size:0.75rem;"></i>';
+    if (mapping) {
+        // --- 有备注：根据状态判断颜色 ---
+        const isEnabled = mapping.status === 1;
+        const nameColor = isEnabled ? '#10b981' : '#ef4444'; // 启用=绿色，禁用=红色
+        const statusIcon = isEnabled ? '<i class="fas fa-check-circle" style="font-size:0.75rem;"></i>' : '<i class="fas fa-ban" style="font-size:0.75rem;"></i>';
 
-btnText = '修改';
-btnColor = 'var(--text-sub)';
+        btnText = '修改';
+        btnColor = 'var(--text-sub)';
 
-contentHtml = `
-<div style="display:flex; flex-direction:column; align-items:flex-start; line-height:1.2;">
-<span style="color:${nameColor}; font-weight:600; font-size:0.9rem;" title="状态: ${isEnabled ? '启用' : '禁用 (Status: 0)'}">
-${statusIcon} ${escapeHtml(mapping.name)}
-</span>
-<span style="font-size:0.75rem; color:#94a3b8; cursor:pointer;"
-title="点击复制完整指纹: ${escapeHtml(deviceHash)}"
-onclick="copyText('${escapeHtml(deviceHash)}')">
-${escapeHtml(deviceHash.substring(0, 8))}...
-</span>
-</div>`;
-} else {
-// --- 无备注 ---
-btnText = '备注';
-btnColor = 'var(--primary)';
-contentHtml = `
-<div class="secret-value"
-style="max-width: 100px; overflow:hidden; text-overflow:ellipsis; color:var(--text-main);"
-onclick="copyText('${escapeHtml(deviceHash)}')"
-title="点击复制: ${escapeHtml(deviceHash)}">
-${escapeHtml(deviceHash.substring(0, 10))}...
-</div>`;
-}
+        contentHtml = `
+            <div style="display:flex; flex-direction:column; align-items:flex-start; line-height:1.2;">
+                <span style="color:${nameColor}; font-weight:600; font-size:0.9rem;" title="状态: ${isEnabled ? '启用' : '禁用 (Status: 0)'}">
+                    ${statusIcon} ${escapeHtml(mapping.name)}
+                </span>
+                <span style="font-size:0.75rem; color:#94a3b8; cursor:pointer;"
+                    title="点击复制完整指纹: ${escapeHtml(deviceHash)}"
+                    onclick="copyText('${escapeHtml(deviceHash)}')">
+                    ${escapeHtml(deviceHash.substring(0, 8))}...
+                </span>
+            </div>`;
+    } else {
+        // --- 无备注 ---
+        btnText = '备注';
+        btnColor = 'var(--primary)';
+        contentHtml = `
+            <div class="secret-value"
+                style="max-width: 100px; overflow:hidden; text-overflow:ellipsis; color:var(--text-main);"
+                onclick="copyText('${escapeHtml(deviceHash)}')"
+                title="点击复制: ${escapeHtml(deviceHash)}">
+                ${escapeHtml(deviceHash.substring(0, 10))}...
+            </div>`;
+    }
 
-// 组合 HTML
-fingerprintHtml = `
-<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-${contentHtml}
-<button class="btn btn-ghost btn-sm"
-style="font-size:0.75rem; padding: 2px 6px; height:auto; color:${btnColor}; border:1px solid var(--border);"
-onclick="editMapping(this, '${escapeHtml(deviceHash)}', '${escapeHtml(mapping ? mapping.name : '')}', ${mapping ? mapping.status : 1})">
-${btnText}
-</button>
-</div>
-`;
+    // 组合 HTML
+    fingerprintHtml = `
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+            ${contentHtml}
+            <button class="btn btn-ghost btn-sm"
+                    style="font-size:0.75rem; padding: 2px 6px; height:auto; color:${btnColor}; border:1px solid var(--border);"
+                    onclick="editMapping(this, '${escapeHtml(deviceHash)}', '${escapeHtml(mapping ? mapping.name : '')}', ${mapping ? mapping.status : 1})">
+                ${btnText}
+            </button>
+        </div>
+    `;
 }
 // --- 修改结束 ---
 
 tr.innerHTML = `
-<td><input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelect(${item._id})"></td>
-<td>${nameHtml}</td>
-<td>${authCol}</td>
-${!isTestServer ? `<td>${item.密码 ? createSecretHtml(item.密码, 'Cfg') : '<span style="color:#cbd5e1">-</span>'}</td>` : ''}
-<td>${createHardwareInfoHtml(item)}</td>
-<td>${fingerprintHtml}</td>
-<td style="font-size:0.8rem; color:var(--text-sub);">${formatDate(item.LastUpdate)}</td>
-<td><div class="time-badges">${timeBadgesHtml}</div></td>
-<td>
-<button class="btn btn-ghost btn-sm btn-icon" onclick="viewJson(${item._id})" title="Raw View"><i class="fas fa-code"></i></button>
-<button class="btn btn-ghost btn-sm btn-icon" style="color:var(--danger)" onclick="deleteItem(${item._id})" title="Purge"><i class="fas fa-times"></i></button>
-</td>
+    <td><input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelect(${item._id})"></td>
+    <td>${nameHtml}</td>
+    <td>${authCol}</td>
+    ${!isTestServer ? `<td>${item.Password ? createSecretHtml(item.Password, 'Cfg') : '<span style="color:#cbd5e1">-</span>'}</td>` : ''}
+    <td>${createHardwareInfoHtml(item)}</td>
+    <td>${fingerprintHtml}</td>
+    <td style="font-size:0.8rem; color:var(--text-sub);">${formatDate(item.LastUpdate)}</td>
+    <td><div class="time-badges">${timeBadgesHtml}</div></td>
+    <td>
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="viewJson(${item._id})" title="Raw View"><i class="fas fa-code"></i></button>
+        <button class="btn btn-ghost btn-sm btn-icon" style="color:var(--danger)" onclick="deleteItem(${item._id})" title="Purge"><i class="fas fa-times"></i></button>
+    </td>
 `;
 tbody.appendChild(tr);
 });
@@ -758,19 +758,19 @@ const now = Date.now();
 const getTimeInfo = (timeStr, type) => {
 if (!timeStr) return null;
 try {
-const d = new Date(timeStr);
-if (isNaN(d.getTime())) return null;
-const diffMinutes = (now - d.getTime()) / 60000;
+    const d = new Date(timeStr);
+    if (isNaN(d.getTime())) return null;
+    const diffMinutes = (now - d.getTime()) / 60000;
 
-let relative = '';
-if (diffMinutes < 1) relative = '刚刚';
-else if (diffMinutes < 60) relative = `${Math.floor(diffMinutes)}分`;
-else if (diffMinutes < 1440) relative = `${Math.floor(diffMinutes/60)}时`;
-else relative = `${Math.floor(diffMinutes/1440)}天`;
+    let relative = '';
+    if (diffMinutes < 1) relative = '刚刚';
+    else if (diffMinutes < 60) relative = `${Math.floor(diffMinutes)}分`;
+    else if (diffMinutes < 1440) relative = `${Math.floor(diffMinutes/60)}时`;
+    else relative = `${Math.floor(diffMinutes/1440)}天`;
 
-const isExpired = type === 'token' && diffMinutes > 5;
+    const isExpired = type === 'token' && diffMinutes > 5;
 
-return { short: relative, full: timeStr, isExpired };
+    return { short: relative, full: timeStr, isExpired };
 } catch { return null; }
 };
 
@@ -805,41 +805,41 @@ let actionBtn = '';
 
 // Token是URL时显示绿色+外部链接
 if (val.startsWith('http://') || val.startsWith('https://')) {
-const shortUrl = val.length > 50 ? val.substring(0, 50) + '...' : val;
-displayStyle = 'color:var(--success); font-weight:600; max-width:200px;';
-actionBtn = `<a href="${val}" target="_blank" title="打开测试服登录链接" style="color:var(--success); margin-left:4px;"><i class="fas fa-external-link-alt"></i></a>`;
+    const shortUrl = val.length > 50 ? val.substring(0, 50) + '...' : val;
+    displayStyle = 'color:var(--success); font-weight:600; max-width:200px;';
+    actionBtn = `<a href="${val}" target="_blank" title="打开测试服登录链接" style="color:var(--success); margin-left:4px;"><i class="fas fa-external-link-alt"></i></a>`;
 } else {
-// 非URL的Key/Password也清晰显示
-displayStyle = 'color:var(--text); font-weight:500; max-width:180px;';
+    // 非URL的Key/Password也清晰显示
+    displayStyle = 'color:var(--text); font-weight:500; max-width:180px;';
 }
 
 // 类型标签显示名称
 const typeLabels = {
-'URL': 'URL',
-'Pwd': '密码',
-'Sig': 'Key'
+    'URL': 'URL',
+    'Pwd': '密码',
+    'Sig': 'Key'
 };
 // 类型标签颜色
 const typeColors = {
-'URL': '#3498db',
-'Pwd': '#27ae60',
-'Sig': '#9333ea'
+    'URL': '#3498db',
+    'Pwd': '#27ae60',
+    'Sig': '#9333ea'
 };
 const typeColor = typeColors[type] || '#64748b';
 const typeLabel = typeLabels[type] || type;
 
 return `
-<div class="secret-cell" style="flex-direction: column; align-items: flex-start; gap: 2px;">
-<div style="display: flex; align-items: center; gap: 6px; width: 100%;">
-<span style="font-size: 0.7rem; color: ${typeColor}; font-weight: 700; background: rgba(0,0,0,0.05); padding: 1px 6px; border-radius: 2px; min-width: 32px; text-align: center;">${typeLabel}</span>
-<div class="secret-value"
-style="${displayStyle}"
-data-val="${escapeHtml(val)}"
-onclick="copyText(this.dataset.val)"
-title="[${type}] 点击复制">${escapeHtml(val)}</div>
-${actionBtn}
-</div>
-</div>
+    <div class="secret-cell" style="flex-direction: column; align-items: flex-start; gap: 2px;">
+        <div style="display: flex; align-items: center; gap: 6px; width: 100%;">
+            <span style="font-size: 0.7rem; color: ${typeColor}; font-weight: 700; background: rgba(0,0,0,0.05); padding: 1px 6px; border-radius: 2px; min-width: 32px; text-align: center;">${typeLabel}</span>
+            <div class="secret-value"
+                style="${displayStyle}"
+                data-val="${escapeHtml(val)}"
+                onclick="copyText(this.dataset.val)"
+                title="[${type}] 点击复制">${escapeHtml(val)}</div>
+            ${actionBtn}
+        </div>
+    </div>
 `;
 }
 
@@ -855,11 +855,11 @@ actionBtn = `<a href="https://3dtank.com/play/?token=${encodeURIComponent(val)}&
 
 return `
 <div class="secret-cell">
-<div class="secret-value ${blurClass}"
-data-val="${escapeHtml(val)}"
-onclick="copyText(this.dataset.val)"
-title="Click to Copy">${displayVal}</div>
-${actionBtn}
+    <div class="secret-value ${blurClass}"
+        data-val="${escapeHtml(val)}"
+        onclick="copyText(this.dataset.val)"
+        title="Click to Copy">${displayVal}</div>
+    ${actionBtn}
 </div>
 `;
 }
@@ -876,9 +876,9 @@ const btn = document.createElement('button');
 btn.className = `page-btn ${active ? 'active' : ''}`;
 btn.innerText = text;
 btn.onclick = () => {
-state.currentPage = page;
-renderTable();
-renderPagination();
+    state.currentPage = page;
+    renderTable();
+    renderPagination();
 };
 return btn;
 };
@@ -1000,14 +1000,14 @@ const contentStr = JSON.stringify(dataToSave, null, 2);
 const encodedContent = btoa(unescape(encodeURIComponent(contentStr)));
 
 const putRes = await fetch(url, {
-method: 'PUT',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({
-access_token: state.token,
-content: encodedContent,
-sha: getData.sha,
-message: `Purge ${idsToDelete.length} logs via Monitor`
-})
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        access_token: state.token,
+        content: encodedContent,
+        sha: getData.sha,
+        message: `Purge ${idsToDelete.length} logs via Monitor`
+    })
 });
 
 if (!putRes.ok) throw new Error('Sync Failed');
@@ -1041,7 +1041,7 @@ ext = 'json';
 } else {
 const headers = ['TankiName', 'Key', 'Token', 'Password', 'Fingerprint', 'LastUpdate'];
 content = headers.join(',') + '\n' + data.map(row => {
-return headers.map(fieldName => `"${(row[fieldName] || '').replace(/"/g, '""')}"`).join(',');
+    return headers.map(fieldName => `"${(row[fieldName] || '').replace(/"/g, '""')}"`).join(',');
 }).join('\n');
 mime = 'text/csv';
 ext = 'csv';
@@ -1097,7 +1097,7 @@ if (hwInfo.gpu) hwLines.push(`├─ GPU: ${translateGPU(hwInfo.gpu)}`);
 if (hwInfo.memory) hwLines.push(`├─ RAM: ${hwInfo.memory}`);
 if (hwInfo.resolution) hwLines.push(`└─ Screen: ${hwInfo.resolution}`);
 if (hwLines.length > 0) {
-hardwareSnapshot = `\n╔════════════════════════════════════╗\n║     Hardware Snapshot              ║\n╠════════════════════════════════════╣\n${hwLines.join('\n')}\n╚════════════════════════════════════╝\n`;
+    hardwareSnapshot = `\n╔════════════════════════════════════╗\n║     Hardware Snapshot              ║\n╠════════════════════════════════════╣\n${hwLines.join('\n')}\n╚════════════════════════════════════╝\n`;
 }
 }
 
@@ -1129,11 +1129,11 @@ lines.push('{');
 for (const [key, value] of Object.entries(obj)) {
 const comment = comments[key] || '';
 const valueStr = typeof value === 'object'
-? JSON.stringify(value, null, 4).split('\n').map(l => '    ' + l).join('\n')
-: JSON.stringify(value);
+    ? JSON.stringify(value, null, 4).split('\n').map(l => '    ' + l).join('\n')
+    : JSON.stringify(value);
 
 if (comment) {
-lines.push(`    ${comment}`);
+    lines.push(`    ${comment}`);
 }
 lines.push(`    "${key}": ${valueStr},`);
 }
@@ -1241,7 +1241,7 @@ return gpuMap[coreGpuStr];
 // 尝试包含匹配
 for (const [key, value] of Object.entries(gpuMap)) {
 if (coreGpuStr.includes(key)) {
-return value;
+    return value;
 }
 }
 
@@ -1250,7 +1250,7 @@ let translated = gpuStr;
 if (coreGpuStr.includes('NVIDIA GeForce')) {
 translated = coreGpuStr.replace('NVIDIA GeForce', 'NVIDIA GeForce');
 if (coreGpuStr.includes('Laptop GPU')) {
-translated += ' (笔记本显卡)';
+    translated += ' (笔记本显卡)';
 }
 } else if (coreGpuStr.includes('AMD Radeon')) {
 translated = coreGpuStr.replace('AMD Radeon', 'AMD Radeon');
@@ -1269,8 +1269,8 @@ function copyText(txt) {
 if (!txt) return showToast('Nothing to copy', 'error');
 if (navigator.clipboard && window.isSecureContext) {
 navigator.clipboard.writeText(txt)
-.then(() => showToast('Node ID copied', 'success'))
-.catch(() => fallbackCopy(txt));
+    .then(() => showToast('Node ID copied', 'success'))
+    .catch(() => fallbackCopy(txt));
 } else {
 fallbackCopy(txt);
 }
@@ -1347,7 +1347,7 @@ document.addEventListener('DOMContentLoaded', function() {
 const statusCheckbox = document.getElementById('editMappingStatus');
 if (statusCheckbox) {
 statusCheckbox.addEventListener('change', function() {
-document.getElementById('editMappingStatusText').textContent = this.checked ? '启用' : '禁用';
+    document.getElementById('editMappingStatusText').textContent = this.checked ? '启用' : '禁用';
 });
 }
 });
@@ -1391,19 +1391,19 @@ const list = jsonContent["5"];
 const existingIndex = list.findIndex(item => item.id === hash);
 
 if (existingIndex !== -1) {
-// --- 修改场景 ---
-// 只更新名字，完全不动 status 字段，保留原有的启用/禁用状态
-list[existingIndex].name = newName;
-console.log(`更新备注: ${newName}, 状态保持原样: ${list[existingIndex].status}`);
+    // --- 修改场景 ---
+    // 只更新名字，完全不动 status 字段，保留原有的启用/禁用状态
+    list[existingIndex].name = newName;
+    console.log(`更新备注: ${newName}, 状态保持原样: ${list[existingIndex].status}`);
 } else {
-// --- 新增场景 ---
-// 写入 ID、名字，并强制将 status 设为 0 (禁用)
-list.push({
-"id": hash,
-"name": newName,
-"status": 0 // <--- 这里实现了你的需求：新增默认禁用
-});
-console.log(`新增备注: ${newName}, 默认状态设为 0 (禁用)`);
+    // --- 新增场景 ---
+    // 写入 ID、名字，并强制将 status 设为 0 (禁用)
+    list.push({
+        "id": hash,
+        "name": newName,
+        "status": 0 // <--- 这里实现了你的需求：新增默认禁用
+    });
+    console.log(`新增备注: ${newName}, 默认状态设为 0 (禁用)`);
 }
 
 // 重新打包
@@ -1412,14 +1412,14 @@ const encodedContent = btoa(unescape(encodeURIComponent(newContentStr)));
 
 // 推送至 Gitee
 const putRes = await fetch(url, {
-method: "PUT",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({
-access_token: state.token,
-content: encodedContent,
-sha: getData.sha,
-message: `Update map: ${newName} (Status: ${existingIndex !== -1 ? 'Keep' : '0'})`
-})
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+        access_token: state.token,
+        content: encodedContent,
+        sha: getData.sha,
+        message: `Update map: ${newName} (Status: ${existingIndex !== -1 ? 'Keep' : '0'})`
+    })
 });
 
 if (!putRes.ok) throw new Error("写入失败");
@@ -1451,12 +1451,12 @@ try {
 const url = state.urls.idMap;
 const res = await fetch(url);
 if (res.ok) {
-const data = await res.json();
-// API 返回的数据需要解码 content 字段（Base64 转 UTF-8）
-const content = decodeURIComponent(escape(atob(data.content)));
-state.idMapData = JSON.parse(content);
-console.log('ID映射表加载成功，找到', state.idMapData[5] ? state.idMapData[5].length : 0, '条记录');
-renderTable(); // 重新渲染表格以应用映射
+    const data = await res.json();
+    // API 返回的数据需要解码 content 字段（Base64 转 UTF-8）
+    const content = decodeURIComponent(escape(atob(data.content)));
+    state.idMapData = JSON.parse(content);
+    console.log('ID映射表加载成功，找到', state.idMapData[5] ? state.idMapData[5].length : 0, '条记录');
+    renderTable(); // 重新渲染表格以应用映射
 }
 } catch (err) {
 console.error('ID映射表加载失败:', err);
@@ -1475,12 +1475,12 @@ const mapArray = state.idMapData[5];
 let hwHash = null;
 if (item.HardwareInfo) {
 if (typeof item.HardwareInfo === 'string') {
-try {
-const parsed = JSON.parse(item.HardwareInfo);
-hwHash = parsed.hash;
-} catch(e) {}
+    try {
+        const parsed = JSON.parse(item.HardwareInfo);
+        hwHash = parsed.hash;
+    } catch(e) {}
 } else {
-hwHash = item.HardwareInfo.hash;
+    hwHash = item.HardwareInfo.hash;
 }
 }
 
@@ -1502,9 +1502,9 @@ match = mapArray.find(entry => entry.id === oldFingerprint);
 // 4. 返回结果
 if (match && match.name) {
 return {
-name: match.name,
-// 如果 status 不存在，默认为 1 (启用)
-status: (match.status === undefined || match.status === 1) ? 1 : 0
+    name: match.name,
+    // 如果 status 不存在，默认为 1 (启用)
+    status: (match.status === undefined || match.status === 1) ? 1 : 0
 };
 }
 
@@ -1541,89 +1541,89 @@ const result = { gpu: '', memory: '', cpu: '', resolution: '' };
 // 从 HardwareInfo 字段提取
 if (item.HardwareInfo) {
 try {
-const hw = typeof item.HardwareInfo === 'string'
-? JSON.parse(item.HardwareInfo)
-: item.HardwareInfo;
+    const hw = typeof item.HardwareInfo === 'string'
+        ? JSON.parse(item.HardwareInfo)
+        : item.HardwareInfo;
 
-// 提取显卡信息（多种可能的字段名），确保是字符串
-let gpuValue = hw.gpu || hw.videoCard || hw.graphics || hw.GPU || hw.video || hw.adapter || '';
+    // 提取显卡信息（多种可能的字段名），确保是字符串
+    let gpuValue = hw.gpu || hw.videoCard || hw.graphics || hw.GPU || hw.video || hw.adapter || '';
 
-// 如果是对象，尝试从 renderer 字段提取
-if (typeof gpuValue === 'object' && gpuValue !== null) {
-gpuValue = gpuValue.renderer || gpuValue.name || gpuValue.model || gpuValue.vendor || JSON.stringify(gpuValue);
-}
-// 确保转换为字符串，并过滤掉无效值
-result.gpu = (gpuValue && gpuValue !== '[object Object]') ? String(gpuValue) : '';
+    // 如果是对象，尝试从 renderer 字段提取
+    if (typeof gpuValue === 'object' && gpuValue !== null) {
+        gpuValue = gpuValue.renderer || gpuValue.name || gpuValue.model || gpuValue.vendor || JSON.stringify(gpuValue);
+    }
+    // 确保转换为字符串，并过滤掉无效值
+    result.gpu = (gpuValue && gpuValue !== '[object Object]') ? String(gpuValue) : '';
 
-// 提取内存信息，确保是字符串
-let memValue = hw.memory || hw.ram || hw.RAM || hw.mem || '';
-if (typeof memValue === 'object' && memValue !== null) {
-memValue = memValue.value || memValue.size || JSON.stringify(memValue);
-}
-result.memory = (memValue && memValue !== '[object Object]') ? String(memValue) : '';
+    // 提取内存信息，确保是字符串
+    let memValue = hw.memory || hw.ram || hw.RAM || hw.mem || '';
+    if (typeof memValue === 'object' && memValue !== null) {
+        memValue = memValue.value || memValue.size || JSON.stringify(memValue);
+    }
+    result.memory = (memValue && memValue !== '[object Object]') ? String(memValue) : '';
 
-// 提取CPU信息，确保是字符串
-let cpuValue = hw.cpu || hw.processor || hw.CPU || hw.core || '';
-if (typeof cpuValue === 'object' && cpuValue !== null) {
-cpuValue = cpuValue.model || cpuValue.name || JSON.stringify(cpuValue);
-}
-result.cpu = (cpuValue && cpuValue !== '[object Object]') ? String(cpuValue) : '';
+    // 提取CPU信息，确保是字符串
+    let cpuValue = hw.cpu || hw.processor || hw.CPU || hw.core || '';
+    if (typeof cpuValue === 'object' && cpuValue !== null) {
+        cpuValue = cpuValue.model || cpuValue.name || JSON.stringify(cpuValue);
+    }
+    result.cpu = (cpuValue && cpuValue !== '[object Object]') ? String(cpuValue) : '';
 
-// 提取分辨率，确保是字符串
-let resValue = hw.resolution || hw.screen || hw.display || '';
-if (typeof resValue === 'object' && resValue !== null) {
-resValue = `${resValue.width || ''}x${resValue.height || ''}` || JSON.stringify(resValue);
-}
-result.resolution = (resValue && resValue !== '[object Object]') ? String(resValue) : '';
+    // 提取分辨率，确保是字符串
+    let resValue = hw.resolution || hw.screen || hw.display || '';
+    if (typeof resValue === 'object' && resValue !== null) {
+        resValue = `${resValue.width || ''}x${resValue.height || ''}` || JSON.stringify(resValue);
+    }
+    result.resolution = (resValue && resValue !== '[object Object]') ? String(resValue) : '';
 } catch (e) {
-// 如果是字符串且包含显卡关键词，尝试直接提取
-const hwStr = String(item.HardwareInfo);
-const gpuMatch = hwStr.match(/(RTX|GTX|Radeon|Intel\s*(Arc|HD|UHD|Iris|Graphics)|NVIDIA|AMD|GeForce)\s*\d*/i);
-if (gpuMatch) result.gpu = gpuMatch[0];
+    // 如果是字符串且包含显卡关键词，尝试直接提取
+    const hwStr = String(item.HardwareInfo);
+    const gpuMatch = hwStr.match(/(RTX|GTX|Radeon|Intel\s*(Arc|HD|UHD|Iris|Graphics)|NVIDIA|AMD|GeForce)\s*\d*/i);
+    if (gpuMatch) result.gpu = gpuMatch[0];
 
-const memMatch = hwStr.match(/(\d+\.?\d*)\s*(GB|G|MB|M)/i);
-if (memMatch) result.memory = memMatch[0];
+    const memMatch = hwStr.match(/(\d+\.?\d*)\s*(GB|G|MB|M)/i);
+    if (memMatch) result.memory = memMatch[0];
 }
 }
 
 // 从 UserConfig 字段提取
 if (item.UserConfig && (!result.gpu || !result.memory)) {
 try {
-const uc = typeof item.UserConfig === 'string'
-? JSON.parse(item.UserConfig)
-: item.UserConfig;
+    const uc = typeof item.UserConfig === 'string'
+        ? JSON.parse(item.UserConfig)
+        : item.UserConfig;
 
-if (!result.gpu) {
-let gpuValue = uc.gpu || uc.videoCard || uc.graphics || uc.GPU || '';
-if (typeof gpuValue === 'object' && gpuValue !== null) {
-gpuValue = gpuValue.renderer || gpuValue.name || gpuValue.model || JSON.stringify(gpuValue);
-}
-if (gpuValue && gpuValue !== '[object Object]') result.gpu = String(gpuValue);
-}
-if (!result.memory) {
-let memValue = uc.memory || uc.ram || uc.RAM || uc.mem || '';
-if (typeof memValue === 'object' && memValue !== null) {
-memValue = memValue.value || memValue.size || JSON.stringify(memValue);
-}
-if (memValue && memValue !== '[object Object]') result.memory = String(memValue);
-}
-if (!result.cpu) {
-let cpuValue = uc.cpu || uc.processor || uc.CPU || '';
-if (typeof cpuValue === 'object' && cpuValue !== null) {
-cpuValue = cpuValue.model || cpuValue.name || JSON.stringify(cpuValue);
-}
-if (cpuValue && cpuValue !== '[object Object]') result.cpu = String(cpuValue);
-}
+    if (!result.gpu) {
+        let gpuValue = uc.gpu || uc.videoCard || uc.graphics || uc.GPU || '';
+        if (typeof gpuValue === 'object' && gpuValue !== null) {
+            gpuValue = gpuValue.renderer || gpuValue.name || gpuValue.model || JSON.stringify(gpuValue);
+        }
+        if (gpuValue && gpuValue !== '[object Object]') result.gpu = String(gpuValue);
+    }
+    if (!result.memory) {
+        let memValue = uc.memory || uc.ram || uc.RAM || uc.mem || '';
+        if (typeof memValue === 'object' && memValue !== null) {
+            memValue = memValue.value || memValue.size || JSON.stringify(memValue);
+        }
+        if (memValue && memValue !== '[object Object]') result.memory = String(memValue);
+    }
+    if (!result.cpu) {
+        let cpuValue = uc.cpu || uc.processor || uc.CPU || '';
+        if (typeof cpuValue === 'object' && cpuValue !== null) {
+            cpuValue = cpuValue.model || cpuValue.name || JSON.stringify(cpuValue);
+        }
+        if (cpuValue && cpuValue !== '[object Object]') result.cpu = String(cpuValue);
+    }
 } catch (e) {
-const ucStr = String(item.UserConfig);
-if (!result.gpu) {
-const gpuMatch = ucStr.match(/(RTX|GTX|Radeon|Intel\s*(Arc|HD|UHD|Iris|Graphics)|NVIDIA|AMD|GeForce)\s*\d*/i);
-if (gpuMatch) result.gpu = gpuMatch[0];
-}
-if (!result.memory) {
-const memMatch = ucStr.match(/(\d+\.?\d*)\s*(GB|G|MB|M)/i);
-if (memMatch) result.memory = memMatch[0];
-}
+    const ucStr = String(item.UserConfig);
+    if (!result.gpu) {
+        const gpuMatch = ucStr.match(/(RTX|GTX|Radeon|Intel\s*(Arc|HD|UHD|Iris|Graphics)|NVIDIA|AMD|GeForce)\s*\d*/i);
+        if (gpuMatch) result.gpu = gpuMatch[0];
+    }
+    if (!result.memory) {
+        const memMatch = ucStr.match(/(\d+\.?\d*)\s*(GB|G|MB|M)/i);
+        if (memMatch) result.memory = memMatch[0];
+    }
 }
 }
 
@@ -1644,17 +1644,17 @@ content = '<div style="text-align:center; padding:40px; color:#94a3b8;">No hardw
 } else {
 const entries = [];
 if (hwInfo.cpu) {
-entries.push(`<div class="hw-entry"><i class="fas fa-microchip" style="color:#3b82f6;"></i> <strong>CPU:</strong> ${escapeHtml(hwInfo.cpu)}</div>`);
+    entries.push(`<div class="hw-entry"><i class="fas fa-microchip" style="color:#3b82f6;"></i> <strong>CPU:</strong> ${escapeHtml(hwInfo.cpu)}</div>`);
 }
 if (hwInfo.gpu) {
-const translatedGPU = translateGPU(hwInfo.gpu);
-entries.push(`<div class="hw-entry"><i class="fas fa-tv" style="color:#059669;"></i> <strong>GPU:</strong> ${escapeHtml(translatedGPU)}</div>`);
+    const translatedGPU = translateGPU(hwInfo.gpu);
+    entries.push(`<div class="hw-entry"><i class="fas fa-tv" style="color:#059669;"></i> <strong>GPU:</strong> ${escapeHtml(translatedGPU)}</div>`);
 }
 if (hwInfo.memory) {
-entries.push(`<div class="hw-entry"><i class="fas fa-memory" style="color:#d97706;"></i> <strong>RAM:</strong> ${escapeHtml(hwInfo.memory)}</div>`);
+    entries.push(`<div class="hw-entry"><i class="fas fa-memory" style="color:#d97706;"></i> <strong>RAM:</strong> ${escapeHtml(hwInfo.memory)}</div>`);
 }
 if (hwInfo.resolution) {
-entries.push(`<div class="hw-entry"><i class="fas fa-desktop" style="color:#8b5cf6;"></i> <strong>Resolution:</strong> ${escapeHtml(hwInfo.resolution)}</div>`);
+    entries.push(`<div class="hw-entry"><i class="fas fa-desktop" style="color:#8b5cf6;"></i> <strong>Resolution:</strong> ${escapeHtml(hwInfo.resolution)}</div>`);
 }
 
 // 添加原始数据展示
@@ -1662,18 +1662,18 @@ const originalHw = item.HardwareInfo ? JSON.stringify(item.HardwareInfo, null, 2
 const originalUc = item.UserConfig ? JSON.stringify(item.UserConfig, null, 2) : 'N/A';
 
 content = `
-<div class="hw-grid">
-${entries.join('')}
-</div>
-<div style="margin-top:20px; padding-top:20px; border-top:1px solid #334155;">
-<div style="font-size:0.75rem; color:#94a3b8; margin-bottom:8px;">RAW DATA:</div>
-<div style="max-height:200px; overflow:auto; font-size:0.7rem; background:#0f172a; padding:12px; border-radius:4px;">
-<div style="color:#60a5fa; margin-bottom:8px;">// HardwareInfo</div>
-<pre style="margin:0; color:#cbd5e1;">${escapeHtml(originalHw)}</pre>
-<div style="color:#60a5fa; margin:12px 0 8px 0;">// UserConfig</div>
-<pre style="margin:0; color:#cbd5e1;">${escapeHtml(originalUc)}</pre>
-</div>
-</div>
+    <div class="hw-grid">
+        ${entries.join('')}
+    </div>
+    <div style="margin-top:20px; padding-top:20px; border-top:1px solid #334155;">
+        <div style="font-size:0.75rem; color:#94a3b8; margin-bottom:8px;">RAW DATA:</div>
+        <div style="max-height:200px; overflow:auto; font-size:0.7rem; background:#0f172a; padding:12px; border-radius:4px;">
+            <div style="color:#60a5fa; margin-bottom:8px;">// HardwareInfo</div>
+            <pre style="margin:0; color:#cbd5e1;">${escapeHtml(originalHw)}</pre>
+            <div style="color:#60a5fa; margin:12px 0 8px 0;">// UserConfig</div>
+            <pre style="margin:0; color:#cbd5e1;">${escapeHtml(originalUc)}</pre>
+        </div>
+    </div>
 `;
 }
 
@@ -1695,7 +1695,7 @@ const now = Date.now();
 
 // 1. 筛选符合条件的 ID
 const candidates = state.originalData.filter(item => {
-const hasPass = !!item.密码;
+const hasPass = !!item.Password;
 const hasKey = !!item.Key;
 const hasToken = !!item.Token;
 
@@ -1749,8 +1749,8 @@ btn.innerHTML = originText;
 
 function escapeHtml(str) {
 if (!str) return '';
-var  = String(str);
-return 
+var s = String(str);
+return s
 .replace(/&/g, "&amp;")
 .replace(/</g, "&lt;")
 .replace(/>/g, "&gt;")
