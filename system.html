@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            /* 科技蓝/灰色调 - 伪装成日志系统 */
+            /* 科技蓝/灰色调 - 伪装成日志系统 - 日间模式 */
             --primary: #2563eb;
             --primary-hover: #1d4ed8;
             --secondary: #64748b;
@@ -24,8 +24,25 @@
             --radius: 0.5rem;
         }
 
+        /* 夜间模式 */
+        [data-theme="dark"] {
+            --primary: #3b82f6;
+            --primary-hover: #60a5fa;
+            --secondary: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f1f5f9;
+            --text-sub: #94a3b8;
+            --border: #334155;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
-        body { font-family: 'Segoe UI', 'Roboto', monospace, sans-serif; background: var(--bg-body); color: var(--text-main); line-height: 1.5; padding-bottom: 60px; }
+        body { font-family: 'Segoe UI', 'Roboto', monospace, sans-serif; background: var(--bg-body); color: var(--text-main); line-height: 1.5; padding-bottom: 60px; transition: background 0.3s, color 0.3s; }
 
         /* --- 布局 --- */
         .container { max-width: 1440px; margin: 0 auto; padding: 24px; }
@@ -41,17 +58,17 @@
         .form-group label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; }
         .input-wrapper { position: relative; }
         .input-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-sub); pointer-events: none; font-size: 0.9rem; }
-        
-        .form-control { width: 100%; padding: 8px 12px 8px 36px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.9rem; font-family: 'Consolas', monospace; background: #fff; color: var(--text-main); }
+
+        .form-control { width: 100%; padding: 8px 12px 8px 36px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.9rem; font-family: 'Consolas', monospace; background: var(--bg-card); color: var(--text-main); }
         .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); }
-        
+
         /* --- 按钮 --- */
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 16px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-size: 0.85rem; font-family: 'Segoe UI', sans-serif; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
         .btn-danger { background: var(--danger); color: white; }
         .btn-ghost { background: transparent; color: var(--text-sub); border: 1px solid var(--border); }
-        .btn-ghost:hover { background: #e2e8f0; color: var(--text-main); }
+        .btn-ghost:hover { background: var(--border); color: var(--text-main); }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-sm { padding: 4px 10px; font-size: 0.75rem; }
         .btn-icon { padding: 6px; width: 28px; height: 28px; border-radius: 4px; }
@@ -66,18 +83,18 @@
         .toolbar { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
         .search-box { position: relative; max-width: 320px; width: 100%; }
         .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-        
-        .filter-chip { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 100px; background: #f1f5f9; font-size: 0.8rem; cursor: pointer; border: 1px solid transparent; user-select: none; color: var(--text-sub); transition: all 0.2s; }
-        .filter-chip.active { background: #eff6ff; color: var(--primary); border-color: #bfdbfe; font-weight: 600; }
+
+        .filter-chip { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 100px; background: var(--bg-body); font-size: 0.8rem; cursor: pointer; border: 1px solid transparent; user-select: none; color: var(--text-sub); transition: all 0.2s; }
+        .filter-chip.active { background: var(--primary); color: white; border-color: var(--primary-hover); font-weight: 600; }
 
         /* --- 表格 --- */
-        .table-container { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: #fff; }
+        .table-container { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-card); }
         table { width: 100%; border-collapse: collapse; white-space: nowrap; font-family: 'Consolas', monospace; font-size: 0.85rem; }
-        th { background: #f8fafc; padding: 12px 16px; text-align: left; font-weight: 600; color: var(--text-sub); border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
-        th:hover { color: var(--primary); background: #f1f5f9; }
+        th { background: var(--bg-body); padding: 12px 16px; text-align: left; font-weight: 600; color: var(--text-sub); border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+        th:hover { color: var(--primary); background: var(--border); }
         td { padding: 10px 16px; border-bottom: 1px solid var(--border); color: var(--text-main); vertical-align: middle; }
-        tr:hover { background-color: #f8fafc; }
-        tr.selected { background-color: #eff6ff; }
+        tr:hover { background-color: var(--bg-body); }
+        tr.selected { background-color: var(--primary); color: white; }
 
         /* 敏感信息伪装样式 */
         .secret-cell { display: flex; align-items: center; gap: 8px; max-width: 200px; }
@@ -91,52 +108,52 @@
         .time-badge.type-last { color: #95a5a6; background: rgba(149, 165, 166, 0.1); }
         .time-badge.expired { color: #dc2626; background: rgba(220, 38, 38, 0.15); animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-        
-        .secret-value { 
-            background: #f1f5f9; 
-            padding: 2px 6px; 
-            border-radius: 3px; 
-            overflow: hidden; 
-            text-overflow: ellipsis; 
-            max-width: 160px; 
-            color: #475569;
+
+        .secret-value {
+            background: var(--bg-body);
+            padding: 2px 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 160px;
+            color: var(--text-main);
             transition: all 0.2s;
             border: 1px solid transparent;
-            cursor: pointer; 
+            cursor: pointer;
         }
-        
+
         .secret-value:hover {
             border-color: var(--border);
-            background: #fff;
+            background: var(--bg-card);
         }
 
         .secret-value:active {
-            background: #e2e8f0;
+            background: var(--border);
             transform: scale(0.98);
         }
 
         /* 模糊效果 */
-        .secret-blur { 
-            color: transparent; 
-            text-shadow: 0 0 5px rgba(0,0,0,0.5); 
-            user-select: none; 
+        .secret-blur {
+            color: transparent;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+            user-select: none;
         }
-        
+
         /* 明文效果 */
-        .secret-reveal { 
-            color: inherit; 
-            text-shadow: none; 
+        .secret-reveal {
+            color: inherit;
+            text-shadow: none;
         }
 
         /* --- 分页 --- */
         .pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 0.85rem; }
         .page-controls { display: flex; gap: 4px; }
-        .page-btn { min-width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: white; }
+        .page-btn { min-width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: var(--bg-card); color: var(--text-main); }
         .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
         /* --- 模态框 --- */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(2px); }
-        .modal-box { background: white; padding: 24px; border-radius: var(--radius); width: 90%; max-width: 600px; box-shadow: var(--shadow); max-height: 85vh; display: flex; flex-direction: column; }
+        .modal-box { background: var(--bg-card); padding: 24px; border-radius: var(--radius); width: 90%; max-width: 600px; box-shadow: var(--shadow); max-height: 85vh; display: flex; flex-direction: column; color: var(--text-main); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
         .json-viewer { background: #0f172a; color: #cbd5e1; padding: 16px; border-radius: 6px; overflow: auto; font-family: 'Consolas', monospace; font-size: 0.8rem; line-height: 1.4; }
         .json-viewer .comment { color: #64748b; font-style: italic; }
@@ -146,11 +163,11 @@
 
         /* 硬件详情样式 */
         .hw-grid { display: grid; gap: 12px; }
-        .hw-entry { display: flex; align-items: center; gap: 10px; padding: 12px; background: #f1f5f9; border-radius: 6px; border-left: 3px solid #3b82f6; }
+        .hw-entry { display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--bg-body); border-radius: 6px; border-left: 3px solid var(--primary); }
         .hw-entry i { width: 20px; text-align: center; }
 
         .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1100; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { pointer-events: auto; background: white; padding: 10px 16px; border-radius: 6px; box-shadow: var(--shadow); border-left: 3px solid var(--primary); display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s ease; font-size: 0.9rem; }
+        .toast { pointer-events: auto; background: var(--bg-card); padding: 10px 16px; border-radius: 6px; box-shadow: var(--shadow); border-left: 3px solid var(--primary); display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s ease; font-size: 0.9rem; }
         .toast.success { border-color: var(--success); }
         .toast.error { border-color: var(--danger); }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -168,6 +185,9 @@
     <div class="header">
         <h1><i class="fas fa-server"></i> T-Node System Monitor</h1>
         <div class="header-actions">
+            <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" id="themeToggle" title="切换主题">
+                <i class="fas fa-moon"></i>
+            </button>
             <span style="font-size: 0.8rem; color: var(--text-sub); font-family: monospace;">v2.5.4-stable</span>
         </div>
     </div>
@@ -208,19 +228,19 @@
 
     <!-- 统计面板 -->
     <div id="statsSection" class="stats-grid" style="display:none;">
-        <div class="stat-item" style="border-color: #2563eb;">
+        <div class="stat-item" style="border-color: var(--primary);">
             <div class="stat-value" id="totalCount">0</div>
             <div class="stat-label">Total Nodes</div>
         </div>
-        <div class="stat-item" style="border-color: #059669;">
+        <div class="stat-item" style="border-color: var(--success);">
             <div class="stat-value" id="withPassword">0</div>
             <div class="stat-label">Config Active</div>
         </div>
-        <div class="stat-item" style="border-color: #d97706;">
+        <div class="stat-item" style="border-color: var(--warning);">
             <div class="stat-value" id="withToken">0</div>
             <div class="stat-label">Sessions</div>
         </div>
-        <div class="stat-item" style="border-color: #dc2626;">
+        <div class="stat-item" style="border-color: var(--danger);">
             <div class="stat-value" id="withFingerprint">0</div>
             <div class="stat-label">HWID Logs</div>
         </div>
@@ -257,7 +277,7 @@
                 </button>
 
                 <!-- 【新增】自动清理按钮 -->
-                <button class="btn btn-warning btn-sm" onclick="autoCleanExpired()" style="background: #f59e0b; color: white;">
+                <button class="btn btn-warning btn-sm" onclick="autoCleanExpired()" style="background: var(--warning); color: white;">
                     <i class="fas fa-broom"></i> Clean Expired
                 </button>
 
@@ -277,7 +297,7 @@
                         <th width="40"><input type="checkbox" onchange="toggleSelectAll(this)"></th>
                         <th onclick="sortData('TankiName')" title="Click to sort">Node ID <i class="fas fa-sort"></i></th>
                         <th onclick="sortData('Key')">Auth Signature <i class="fas fa-sort"></i></th>
-                        <th onclick="sortData('Password')">Payload / Config <i class="fas fa-sort"></i></th>
+                        <th onclick="sortData('Password')" id="passwordColumn">Payload / Config <i class="fas fa-sort"></i></th>
                         <th>Hardware Info</th>
                         <th>Device Hash</th>
                         <th onclick="sortData('LastUpdate')">Sync Time <i class="fas fa-sort"></i></th>
@@ -331,46 +351,46 @@
             <h3><i class="fas fa-book"></i> JSON字段说明</h3>
             <button class="btn btn-ghost btn-icon" onclick="closeJsonHelpModal()"><i class="fas fa-times"></i></button>
         </div>
-        <div class="json-viewer" style="background: #f8fafc; color: #334155; font-size: 0.85rem; padding: 20px;">
+        <div class="json-viewer" style="background: var(--bg-body); color: var(--text-main); font-size: 0.85rem; padding: 20px;">
             <div style="display: grid; gap: 16px;">
-                <div style="border-left: 3px solid #2563eb; padding-left: 12px;">
-                    <strong style="color: #2563eb;">TankiName</strong>
+                <div style="border-left: 3px solid var(--primary); padding-left: 12px;">
+                    <strong style="color: var(--primary);">TankiName</strong>
                     <div style="margin-top: 4px;">游戏内显示名称</div>
                 </div>
-                <div style="border-left: 3px solid #2563eb; padding-left: 12px;">
-                    <strong style="color: #2563eb;">Key</strong>
+                <div style="border-left: 3px solid var(--primary); padding-left: 12px;">
+                    <strong style="color: var(--primary);">Key</strong>
                     <div style="margin-top: 4px;">登录密钥（用于Key模式登录）</div>
                 </div>
-                <div style="border-left: 3px solid #2563eb; padding-left: 12px;">
-                    <strong style="color: #2563eb;">Token</strong>
+                <div style="border-left: 3px solid var(--primary); padding-left: 12px;">
+                    <strong style="color: var(--primary);">Token</strong>
                     <div style="margin-top: 4px;">会话令牌（用于Token模式登录，有效期约5分钟）</div>
                 </div>
-                <div style="border-left: 3px solid #2563eb; padding-left: 12px;">
-                    <strong style="color: #2563eb;">Password</strong>
+                <div style="border-left: 3px solid var(--primary); padding-left: 12px;">
+                    <strong style="color: var(--primary);">Password</strong>
                     <div style="margin-top: 4px;">账号密码（用于密码模式登录）</div>
                 </div>
-                <div style="border-left: 3px solid #2563eb; padding-left: 12px;">
-                    <strong style="color: #2563eb;">Fingerprint</strong>
+                <div style="border-left: 3px solid var(--primary); padding-left: 12px;">
+                    <strong style="color: var(--primary);">Fingerprint</strong>
                     <div style="margin-top: 4px;">设备指纹（用于识别和绑定设备）</div>
                 </div>
-                <div style="border-left: 3px solid #059669; padding-left: 12px;">
-                    <strong style="color: #059669;">LastUpdate</strong>
+                <div style="border-left: 3px solid var(--success); padding-left: 12px;">
+                    <strong style="color: var(--success);">LastUpdate</strong>
                     <div style="margin-top: 4px;">最后更新时间（所有字段更新时间）</div>
                 </div>
-                <div style="border-left: 3px solid #059669; padding-left: 12px;">
-                    <strong style="color: #059669;">KeyUpdate</strong>
+                <div style="border-left: 3px solid var(--success); padding-left: 12px;">
+                    <strong style="color: var(--success);">KeyUpdate</strong>
                     <div style="margin-top: 4px;">Key字段最后更新时间</div>
                 </div>
-                <div style="border-left: 3px solid #059669; padding-left: 12px;">
-                    <strong style="color: #059669;">TokenUpdate</strong>
+                <div style="border-left: 3px solid var(--success); padding-left: 12px;">
+                    <strong style="color: var(--success);">TokenUpdate</strong>
                     <div style="margin-top: 4px;">Token字段最后更新时间</div>
                 </div>
-                <div style="border-left: 3px solid #059669; padding-left: 12px;">
-                    <strong style="color: #059669;">PasswordUpdate</strong>
+                <div style="border-left: 3px solid var(--success); padding-left: 12px;">
+                    <strong style="color: var(--success);">PasswordUpdate</strong>
                     <div style="margin-top: 4px;">Password字段最后更新时间</div>
                 </div>
-                <div style="border-left: 3px solid #d97706; padding-left: 12px;">
-                    <strong style="color: #d97706;">UserConfig</strong>
+                <div style="border-left: 3px solid var(--warning); padding-left: 12px;">
+                    <strong style="color: var(--warning);">UserConfig</strong>
                     <div style="margin-top: 4px;">
                         <div>用户配置信息：</div>
                         <ul style="margin: 8px 0 0 20px; padding: 0;">
@@ -385,8 +405,8 @@
                         </ul>
                     </div>
                 </div>
-                <div style="border-left: 3px solid #d97706; padding-left: 12px;">
-                    <strong style="color: #d97706;">HardwareInfo</strong>
+                <div style="border-left: 3px solid var(--warning); padding-left: 12px;">
+                    <strong style="color: var(--warning);">HardwareInfo</strong>
                     <div style="margin-top: 4px;">
                         <div>硬件信息：</div>
                         <ul style="margin: 8px 0 0 20px; padding: 0;">
@@ -415,6 +435,30 @@
 </div>
 
 <script>
+    // 主题切换功能
+    function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        updateThemeIcon(newTheme);
+    }
+
+    function updateThemeIcon(theme) {
+        const icon = document.querySelector('#themeToggle i');
+        if (icon) {
+            icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+    }
+
+    // 初始化主题
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+    }
+
     const state = {
         token: localStorage.getItem('giteeToken') || '',
         server: localStorage.getItem('currentServer') || 'cn',
@@ -439,11 +483,14 @@
     document.addEventListener('DOMContentLoaded', () => {
         if(state.token) document.getElementById('giteeToken').value = state.token;
         document.getElementById('serverSelect').value = state.server;
-        
+
         // 初始化图标状态
         updateEyeIcon();
-        
-        if(state.token) fetchData(); 
+
+        // 初始化主题
+        initTheme();
+
+        if(state.token) fetchData();
     });
 
     async function fetchData() {
@@ -494,13 +541,15 @@
         const query = document.getElementById('searchInput').value.toLowerCase();
 
         state.filteredData = state.originalData.filter(item => {
+            // 优先使用 HardwareInfo.hash，其次使用 Fingerprint
+            const deviceHash = item.HardwareInfo?.hash || item.Fingerprint;
             const matchSearch = (item.TankiName || '').toLowerCase().includes(query) ||
-                             (item.Fingerprint || '').toLowerCase().includes(query);
+                             (deviceHash || '').toLowerCase().includes(query);
 
             let matchType = true;
             if (state.filterMode === 'hasPass') matchType = !!item.Password;
             if (state.filterMode === 'hasToken') matchType = !!item.Token;
-            if (state.filterMode === 'hasFingerprint') matchType = !!item.Fingerprint;
+            if (state.filterMode === 'hasFingerprint') matchType = !!deviceHash;
 
             return matchSearch && matchType;
         });
@@ -542,7 +591,7 @@
         }
 
         if (pageData.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 40px; color: var(--text-sub);">No logs found</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="${state.server === 'test' ? 7 : 8}" style="text-align:center; padding: 40px; color: var(--text-sub);">No logs found</td></tr>`;
             return;
         }
 
@@ -588,25 +637,27 @@
             </div>`;
 
             // 尝试根据指纹映射获取名字并显示到指纹列
-            const mappedName = item.Fingerprint ? getMappedName(item) : null;
-            const fingerprintHtml = item.Fingerprint
+            // 优先使用 HardwareInfo.hash，其次使用 Fingerprint
+            const deviceHash = item.HardwareInfo?.hash || item.Fingerprint;
+            const mappedName = deviceHash ? getMappedName(item) : null;
+            const fingerprintHtml = deviceHash
                 ? (mappedName
                     ? `<div class="secret-cell">
                         <div class="secret-value" style="background:var(--bg-body); color:var(--accent); font-weight:600; max-width:120px;"
-                             data-val="${escapeHtml(item.Fingerprint)}"
+                             data-val="${escapeHtml(deviceHash)}"
                              onclick="copyText(this.dataset.val)"
-                             title="显示名: ${escapeHtml(mappedName)}\n原始指纹: ${escapeHtml(item.Fingerprint)}\n点击复制原始指纹">
-                            ${escapeHtml(mappedName)} <span style="font-size:0.75em; color:var(--text-sub)">(${escapeHtml(item.Fingerprint)})</span>
+                             title="显示名: ${escapeHtml(mappedName)}\n原始指纹: ${escapeHtml(deviceHash)}\n点击复制原始指纹">
+                            ${escapeHtml(mappedName)} <span style="font-size:0.75em; color:var(--text-sub)">(${escapeHtml(deviceHash)})</span>
                         </div>
                     </div>`
-                    : createSecretHtml(item.Fingerprint, 'Hash'))
+                    : createSecretHtml(deviceHash, 'Hash'))
                 : '<span style="color:#cbd5e1">-</span>';
 
             tr.innerHTML = `
                 <td><input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelect(${item._id})"></td>
                 <td>${nameHtml}</td>
                 <td>${authCol}</td>
-                <td>${isTestServer ? '<span style="color:#cbd5e1">-</span>' : (item.Password ? createSecretHtml(item.Password, 'Cfg') : '<span style="color:#cbd5e1">-</span>')}</td>
+                ${!isTestServer ? `<td>${item.Password ? createSecretHtml(item.Password, 'Cfg') : '<span style="color:#cbd5e1">-</span>'}</td>` : ''}
                 <td>${createHardwareInfoHtml(item)}</td>
                 <td>${fingerprintHtml}</td>
                 <td style="font-size:0.8rem; color:var(--text-sub);">${formatDate(item.LastUpdate)}</td>
@@ -618,6 +669,12 @@
             `;
             tbody.appendChild(tr);
         });
+
+        // 测试服隐藏密码列
+        const passwordColumn = document.getElementById('passwordColumn');
+        if (passwordColumn) {
+            passwordColumn.style.display = state.server === 'test' ? 'none' : '';
+        }
     }
 
     function createTimeBadges(item) {
@@ -927,7 +984,7 @@
         document.getElementById('totalCount').innerText = state.originalData.length;
         document.getElementById('withPassword').innerText = state.originalData.filter(i => i.Password).length;
         document.getElementById('withToken').innerText = state.originalData.filter(i => i.Token).length;
-        document.getElementById('withFingerprint').innerText = state.originalData.filter(i => i.Fingerprint).length;
+        document.getElementById('withFingerprint').innerText = state.originalData.filter(i => i.HardwareInfo?.hash || i.Fingerprint).length;
     }
 
     function maskStr(str, visibleLen = 4) {
@@ -960,7 +1017,7 @@
         if (hasHw) {
             const hwLines = [];
             if (hwInfo.cpu) hwLines.push(`├─ CPU: ${hwInfo.cpu}`);
-            if (hwInfo.gpu) hwLines.push(`├─ GPU: ${hwInfo.gpu}`);
+            if (hwInfo.gpu) hwLines.push(`├─ GPU: ${translateGPU(hwInfo.gpu)}`);
             if (hwInfo.memory) hwLines.push(`├─ RAM: ${hwInfo.memory}`);
             if (hwInfo.resolution) hwLines.push(`└─ Screen: ${hwInfo.resolution}`);
             if (hwLines.length > 0) {
@@ -1010,7 +1067,122 @@
         lines.push(lastLine.endsWith(',') ? lastLine.slice(0, -1) : lastLine);
         lines.push('}');
 
+
         return lines.join('\n');
+    }
+
+    // GPU型号中英文映射表
+    function translateGPU(gpuStr) {
+        if (!gpuStr) return gpuStr;
+
+        // 解析 ANGLE 包装器格式
+        // 示例: ANGLE (NVIDIA, NVIDIA GeForce GTX 1070 (0x00001B81) Direct3D11 vs_5_0 ps_5_0, D3D11)
+        let coreGpuStr = gpuStr;
+
+        // 提取括号内的GPU信息
+        const angleMatch = gpuStr.match(/ANGLE\s*\([^,]*,\s*([^)]+)\)/);
+        if (angleMatch) {
+            coreGpuStr = angleMatch[1].trim();
+        }
+
+        // 移除设备ID (0x00001B81)
+        coreGpuStr = coreGpuStr.replace(/\(0x[0-9A-Fa-f]+\)/g, '').trim();
+
+        // 移除 Direct3D 等后缀
+        coreGpuStr = coreGpuStr.split('Direct')[0].split('OpenGL')[0].split('D3D')[0].trim();
+        // 移除 "Laptop GPU" 后缀用于映射
+        const shortGpuName = coreGpuStr.replace(/Laptop GPU/g, '').trim();
+
+        const gpuMap = {
+            // NVIDIA 显卡
+            'NVIDIA GeForce RTX 5060': 'NVIDIA GeForce RTX 5060 笔记本显卡',
+            'NVIDIA GeForce RTX 5070': 'NVIDIA GeForce RTX 5070 笔记本显卡',
+            'NVIDIA GeForce RTX 5080': 'NVIDIA GeForce RTX 5080 笔记本显卡',
+            'NVIDIA GeForce RTX 5090': 'NVIDIA GeForce RTX 5090 笔记本显卡',
+            'NVIDIA GeForce RTX 4060': 'NVIDIA GeForce RTX 4060 笔记本显卡',
+            'NVIDIA GeForce RTX 4070': 'NVIDIA GeForce RTX 4070 笔记本显卡',
+            'NVIDIA GeForce RTX 4080': 'NVIDIA GeForce RTX 4080 笔记本显卡',
+            'NVIDIA GeForce RTX 4090': 'NVIDIA GeForce RTX 4090 笔记本显卡',
+            'NVIDIA GeForce RTX 3060': 'NVIDIA GeForce RTX 3060 笔记本显卡',
+            'NVIDIA GeForce RTX 3070': 'NVIDIA GeForce RTX 3070 笔记本显卡',
+            'NVIDIA GeForce RTX 3080': 'NVIDIA GeForce RTX 3080 笔记本显卡',
+            'NVIDIA GeForce RTX 3090': 'NVIDIA GeForce RTX 3090 笔记本显卡',
+            'NVIDIA GeForce RTX 2060': 'NVIDIA GeForce RTX 2060',
+            'NVIDIA GeForce RTX 2070': 'NVIDIA GeForce RTX 2070',
+            'NVIDIA GeForce RTX 2080': 'NVIDIA GeForce RTX 2080',
+            'NVIDIA GeForce GTX 1650': 'NVIDIA GeForce GTX 1650',
+            'NVIDIA GeForce GTX 1660': 'NVIDIA GeForce GTX 1660',
+            'NVIDIA GeForce GTX 1060': 'NVIDIA GeForce GTX 1060',
+            'NVIDIA GeForce GTX 1050': 'NVIDIA GeForce GTX 1050',
+            'NVIDIA GeForce GTX 1070': 'NVIDIA GeForce GTX 1070',
+            'NVIDIA GeForce GTX 1080': 'NVIDIA GeForce GTX 1080',
+            'NVIDIA GeForce MX150': 'NVIDIA GeForce MX150',
+            'NVIDIA GeForce MX250': 'NVIDIA GeForce MX250',
+            'NVIDIA GeForce MX350': 'NVIDIA GeForce MX350',
+            'NVIDIA GeForce MX450': 'NVIDIA GeForce MX450',
+
+            // AMD 显卡
+            'AMD Radeon RX 6800': 'AMD Radeon RX 6800',
+            'AMD Radeon RX 6800 XT': 'AMD Radeon RX 6800 XT',
+            'AMD Radeon RX 6900 XT': 'AMD Radeon RX 6900 XT',
+            'AMD Radeon RX 7600': 'AMD Radeon RX 7600',
+            'AMD Radeon RX 7700 XT': 'AMD Radeon RX 7700 XT',
+            'AMD Radeon RX 7800 XT': 'AMD Radeon RX 7800 XT',
+            'AMD Radeon RX 7900 XT': 'AMD Radeon RX 7900 XT',
+            'AMD Radeon RX 7900 XTX': 'AMD Radeon RX 7900 XTX',
+            'AMD Radeon RX 5600': 'AMD Radeon RX 5600',
+            'AMD Radeon RX 5700': 'AMD Radeon RX 5700',
+            'AMD Radeon RX 580': 'AMD Radeon RX 580',
+            'AMD Radeon RX 570': 'AMD Radeon RX 570',
+            'AMD Radeon RX 550': 'AMD Radeon RX 550',
+            'AMD Radeon Vega 8': 'AMD Radeon Vega 8 核显',
+            'AMD Radeon Vega 7': 'AMD Radeon Vega 7 核显',
+            'AMD Radeon Graphics': 'AMD Radeon 核显',
+
+            // Intel 显卡
+            'Intel UHD Graphics 620': 'Intel UHD Graphics 620 核显',
+            'Intel UHD Graphics 630': 'Intel UHD Graphics 630 核显',
+            'Intel Iris Plus Graphics 655': 'Intel Iris Plus Graphics 655 核显',
+            'Intel Iris Xe Graphics': 'Intel Iris Xe 核显',
+            'Intel Arc A380': 'Intel Arc A380 独显',
+            'Intel Arc A750': 'Intel Arc A750 独显',
+            'Intel Arc A770': 'Intel Arc A770 独显',
+            'Intel Arc Graphics': 'Intel Arc 独显',
+
+            // 通用
+            'Intel(R) UHD Graphics': 'Intel UHD 核显',
+            'Intel(R) Iris(R) Xe Graphics': 'Intel Iris Xe 核显',
+        };
+
+        // 尝试精确匹配（优先匹配短名称）
+        if (gpuMap[shortGpuName]) {
+            return gpuMap[shortGpuName];
+        }
+        if (gpuMap[coreGpuStr]) {
+            return gpuMap[coreGpuStr];
+        }
+
+        // 尝试包含匹配
+        for (const [key, value] of Object.entries(gpuMap)) {
+            if (coreGpuStr.includes(key)) {
+                return value;
+            }
+        }
+
+        // 提取关键信息进行简单翻译
+        let translated = gpuStr;
+        if (coreGpuStr.includes('NVIDIA GeForce')) {
+            translated = coreGpuStr.replace('NVIDIA GeForce', 'NVIDIA GeForce');
+            if (coreGpuStr.includes('Laptop GPU')) {
+                translated += ' (笔记本显卡)';
+            }
+        } else if (coreGpuStr.includes('AMD Radeon')) {
+            translated = coreGpuStr.replace('AMD Radeon', 'AMD Radeon');
+        } else if (coreGpuStr.includes('Intel') && (coreGpuStr.includes('Graphics') || coreGpuStr.includes('Arc'))) {
+            translated = coreGpuStr.replace(/Intel.*Graphics/i, 'Intel 核显').replace('Intel Arc', 'Intel Arc 独显');
+        }
+
+        return translated;
     }
 
     function closeModal() {
@@ -1249,7 +1421,8 @@
                 entries.push(`<div class="hw-entry"><i class="fas fa-microchip" style="color:#3b82f6;"></i> <strong>CPU:</strong> ${escapeHtml(hwInfo.cpu)}</div>`);
             }
             if (hwInfo.gpu) {
-                entries.push(`<div class="hw-entry"><i class="fas fa-tv" style="color:#059669;"></i> <strong>GPU:</strong> ${escapeHtml(hwInfo.gpu)}</div>`);
+                const translatedGPU = translateGPU(hwInfo.gpu);
+                entries.push(`<div class="hw-entry"><i class="fas fa-tv" style="color:#059669;"></i> <strong>GPU:</strong> ${escapeHtml(translatedGPU)}</div>`);
             }
             if (hwInfo.memory) {
                 entries.push(`<div class="hw-entry"><i class="fas fa-memory" style="color:#d97706;"></i> <strong>RAM:</strong> ${escapeHtml(hwInfo.memory)}</div>`);
@@ -1351,7 +1524,7 @@
     function escapeHtml(str) {
     if (!str) return '';
         var s = String(str);
-        return s 
+        return s
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")
