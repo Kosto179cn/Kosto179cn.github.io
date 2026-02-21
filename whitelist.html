@@ -272,6 +272,42 @@
     .input-group-text { background-color: var(--card-bg) !important; border-color: var(--border-color) !important; color: var(--text-main) !important; }
     .text-muted { color: var(--text-muted) !important; }
 
+    /* --- 修改后的通知弹窗样式 (防止冲突 + 改为右上角) --- */
+    .k-toast-container {
+        position: fixed;
+        top: 20px;       /* 改为顶部 */
+        right: 20px;     /* 靠右 */
+        z-index: 9999;   /* 提高层级 */
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+    }
+
+    .k-toast {
+        pointer-events: auto;
+        background: var(--card-bg);
+        padding: 12px 20px; /* 增加一点内边距 */
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15); /* 加深阴影 */
+        border-left: 4px solid var(--primary-color);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        animation: slideInRight 0.3s ease; /* 改为从右侧滑入动画 */
+        font-size: 0.9rem;
+        min-width: 200px;
+    }
+
+    .k-toast.success { border-color: var(--success-color); }
+    .k-toast.error { border-color: var(--danger-color); }
+
+    /* 从右侧滑入的动画 */
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
     /* 模态框深色适配 */
     .modal-content { background-color: var(--card-bg); color: var(--text-main); }
     .modal-header, .modal-footer { border-color: var(--border-color); }
@@ -286,7 +322,8 @@
 <div class="custom-loader" id="loadingBar"><div class="bar"></div></div>
 
 <!-- 通知容器 -->
-<div id="notification-container"></div>
+<!-- 修改 class 名以匹配新样式 -->
+<div class="k-toast-container" id="toastContainer"></div>
 
 <!-- 顶部导航 -->
 <nav class="navbar navbar-custom">
@@ -1015,29 +1052,20 @@
     // ================= 通知系统 =================
     const Notify = {
         show: (message, type = 'info') => {
-            const container = document.getElementById('notification-container');
+            const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
-            
-            let icon = 'info-circle';
-            let bgClass = 'bg-primary';
-            if (type === 'success') { icon = 'check-circle'; bgClass = 'bg-success'; }
-            if (type === 'error') { icon = 'exclamation-circle'; bgClass = 'bg-danger'; }
-            if (type === 'warning') { icon = 'exclamation-triangle'; bgClass = 'bg-warning text-dark'; }
 
-            toast.className = `toast align-items-center text-white ${bgClass} border-0 show mb-2`;
-            toast.innerHTML = `
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <i class="fas fa-${icon} me-2"></i> ${Utils.escapeHtml(message)}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="this.parentElement.parentElement.remove()"></button>
-                </div>`;
-            
+            let icon = 'info-circle';
+            let typeClass = 'info';
+            if (type === 'success') { icon = 'check'; typeClass = 'success'; }
+            if (type === 'error') { icon = 'times'; typeClass = 'error'; }
+            if (type === 'warning') { icon = 'exclamation-triangle'; typeClass = 'warning'; }
+
+            // 修改这里：使用新的类名 k-toast
+            toast.className = `k-toast ${typeClass}`;
+            toast.innerHTML = `<i class="fas fa-${icon}"></i> ${Utils.escapeHtml(message)}`;
             container.appendChild(toast);
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 300);
-            }, 4000);
+            setTimeout(() => toast.remove(), 3000);
         }
     };
 
