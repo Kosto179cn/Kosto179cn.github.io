@@ -1359,84 +1359,90 @@ currentEditHash = null;
 }
 
 async function saveMapping() {
-const newName = document.getElementById('editMappingName').value.trim();
-const newStatus = document.getElementById('editMappingStatus').checked ? 1 : 0;
-if (!newName) return showToast("名称不能为空", "error");
+    const newName = document.getElementById('editMappingName').value.trim();
+    // 获取当前复选框的状态 (1=选中/启用, 0=未选中/禁用)
+    const newStatus = document.getElementById('editMappingStatus').checked ? 1 : 0;
+    
+    if (!newName) return showToast("名称不能为空", "error");
 
-const hash = currentEditHash;
-if (!hash) return;
+    const hash = currentEditHash;
+    if (!hash) return;
 
-// UI反馈：修改按钮文字
-const originalText = currentEditBtn.innerText;
-currentEditBtn.innerText = "保存中...";
-currentEditBtn.disabled = true;
+    // UI反馈
+    const originalText = currentEditBtn.innerText;
+    currentEditBtn.innerText = "保存中...";
+    currentEditBtn.disabled = true;
 
-// 关闭模态框
-closeEditMappingModal();
+    // 关闭模态框
+    closeEditMappingModal();
 
-try {
-const url = `${state.urls.idMap}?access_token=${state.token}`;
+    try {
+        const url = `${state.urls.idMap}?access_token=${state.token}`;
 
-// 读取现有配置
-const getRes = await fetch(url);
-if (!getRes.ok) throw new Error("无法读取配置文件");
+        // 读取现有配置
+        const getRes = await fetch(url);
+        if (!getRes.ok) throw new Error("无法读取配置文件");
 
-const getData = await getRes.json();
-const contentStr = decodeURIComponent(escape(atob(getData.content)));
-let jsonContent = JSON.parse(contentStr);
+        const getData = await getRes.json();
+        const contentStr = decodeURIComponent(escape(atob(getData.content)));
+        let jsonContent = JSON.parse(contentStr);
 
-// 更新 JSON 数据
-if (!jsonContent["5"]) jsonContent["5"] = [];
-const list = jsonContent["5"];
-const existingIndex = list.findIndex(item => item.id === hash);
+        if (!jsonContent["5"]) jsonContent["5"] = [];
+        const list = jsonContent["5"];
+        const existingIndex = list.findIndex(item => item.id === hash);
 
-if (existingIndex !== -1) {
-    // --- 修改场景 ---
-    // 只更新名字，完全不动 status 字段，保留原有的启用/禁用状态
-    list[existingIndex].name = newName;
-    console.log(`更新备注: ${newName}, 状态保持原样: ${list[existingIndex].status}`);
-} else {
-    // --- 新增场景 ---
-    // 写入 ID、名字，并强制将 status 设为 0 (禁用)
-    list.push({
-        "id": hash,
-        "name": newName,
-        "status": 0 // <--- 这里实现了你的需求：新增默认禁用
-    });
-    console.log(`新增备注: ${newName}, 默认状态设为 0 (禁用)`);
-}
+        if (existingIndex !== -1) {
+            // --- 修改场景 ---
+            list[existingIndex].name = newName;
+            
+            // 【修正点 1】: 这里原本被略过了，现在赋值为新的状态
+            list[existingIndex].status = newStatus; 
+            
+            console.log(`更新备注: ${newName}, 状态更新为: ${newStatus}`);
+        } else {
+            // --- 新增场景 ---
+            list.push({
+                "id": hash,
+                "name": newName,
+                // 【修正点 2】: 之前强制为0，现在使用用户选择的状态
+                "status": newStatus 
+            });
+            console.log(`新增备注: ${newName}, 状态设为: ${newStatus}`);
+        }
 
-// 重新打包
-const newContentStr = JSON.stringify(jsonContent, null, 2);
-const encodedContent = btoa(unescape(encodeURIComponent(newContentStr)));
+        // 重新打包
+        const newContentStr = JSON.stringify(jsonContent, null, 2);
+        const encodedContent = btoa(unescape(encodeURIComponent(newContentStr)));
 
-// 推送至 Gitee
-const putRes = await fetch(url, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-        access_token: state.token,
-        content: encodedContent,
-        sha: getData.sha,
-        message: `Update map: ${newName} (Status: ${existingIndex !== -1 ? 'Keep' : '0'})`
-    })
-});
+        // 推送至 Gitee
+        const putRes = await fetch(url, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                access_token: state.token,
+                content: encodedContent,
+                sha: getData.sha,
+                message: `Update map: ${newName} (Status: ${newStatus})`
+            })
+        });
 
-if (!putRes.ok) throw new Error("写入失败");
+        if (!putRes.ok) throw new Error("写入失败");
 
-showToast("备注更新成功", "success");
+        showToast("更新成功 (状态已同步)", "success");
 
-// 更新本地数据并刷新表格
-state.idMapData = jsonContent;
-renderTable();
+        // 更新本地数据并刷新表格
+        state.idMapData = jsonContent;
+        renderTable();
 
-} catch (e) {
-console.error(e);
-showToast("失败: " + e.message, "error");
-// 失败时恢复按钮文字
-currentEditBtn.innerText = originalText;
-currentEditBtn.disabled = false;
-}
+    } catch (e) {
+        console.error(e);
+        showToast("失败: " + e.message, "error");
+        // 失败时恢复按钮文字
+        if(currentEditBtn) {
+            currentEditBtn.innerText = originalText;
+            currentEditBtn.disabled = false;
+        }
+    }
 }
 
 function toggleTokenVisibility(icon) {
