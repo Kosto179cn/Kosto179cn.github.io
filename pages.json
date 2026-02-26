@@ -22,5 +22,13 @@
     "icon": "fa-search",
     "category": "admin",
     "theme": "theme-admin"
+  },
+  {
+    "filename": "fire.html",
+    "title": "Douyinh.txt 格式化配置工具",
+    "desc": "自动发现的新页面",
+    "icon": "fa-file",
+    "category": "other",
+    "theme": "theme-other"
   }
 ]
