@@ -53,6 +53,12 @@
       "category": "tool",
       "theme": "theme-tool",
       "desc": "查询国服/外服的玩家账号数据"
+    },
+    "fire.html": {
+      "icon": "fa-dice",
+      "category": "admin",
+      "theme": "theme-admin",
+      "desc": "用于选择跟哪个用户续火花"
     }
   },
   "EXCLUDE_FILES": [
