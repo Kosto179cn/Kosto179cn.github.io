@@ -26,9 +26,9 @@
   {
     "filename": "fire.html",
     "title": "Douyinh.txt 格式化配置工具",
-    "desc": "自动发现的新页面",
-    "icon": "fa-file",
-    "category": "other",
-    "theme": "theme-other"
+    "desc": "用于选择跟哪个用户续火花",
+    "icon": "fa-dice",
+    "category": "admin",
+    "theme": "theme-admin"
   }
 ]
