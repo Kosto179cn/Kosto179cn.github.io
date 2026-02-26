@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Douyinh.txt 格式化配置工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .card-selected { border-color: #3b82f6; background-color: rgba(59, 130, 246, 0.15); transform: scale(1.02); box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.2); }
+        .loading-mask { background: rgba(0,0,0,0.9); display: none; backdrop-filter: blur(4px); }
+        .user-card { transition: all 0.2s ease-in-out; }
+        @media (max-width: 640px) {
+            .user-card { border-radius: 1rem; }
+        }
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(30, 41, 59, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.6); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.8); }
+        /* 触摸优化 */
+        @media (hover: none) and (pointer: coarse) {
+            .user-card:hover { border-color: transparent; }
+            button, input { -webkit-tap-highlight-color: transparent; }
+        }
+        /* 模态框动画 */
+        #loginModal { opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        #loginModal[style*="display: flex"] { opacity: 1; visibility: visible; }
+        #loginModal > div:last-child { transform: translateY(20px); transition: transform 0.3s ease; }
+        #loginModal[style*="display: flex"] > div:last-child { transform: translateY(0); }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+    <div id="loadingMask" class="fixed inset-0 z-50 flex flex-col items-center justify-center loading-mask">
+        <div class="relative">
+            <div class="w-16 h-16 border-4 border-blue-500/30 rounded-full"></div>
+            <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full absolute inset-0 animate-spin"></div>
+        </div>
+        <div class="mt-6 text-lg font-semibold text-blue-300">正在同步 Gitee 数据...</div>
+        <div class="mt-2 text-sm text-slate-400 font-mono">请稍候，正在加载用户信息</div>
+    </div>
+
+    <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
+        <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm"></div>
+        <div class="relative bg-slate-800 rounded-2xl border border-slate-700 shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="p-6 md:p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-blue-400">Gitee Token 登录</h2>
+                    <button onclick="closeLoginModal()" class="text-slate-500 hover:text-slate-300 transition-colors p-1">
+                        <svg class="w1 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-2">Gitee Personal Access Token</label>
+                        <input type="password" id="tokenInput" 
+                               class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
+                               placeholder="请输入您的 Gitee Token">
+                        <p class="mt-2 text-xs text-slate-500">
+                            需要访问 Gitee 仓库的权限。请前往 
+                            <a href="https://gitee.com/profile/personal_access_tokens" target="_blank" class="text-blue-400 hover:text-blue-300 underline">Gitee Token 管理</a>
+                            创建并复制 token。
+                        </p>
+                    </div>
+                    
+                    <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700">
+                        <h3 class="text-sm font-semibold text-slate-300 mb-2">权限要求：</h3>
+                        <ul class="text-xs text-slate-400 space-y-1">
+                            <li class="flex items-start">
+                                <svg class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span>仓库读取权限 (repo:read)</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span>仓库写入权限 (repo:write)</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span>用户信息读取权限 (user_info:read)</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mt-8 flex flex-col sm:flex-row gap-3">
+                    <button onclick="saveToken()" 
+                            class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-blue-900/20 transition-all active:scale-95">
+                        保存并登录
+                    </button>
+                    <button onclick="closeLoginModal()" 
+                            class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-medium py-3 px-6 rounded-xl transition-all active:scale-95">
+                        取消
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto p-4 md:p-8">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4 md:gap-6 border-b border-slate-700 pb-4 md:pb-6">
+            <div class="w-full md:w-auto">
+                <h1 class="text-2xl md:text-3xl font-black text-blue-500 tracking-tighter">KOSTO USER SELECTOR</h1>
+                <p class="text-slate-400 font-mono text-xs md:text-sm mt-1">Target: douyinh.txt (Line by Line)</p>
+            </div>
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+                <div class="bg-slate-800 px-4 py-3 rounded-xl border border-slate-700 flex items-center justify-between sm:justify-center">
+                    <span class="text-xs text-slate-500">已选中 ID</span>
+                    <span id="selectedCount" class="text-xl font-bold text-blue-400 ml-2">0</span>
+                </div>
+                <button onclick="saveToGitee()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 md:px-8 rounded-xl shadow-lg shadow-blue-900/20 transition-all active:scale-95 text-sm md:text-base">
+                    保存到 GITEE
+                </button>
+            </div>
+        </header>
+
+        <div class="mb-6 flex flex-col sm:flex-row gap-3">
+            <div class="flex-1 relative">
+                <input type="text" id="search" placeholder="输入昵称或抖音号进行筛选..." oninput="render()" 
+                       class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 md:py-3.5 focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm md:text-base">
+                <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+            </div>
+            <button onclick="clearAll()" class="bg-slate-700 hover:bg-red-900 text-white font-medium py-3 px-6 rounded-xl text-sm md:text-base transition-colors active:scale-95 whitespace-nowrap">
+                清空全选
+            </button>
+        </div>
+
+        <div id="userList" class="flex flex-col gap-3">
+            </div>
+        
+        <footer class="mt-8 md:mt-12 pt-6 border-t border-slate-800">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                        <span>已连接 Gitee</span>
+                    </div>
+                    <div class="hidden md:block">|</div>
+                    <div>点击用户卡片进行选择/取消</div>
+                </div>
+                <div class="text-xs font-mono">
+                    KOSTO Tool v1.0 • 数据实时同步
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const REPO = "Kosto179/kosto-battle-clicker-new";
+        const FILES = {
+            JSON: "douyin_all_users.json",
+            TXT: "douyinh.txt"
+        };
+
+        let allUsers = [];      
+        let selectedIds = new Set(); 
+        let currentTxtSha = "";    
+
+        async function init() {
+            const token = localStorage.getItem("giteeToken");
+            if (!token) {
+                updateConnectionStatus(false);
+                showLoginModal();
+                return;
+            }
+            await loadData(token);
+        }
+
+        async function loadData(token) {
+            showLoading(true);
+            try {
+                // 1. 并发获取 JSON库 和 TXT配置
+                const [jsonRes, txtRes] = await Promise.all([
+                    fetch(`https://gitee.com/api/v5/repos/${REPO}/contents/${FILES.JSON}?access_token=${token}`),
+                    fetch(`https://gitee.com/api/v5/repos/${REPO}/contents/${FILES.TXT}?access_token=${token}`)
+                ]);
+
+                if (!jsonRes.ok || !txtRes.ok) throw new Error("Gitee 请求失败，请检查仓库权限");
+
+                const jsonData = await jsonRes.json();
+                const txtData = await txtRes.json();
+
+                // 解析 JSON 用户数据
+                allUsers = JSON.parse(decodeURIComponent(escape(atob(jsonData.content))));
+
+                // 解析 TXT 已选数据 (按行分割)
+                currentTxtSha = txtData.sha;
+                const rawTxt = atob(txtData.content);
+                selectedIds = new Set(
+                    rawTxt.split('\n')
+                          .map(line => line.trim())
+                          .filter(line => line.length > 0)
+                );
+
+                render();
+                updateConnectionStatus(true);
+            } catch (e) {
+                console.error(e);
+                alert("初始化错误: " + e.message);
+                updateConnectionStatus(false);
+            }
+            showLoading(false);
+        }
+
+        // 模态框相关函数
+        function showLoginModal() {
+            document.getElementById('loginModal').style.display = 'flex';
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').style.display = 'none';
+        }
+
+        async function saveToken() {
+            const tokenInput = document.getElementById('tokenInput');
+            const token = tokenInput.value.trim();
+            if (!token) {
+                alert('请输入 Gitee Token');
+                tokenInput.focus();
+                return;
+            }
+            // 保存到 localStorage
+            localStorage.setItem('giteeToken', token);
+            closeLoginModal();
+            // 开始加载数据
+            await loadData(token);
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusIndicator = document.querySelector('footer .w-2.h-2');
+            const statusText = document.querySelector('footer .w-2.h-2 + span');
+            if (statusIndicator && statusText) {
+                statusIndicator.className = connected ? 'w-2 h-2 rounded-full bg-green-500 animate-pulse' : 'w-2 h-2 rounded-full bg-red-500';
+                statusText.textContent = connected ? '已连接 Gitee' : '未连接 Gitee';
+            }
+        }
+
+        function render() {
+            const keyword = document.getElementById('search').value.toLowerCase();
+            const container = document.getElementById('userList');
+            document.getElementById('selectedCount').textContent = selectedIds.size;
+
+            container.innerHTML = allUsers
+                .filter(u => u.nickname.toLowerCase().includes(keyword) || u.douyinId.toLowerCase().includes(keyword))
+                .map(user => {
+                    const isSelected = selectedIds.has(user.douyinId);
+                    return `
+                        <div onclick="toggleUser('${user.douyinId}')" 
+                             class="user-card group cursor-pointer bg-slate-800 p-3 md:p-4 rounded-2xl border-2 border-transparent hover:border-slate-600 active:scale-95 flex items-center gap-4 ${isSelected ? 'card-selected border-blue-500' : ''}">
+                            <div class="relative flex-shrink-0">
+                                <img src="${user.avatar}" class="w-16 h-16 md:w-20 md:h-20 object-cover rounded-xl shadow-inner bg-slate-700">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent rounded-xl"></div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm md:text-base font-bold truncate group-hover:text-blue-400 transition-colors">${user.nickname || '未知用户'}</div>
+                                <div class="text-xs md:text-sm text-slate-500 font-mono mt-1">${user.douyinId}</div>
+                            </div>
+                            ${isSelected ? `
+                                <div class="flex-shrink-0 bg-blue-500 text-white rounded-full p-2 md:p-2.5 shadow-lg ring-2 md:ring-4 ring-slate-900">
+                                    <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+        }
+
+        function toggleUser(id) {
+            if (!id || id === "未获取到") return;
+            if (selectedIds.has(id)) {
+                selectedIds.delete(id);
+            } else {
+                selectedIds.add(id);
+            }
+            render();
+        }
+
+        function clearAll() {
+            if(confirm("确定清空所有已选抖音号吗？")) {
+                selectedIds.clear();
+                render();
+            }
+        }
+
+        async function saveToGitee() {
+            const token = localStorage.getItem("giteeToken");
+            if (!token) {
+                updateConnectionStatus(false);
+                showLoginModal();
+                return;
+            }
+            // 【关键点】生成一行一个的文本格式
+            const newContentText = Array.from(selectedIds).join('\n');
+            
+            // 处理中文及特殊字符编码
+            const base64Content = btoa(unescape(encodeURIComponent(newContentText)));
+
+            showLoading(true);
+            try {
+                const res = await fetch(`https://gitee.com/api/v5/repos/${REPO}/contents/${FILES.TXT}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        access_token: token,
+                        content: base64Content,
+                        sha: currentTxtSha,
+                        message: `Update douyinh.txt: ${selectedIds.size} users selected`
+                    })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    currentTxtSha = data.content.sha; // 更新本地 SHA 供下次保存
+                    alert(`成功保存 ${selectedIds.size} 个抖音号到 douyinh.txt`);
+                } else {
+                    throw new Error(data.message || "上传失败");
+                }
+            } catch (e) {
+                alert("保存失败: " + e.message);
+            }
+            showLoading(false);
+        }
+
+        function showLoading(s) { document.getElementById('loadingMask').style.display = s ? 'flex' : 'none'; }
+
+        init();
+    </script>
+</body>
+</html>
