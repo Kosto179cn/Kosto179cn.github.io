@@ -46,7 +46,7 @@
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-2xl font-bold text-blue-400">Gitee Token 登录</h2>
                     <button onclick="closeLoginModal()" class="text-slate-500 hover:text-slate-300 transition-colors p-1">
-                        <svg class="w1 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
@@ -238,8 +238,8 @@
         }
 
         function updateConnectionStatus(connected) {
-            const statusIndicator = document.querySelector('footer .w-2.h-2');
-            const statusText = document.querySelector('footer .w-2.h-2 + span');
+            const statusIndicator = document.querySelector('footer .flex.items-center.gap-2 .w-2');
+            const statusText = document.querySelector('footer .flex.items-center.gap-2 .w-2 + span');
             if (statusIndicator && statusText) {
                 statusIndicator.className = connected ? 'w-2 h-2 rounded-full bg-green-500 animate-pulse' : 'w-2 h-2 rounded-full bg-red-500';
                 statusText.textContent = connected ? '已连接 Gitee' : '未连接 Gitee';
