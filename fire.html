@@ -265,6 +265,7 @@
                             <div class="flex-1 min-w-0">
                                 <div class="text-sm md:text-base font-bold truncate group-hover:text-blue-400 transition-colors">${user.nickname || '未知用户'}</div>
                                 <div class="text-xs md:text-sm text-slate-500 font-mono mt-1">${user.douyinId}</div>
+                                ${user.lastChatTime ? `<div class="text-xs text-slate-600 mt-1">最近聊天: ${user.lastChatTime}</div>` : ''}
                             </div>
                             ${isSelected ? `
                                 <div class="flex-shrink-0 bg-blue-500 text-white rounded-full p-2 md:p-2.5 shadow-lg ring-2 md:ring-4 ring-slate-900">
