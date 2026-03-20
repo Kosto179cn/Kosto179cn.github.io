@@ -10,11 +10,11 @@ let link = document.querySelector("link[rel*='icon']") || document.createElement
         link.href = window.base64tank;
         document.head.appendChild(link);
 }
-window.dist =(e,t)=>{e=Object.values(e),t=Object.values(t);let l=t[0]-e[0],s=t[1]-e[1],r=t[2]-e[2];return Math.sqrt(l*l+s*s+r*r)};
+window.dist =(e,t)=>{e=Object.values(e),t=Object.values(t);let l=t[0]-e[0],=t[1]-e[1],r=t[2]-e[2];return Math.sqrt(l*l+*+r*r)};
 window.apply = (property, setter, getter) => property && Object.defineProperty(Object.prototype, property, { get() { return getter ? getter.call(this, `_${property}_`, this[`_${property}_`]) : this[`_${property}_`]; }, set(value) { this[`_${property}_`] = setter ? setter.call(this, value) : value; }, configurable: true });
 window.sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 window.getMain = async (url) => {
-    while (!(url = [...document.scripts].find(s => s.src.includes("/static/js/"))?.src)) await window.sleep(100);
+    while (!(url = [...document.scripts].find( => .src.includes("/static/js/"))?.src)) await window.sleep(100);
 
     return url.split("com")[1];
 }
@@ -33,9 +33,9 @@ window.setup = (str) => {
 
   let regexes = [/(\w+)="\+this\.(\w+)\+"/g, /(\w+)="\+this\.(\w+)(?:\(\)|\w*)\+/g, /(\w+)\s*=\s*"\+this\.(\w+)/g, /(\w+)="\+Td\(this\.(\w+)\)/g, /(\w+)\s*=\s*(?:"\+)?\w+\(this\.(\w+)\)/g, /(\w+):\s*"\+this\.(\w+)/g, /(\w+)="\+new\s+iR\(this\.(\w+)\)/g]
   const handler = {
-    parents: (a) => {let t=(a,t)=>{let r=[],e=t.matchAll(a);for(let s of e)r.push([s[1],s[2]]);return r},r=(a,t)=>{t.forEach(([t,r])=>{introduce("parents",a,r)})},e=[{classPattern:/"(\w+)\((.*?)\)"/,paramPattern:/(\w+)="\+(?:\w+\()?(.+?)(?:\))?\+/g,valueTransform:a=>a.replace(/.*?([a-zA-Z0-9_]+)$/,"$1")},{classPattern:/"(\w+)\s*\["/,paramPattern:/(\w+)\s*=\s*"\+this\.([a-zA-Z0-9_]+)/,valueTransform:a=>a},{classPattern:/"(\w+)\s*\["/,paramPattern:/(\w+)\s*=\s*"\+\w+\(this\.([a-zA-Z0-9_]+)\)/g,valueTransform:a=>a}];for(let s of e)try{let n=a.match(s.classPattern);if(!n)continue;let l=n[1],c=t(s.paramPattern,a).map(([a,t])=>[a,s.valueTransform(t)]);if(c.length)return r(l,c)}catch(f){continue}},
+    parents: (a) => {let t=(a,t)=>{let r=[],e=t.matchAll(a);for(let  of e)r.push([[1],[2]]);return r},r=(a,t)=>{t.forEach(([t,r])=>{introduce("parents",a,r)})},e=[{classPattern:/"(\w+)\((.*?)\)"/,paramPattern:/(\w+)="\+(?:\w+\()?(.+?)(?:\))?\+/g,valueTransform:a=>a.replace(/.*?([a-zA-Z0-9_]+)$/,"$1")},{classPattern:/"(\w+)\s*\["/,paramPattern:/(\w+)\s*=\s*"\+this\.([a-zA-Z0-9_]+)/,valueTransform:a=>a},{classPattern:/"(\w+)\s*\["/,paramPattern:/(\w+)\s*=\s*"\+\w+\(this\.([a-zA-Z0-9_]+)\)/g,valueTransform:a=>a}];for(let  of e)try{let n=a.match(.classPattern);if(!n)continue;let l=n[1],c=t(.paramPattern,a).map(([a,t])=>[a,.valueTransform(t)]);if(c.length)return r(l,c)}catch(f){continue}},
     toStrings: (l) => {if(!l.includes('"'))return;handler.parents(l);let t;for(let e of regexes){let c=l.matchAll(e);for(let o of c){let[i,n,r]=o;introduce("collection",n,r),t=!0}}let f=l.match(/"([^(]+)/)[1].trim().toLowerCase(),a=[...l.matchAll(/this\.(\w+)/g)],h=[" ","[","+"];a.forEach((l,e)=>{let[c,o,i]=l,n=`${f}_${e+1}`,r=!h.find(l=>n.includes(l)||o.includes(l));introduce("collection",n,i),t=r&&i})},
-    callableNames: (l) => {let t=/function\s+([^(]+)|callableName\s*=\s*"([^"]+)"/g,i=null,e;for(;null!==(e=t.exec(l));)e[1]?i=e[1]:e[2]&&i&&introduce("callable",e[2],i);let s=["targetingSystem","angularVelocity","chatModeratorLevel","linksWhiteList"],a=["n","t","i"];s.forEach(t=>{let i=l.split(`"${t}")`)[0],e=i.split("if(").pop().split(";")[1].split("(")[0];a.forEach(t=>{l.split(`if(null!=${t})return ${t};${e}("`).slice(1).forEach((l,i,e)=>{let[s,a]=[l.split('"')[0],e[i-1]?.slice(-20).split(`${t}=`)[1]?.split(".")[1]?.split(";")[0]];introduce("collection",s,a)})})})},
+    callableNames: (l) => {let t=/function\s+([^(]+)|callableName\s*=\s*"([^"]+)"/g,i=null,e;for(;null!==(e=t.exec(l));)e[1]?i=e[1]:e[2]&&i&&introduce("callable",e[2],i);let =["targetingSystem","angularVelocity","chatModeratorLevel","linksWhiteList"],a=["n","t","i"];.forEach(t=>{let i=l.split(`"${t}")`)[0],e=i.split("if(").pop().split(";")[1].split("(")[0];a.forEach(t=>{l.split(`if(null!=${t})return ${t};${e}("`).slice(1).forEach((l,i,e)=>{let[,a]=[l.split('"')[0],e[i-1]?.slice(-20).split(`${t}=`)[1]?.split(".")[1]?.split(";")[0]];introduce("collection",,a)})})})},
   };
 
   let chunks = str.split(`).toString=function(){`);
