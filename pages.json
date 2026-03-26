@@ -1,11 +1,11 @@
 [
   {
-    "filename": "Servers.html",
-    "title": "3D坦克-服务器六合一",
-    "desc": "3D坦克各服快速入口整合。",
-    "icon": "fa-server",
-    "category": "game",
-    "theme": "theme-game"
+    "filename": "fire.html",
+    "title": "Douyinh.txt 格式化配置工具",
+    "desc": "用于选择跟哪个用户续火花",
+    "icon": "fa-dice",
+    "category": "admin",
+    "theme": "theme-admin"
   },
   {
     "filename": "ratings.html",
@@ -16,18 +16,18 @@
     "theme": "theme-tool"
   },
   {
+    "filename": "Servers.html",
+    "title": "3D坦克-服务器六合一",
+    "desc": "3D坦克各服快速入口整合。",
+    "icon": "fa-server",
+    "category": "game",
+    "theme": "theme-game"
+  },
+  {
     "filename": "replacement.html",
     "title": "屏蔽词测试工具",
     "desc": "屏蔽词替换 网页版",
     "icon": "fa-search",
-    "category": "admin",
-    "theme": "theme-admin"
-  },
-  {
-    "filename": "fire.html",
-    "title": "Douyinh.txt 格式化配置工具",
-    "desc": "用于选择跟哪个用户续火花",
-    "icon": "fa-dice",
     "category": "admin",
     "theme": "theme-admin"
   }
