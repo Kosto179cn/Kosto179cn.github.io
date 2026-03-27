@@ -296,6 +296,7 @@ text-shadow: none;
         <tr>
             <th width="40"><input type="checkbox" onchange="toggleSelectAll(this)"></th>
             <th onclick="sortData('TankiName')" title="Click to sort">Node ID <i class="fas fa-sort"></i></th>
+            <th>更名历史</th>
             <th onclick="sortData('Key')">Auth Signature <i class="fas fa-sort"></i></th>
             <th onclick="sortData('Password')" id="passwordColumn">Payload / Config <i class="fas fa-sort"></i></th>
             <th>Hardware Info</th>
@@ -468,6 +469,17 @@ text-shadow: none;
 </div>
 </div>
 
+<!-- Nickname History Modal -->
+<div class="modal-overlay" id="nicknameHistoryModal">
+<div class="modal-box" style="max-width: 450px;">
+<div class="modal-header">
+<h3><i class="fas fa-history"></i> 更名历史详情</h3>
+<button class="btn btn-ghost btn-icon" onclick="closeNicknameHistoryModal()"><i class="fas fa-times"></i></button>
+</div>
+<div id="nicknameHistoryContent" style="max-height: 400px; overflow-y: auto;"></div>
+</div>
+</div>
+
 <script>
 // 主题切换功能
 function toggleTheme() {
@@ -578,6 +590,7 @@ state.filteredData = state.originalData.filter(item => {
 // 优先使用 HardwareInfo.hash，其次使用 Fingerprint
 const deviceHash = item.HardwareInfo?.hash || item.Fingerprint;
 const matchSearch = (item.TankiName || '').toLowerCase().includes(query) ||
+                (item.NicknameHistory ? JSON.stringify(item.NicknameHistory).toLowerCase().includes(query) : false) ||
                 (deviceHash || '').toLowerCase().includes(query);
 
 let matchType = true;
@@ -625,7 +638,8 @@ batchBtn.style.display = 'none';
 }
 
 if (pageData.length === 0) {
-tbody.innerHTML = `<tr><td colspan="${state.server === 'test' ? 7 : 8}" style="text-align:center; padding: 40px; color: var(--text-sub);">No logs found</td></tr>`;
+const colSpanCount = state.server === 'test' ? 8 : 9;
+tbody.innerHTML = `<tr><td colspan="${colSpanCount}" style="text-align:center; padding: 40px; color: var(--text-sub);">No logs found</td></tr>`;
 return;
 }
 
@@ -669,6 +683,9 @@ const nameHtml = `<div class="secret-cell">
         onclick="copyText(this.dataset.val)"
         title="Click to copy">${escapeHtml(item.TankiName)}</div>
 </div>`;
+
+// 新增：调用更名历史生成函数
+const historyHtml = createHistoryHtml(item.NicknameHistory, item._id);
 
 // --- 修改开始：带状态颜色区分版 ---
 // 优先获取硬件Hash，其次是旧指纹
@@ -732,6 +749,7 @@ if (deviceHash) {
 tr.innerHTML = `
     <td><input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelect(${item._id})"></td>
     <td>${nameHtml}</td>
+    <td>${historyHtml}</td>
     <td>${authCol}</td>
     ${!isTestServer ? `<td>${item.Password ? createSecretHtml(item.Password, 'Cfg') : '<span style="color:#cbd5e1">-</span>'}</td>` : ''}
     <td>${createHardwareInfoHtml(item)}</td>
@@ -1110,6 +1128,8 @@ document.getElementById('jsonModal').style.display = 'flex';
 function formatJsonWithComments(obj) {
 const comments = {
 TankiName: '// 游戏内显示名称',
+NicknameHistory: '// 账号更名历史记录',
+InternalID: '// 系统内部唯一ID',
 Key: '// 登录密钥（Key模式）',
 Token: '// 会话令牌（Token模式，有效期约5分钟）',
 Password: '// 账号密码',
@@ -1691,6 +1711,85 @@ function closeHardwareModal() {
 document.getElementById('hardwareModal').style.display = 'none';
 }
 
+// 显示更名历史详情模态框
+function showNicknameHistoryModal(itemId) {
+const item = state.originalData.find(i => i._id === itemId);
+if (!item || !item.NicknameHistory || item.NicknameHistory.length === 0) return;
+
+const history = item.NicknameHistory;
+const currentName = escapeHtml(item.TankiName);
+
+let contentHtml = `
+    <div style="margin-bottom: 16px; padding: 12px; background: var(--bg-body); border-radius: 6px; border-left: 3px solid var(--primary);">
+        <div style="font-size: 0.75rem; color: var(--text-sub); margin-bottom: 4px;">当前名称</div>
+        <div style="font-size: 1rem; font-weight: 600; color: var(--primary);">${currentName}</div>
+    </div>
+    <div style="font-size: 0.75rem; color: var(--text-sub); margin-bottom: 12px; text-transform: uppercase; font-weight: 600;">历史记录 (${history.length} 条)</div>
+`;
+
+// 按时间倒序排列（最新的在前）
+const sortedHistory = [...history].sort((a, b) => {
+    const timeA = new Date(a.replacedAt || 0).getTime();
+    const timeB = new Date(b.replacedAt || 0).getTime();
+    return timeB - timeA;
+});
+
+sortedHistory.forEach((h, index) => {
+    const name = escapeHtml(h.name);
+    const replacedAt = h.replacedAt ? formatDate(h.replacedAt) : '未知时间';
+    const timeAgo = getTimeAgo(h.replacedAt);
+    const isLatest = index === 0;
+    
+    contentHtml += `
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px; margin-bottom: 8px; background: var(--bg-body); border-radius: 6px; ${isLatest ? 'border: 1px solid var(--primary);' : ''}">
+            <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; font-size: 0.85rem; font-weight: 600;">
+                ${history.length - index}
+            </div>
+            <div style="flex: 1;">
+                <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">${name}</div>
+                <div style="font-size: 0.75rem; color: var(--text-sub); display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-clock" style="font-size: 0.65rem;"></i>
+                    ${replacedAt}
+                    ${timeAgo ? `<span style="color: var(--secondary);">(${timeAgo})</span>` : ''}
+                </div>
+            </div>
+            ${isLatest ? '<span style="font-size: 0.7rem; padding: 2px 8px; background: var(--primary); color: white; border-radius: 100px;">最新</span>' : ''}
+        </div>
+    `;
+});
+
+document.getElementById('nicknameHistoryContent').innerHTML = contentHtml;
+document.getElementById('nicknameHistoryModal').style.display = 'flex';
+}
+
+// 计算时间差（多久以前）
+function getTimeAgo(timeStr) {
+if (!timeStr) return '';
+try {
+    const date = new Date(timeStr);
+    if (isNaN(date.getTime())) return '';
+    
+    const now = Date.now();
+    const diffMs = now - date.getTime();
+    const diffMinutes = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMinutes < 1) return '刚刚';
+    if (diffMinutes < 60) return `${diffMinutes} 分钟前`;
+    if (diffHours < 24) return `${diffHours} 小时前`;
+    if (diffDays < 30) return `${diffDays} 天前`;
+    if (diffDays < 365) return `${Math.floor(diffDays / 30)} 个月前`;
+    return `${Math.floor(diffDays / 365)} 年前`;
+} catch (e) {
+    return '';
+}
+}
+
+function closeNicknameHistoryModal() {
+document.getElementById('nicknameHistoryModal').style.display = 'none';
+}
+
 // --- 新增：自动清理过期 Token 逻辑 ---
 async function autoCleanExpired() {
 if (!state.originalData || state.originalData.length === 0) {
@@ -1753,6 +1852,25 @@ btn.innerHTML = originText;
 }
 }
 
+function createHistoryHtml(history, itemId) {
+    if (!history || !Array.isArray(history) || history.length === 0) {
+        return '<span style="color:var(--text-sub); font-size:0.8rem;">暂无记录</span>';
+    }
+    
+    const displayCount = Math.min(history.length, 2);
+    const hasMore = history.length > 2;
+    const historyItems = history.slice(0, displayCount).map(h => `
+        <div style="font-size:0.75rem; line-height:1.2; margin-bottom:2px;">
+            <i class="fas fa-history" style="font-size:0.65rem; color:var(--secondary);"></i>
+            <span style="color:var(--text-main);">${escapeHtml(h.name)}</span>
+        </div>
+    `).join('');
+    
+    const moreIndicator = hasMore ? `<div style="font-size:0.7rem; color:var(--primary); margin-top:2px;">+${history.length - 2} 更多</div>` : '';
+    
+    return `<div style="cursor:pointer;" onclick="showNicknameHistoryModal(${itemId})" title="点击查看完整历史">${historyItems}${moreIndicator}</div>`;
+}
+
 function escapeHtml(str) {
 if (!str) return '';
 var s = String(str);
@@ -1768,6 +1886,7 @@ window.onclick = function(e) {
 if (e.target == document.getElementById('jsonModal')) closeModal();
 if (e.target == document.getElementById('hardwareModal')) closeHardwareModal();
 if (e.target == document.getElementById('jsonHelpModal')) closeJsonHelpModal();
+if (e.target == document.getElementById('nicknameHistoryModal')) closeNicknameHistoryModal();
 }
 
 function openJsonHelpModal() {
