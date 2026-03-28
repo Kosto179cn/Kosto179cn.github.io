@@ -43,7 +43,7 @@
         .brand-logo {
             font-weight: 800; font-size: 1.5rem;
             background: linear-gradient(45deg, #007bff, #6610f2);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
         /* 英雄区域 (B站入口) */
@@ -169,6 +169,10 @@
                     <a href="https://space.bilibili.com/509510039" target="_blank" class="bilibili-btn">
                         <i class="fab fa-bilibili me-2"></i> 访问我的主页
                     </a>
+                    <!-- 新增引导按钮 -->
+                    <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#guideModal" style="background: linear-gradient(45deg, #007bff, #6610f2); border:none; box-shadow: 0 4px 15px rgba(0,123,255,0.3);">
+                        <i class="fas fa-book-open me-2"></i> 脚本安装与使用指南
+                    </button>
                     <a href="https://message.bilibili.com/" target="_blank" class="btn btn-outline-secondary rounded-pill px-4 py-2" style="background: white;">
                         <i class="fas fa-envelope me-2"></i> 私信联系
                     </a>
@@ -597,7 +601,110 @@
             initCharts();  // 2. 加载图表
             
             document.getElementById('checkVersionBtn').addEventListener('click', checkVersion);
+            
+            // 检查是否是第一次访问
+            if (!localStorage.getItem('kosto_guide_seen')) {
+                const guideModal = new bootstrap.Modal(document.getElementById('guideModal'));
+                guideModal.show();
+                // 记录已查看，下次不再自动弹出
+                localStorage.setItem('kosto_guide_seen', 'true');
+            }
         });
     </script>
+
+    <!-- 使用指南模态框 -->
+    <div class="modal fade" id="guideModal" tabindex="-1" aria-labelledby="guideModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header border-0 bg-light" style="border-radius: 20px 20px 0 0;">
+                    <h5 class="modal-title fw-bold text-primary" id="guideModalLabel">
+                        <i class="fas fa-rocket me-2"></i>Kosto 脚本使用手册
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- 第一步：环境安装 -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold"><span class="badge bg-primary me-2">Step 1</span> 安装脚本管理器</h6>
+                        <p class="text-muted small">脚本必须运行在“篡改猴”插件之上，请先安装：</p>
+                        <div class="d-grid gap-2 d-md-block">
+                            <a href="https://www.tampermonkey.net/" target="_blank" class="btn btn-sm btn-outline-dark">
+                                <i class="fas fa-plug me-1"></i> Tampermonkey 官网下载
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 第二步：开启开发者模式 -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold"><span class="badge bg-warning text-dark me-2">Step 2</span> 开启浏览器开发者模式 (重要)</h6>
+                        <div class="alert alert-warning border-0 small py-2">
+                            某些浏览器（如 Edge/Chrome）为了安全会拦截第三方扩展，必须开启开发者模式：
+                        </div>
+                        <ul class="text-muted small">
+                            <li>在浏览器地址栏输入 <code>chrome://extensions/</code> (Chrome) 或 <code>edge://extensions/</code> (Edge)</li>
+                            <li>在页面右上角找到 <strong>“开发者模式”</strong> 开关并开启。</li>
+                            <li>重新刷新本页面。</li>
+                        </ul>
+                    </div>
+
+                    <!-- 第三步：安装脚本 -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold"><span class="badge bg-success me-2">Step 3</span> 确认安装脚本</h6>
+                        <p class="text-muted small">点击主页的“立即下载”按钮，篡改猴会自动弹出安装界面，点击“安装”或“更新”即可。</p>
+                    </div>
+
+                    <!-- 第四步：安装脚本 -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold"><span class="badge bg-info me-2">Step 4</span> 安装脚本</h6>
+                        <p class="text-muted small">安装完篡改猴后，点击以下链接安装 Kosto 脚本：</p>
+                        <div class="d-grid gap-2 d-md-block">
+                            <a href="https://gitee.com/Kosto179/kosto/raw/master/js/cloudversion.script.user.js" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-download me-1"></i> 安装 Kosto 脚本
+                            </a>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- 第五步：操作指南 -->
+                    <div class="mb-2">
+                        <h6 class="fw-bold text-danger"><i class="fas fa-keyboard me-2"></i>游戏内快捷键及功能</h6>
+                        <div class="table-responsive mt-3">
+                            <table class="table table-sm table-hover border">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>按键</th>
+                                        <th>功能说明</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="small">
+                                    <tr><td><span class="badge bg-secondary">M</span></td><td><strong>呼出/关闭菜单</strong> (录屏模式下需长按2秒)</td></tr>
+                                    <tr><td><span class="badge bg-secondary">A</span> / <span class="badge bg-secondary">B</span></td><td>在大厅自动加入 A队 或 B队</td></tr>
+                                    <tr><td><span class="badge bg-secondary">H</span></td><td>自动加入任意有空位的队伍</td></tr>
+                                    <tr><td><span class="badge bg-secondary">X</span></td><td><strong>紧急停止</strong> 所有自动线程 (抢位、点击器等)</td></tr>
+                                    <tr><td><span class="badge bg-secondary">T</span></td><td><strong>一键闪退</strong> (从战场瞬间返回大厅)</td></tr>
+                                    <tr><td><span class="badge bg-secondary">F10</span></td><td>屏幕截图 (可配置保存到剪贴板或下载)</td></tr>
+                                    <tr><td><span class="badge bg-secondary">F5</span></td><td>手动刷新游戏页面</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 特殊说明 -->
+                    <div class="bg-info bg-opacity-10 p-3 rounded-3 mt-3">
+                        <h6 class="fw-bold" style="font-size: 0.9rem;"><i class="fas fa-info-circle me-1"></i> 特色功能提示</h6>
+                        <ul class="mb-0 text-muted" style="font-size: 0.8rem;">
+                            <li><strong>录屏/直播模式：</strong> 开启后将隐藏所有脚本 UI 和关键个人信息，防止被封号。</li>
+                            <li><strong>防封挂机：</strong> 模拟真实随机按键，通过自定义动作防止被判定为 2.5 挂机。</li>
+                            <li><strong>管理员意淫：</strong> 仅在本地生效的视觉增强，满足虚荣心之选。</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">我知道了</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
