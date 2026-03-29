@@ -1,1964 +1,710 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>T-Node System Monitor</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-:root {
-/* 科技蓝/灰色调 - 伪装成日志系统 - 日间模式 */
---primary: #2563eb;
---primary-hover: #1d4ed8;
---secondary: #64748b;
---success: #059669;
---danger: #dc2626;
---warning: #d97706;
---bg-body: #f1f5f9;
---bg-card: #ffffff;
---text-main: #334155;
---text-sub: #64748b;
---border: #e2e8f0;
---shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
---shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
---radius: 0.5rem;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kosto 聚合门户</title>
+    <!-- Bootstrap 5.3 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-/* 夜间模式 */
-[data-theme="dark"] {
---primary: #3b82f6;
---primary-hover: #60a5fa;
---secondary: #94a3b8;
---success: #10b981;
---danger: #ef4444;
---warning: #f59e0b;
---bg-body: #0f172a;
---bg-card: #1e293b;
---text-main: #f1f5f9;
---text-sub: #94a3b8;
---border: #334155;
---shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
---shadow: 0 4px 6px -1px rgb(0 0 0 / 0.4);
-}
+    <style>
+        :root {
+            --primary-bg: #f0f2f5;
+            --bilibili-pink: #fb7299;
+            --bilibili-blue: #00aeec;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(255, 255, 255, 0.5);
+            --text-primary: #333;
+        }
 
-* { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
-body { font-family: 'Segoe UI', 'Roboto', monospace, sans-serif; background: var(--bg-body); color: var(--text-main); line-height: 1.5; padding-bottom: 60px; transition: background 0.3s, color 0.3s; }
+        body {
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            background-attachment: fixed;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding-bottom: 80px;
+        }
 
-/* --- 布局 --- */
-.container { max-width: 1440px; margin: 0 auto; padding: 24px; }
-.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.header h1 { font-size: 1.25rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 1px; }
-.header h1 i { color: var(--primary); }
+        /* 顶部导航 */
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            position: sticky; top: 0; z-index: 1000;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
 
-/* --- 卡片 --- */
-.card { background: var(--bg-card); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 20px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .brand-logo {
+            font-weight: 800; font-size: 1.5rem;
+            background: linear-gradient(45deg, #007bff, #6610f2);
+            background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
 
-/* --- 表单 --- */
-.login-grid { display: grid; grid-template-columns: 3fr 1fr auto; gap: 16px; align-items: end; }
-.form-group label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; }
-.input-wrapper { position: relative; }
-.input-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-sub); pointer-events: none; font-size: 0.9rem; }
+        /* 英雄区域 (B站入口) */
+        .hero-section {
+            background: white; border-radius: 24px; padding: 40px; margin-top: 30px;
+            box-shadow: 0 15px 35px rgba(251, 114, 153, 0.1);
+            border: 1px solid rgba(251, 114, 153, 0.15);
+            position: relative; overflow: hidden;
+            background: linear-gradient(120deg, #fff 0%, #fff0f6 100%);
+        }
+        
+        .hero-bg-icon {
+            position: absolute; right: -30px; top: -40px; font-size: 18rem;
+            color: rgba(251, 114, 153, 0.08); transform: rotate(15deg);
+            z-index: 0; pointer-events: none;
+        }
 
-.form-control { width: 100%; padding: 8px 12px 8px 36px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.9rem; font-family: 'Consolas', monospace; background: var(--bg-card); color: var(--text-main); }
-.form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); }
+        .bilibili-btn {
+            background-color: var(--bilibili-pink); color: white; border: none;
+            padding: 12px 35px; border-radius: 50px; font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1; position: relative; box-shadow: 0 5px 15px rgba(251, 114, 153, 0.3);
+        }
 
-/* --- 按钮 --- */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 16px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; font-size: 0.85rem; font-family: 'Segoe UI', sans-serif; }
-.btn-primary { background: var(--primary); color: white; }
-.btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
-.btn-danger { background: var(--danger); color: white; }
-.btn-ghost { background: transparent; color: var(--text-sub); border: 1px solid var(--border); }
-.btn-ghost:hover { background: var(--border); color: var(--text-main); }
-.btn:disabled { opacity: 0.6; cursor: not-allowed; }
-.btn-sm { padding: 4px 10px; font-size: 0.75rem; }
-.btn-icon { padding: 6px; width: 28px; height: 28px; border-radius: 4px; }
+        .bilibili-btn:hover {
+            background-color: #e55b80; transform: translateY(-3px) scale(1.02);
+            color: white; box-shadow: 0 8px 20px rgba(251, 114, 153, 0.5);
+        }
 
-/* --- 统计 --- */
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
-.stat-item { background: var(--bg-card); padding: 16px; border-radius: var(--radius); border-left: 3px solid var(--primary); box-shadow: var(--shadow-sm); }
-.stat-value { font-size: 1.5rem; font-weight: 700; color: var(--text-main); font-family: 'Consolas', monospace; }
-.stat-label { font-size: 0.75rem; color: var(--text-sub); text-transform: uppercase; font-weight: 600; margin-top: 4px; }
+        /* 区域标题 (默认隐藏，JS有内容时显示) */
+        .section-title {
+            font-weight: 700; margin: 40px 0 20px; position: relative; padding-left: 15px; color: #495057;
+            display: none; 
+        }
+        .section-title::before { content: ''; position: absolute; left: 0; top: 5px; bottom: 5px; width: 5px; border-radius: 5px; background: #007bff; }
+        .section-title.tools::before { background: #20c997; } /* 绿色 */
+        .section-title.admin::before { background: #6f42c1; } /* 紫色 */
+        .section-title.res::before { background: #fd7e14; } /* 橙色 */
+        .section-title.other::before { background: #6c757d; } /* 灰色 */
 
-/* --- 工具栏 --- */
-.toolbar { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
-.search-box { position: relative; max-width: 320px; width: 100%; }
-.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        /* 功能卡片样式 */
+        .tool-card {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 16px; transition: all 0.3s ease; height: 100%;
+            position: relative; overflow: hidden; backdrop-filter: blur(5px);
+        }
+        .tool-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); background: #fff; }
 
-.filter-chip { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 100px; background: var(--bg-body); font-size: 0.8rem; cursor: pointer; border: 1px solid transparent; user-select: none; color: var(--text-sub); transition: all 0.2s; }
-.filter-chip.active { background: var(--primary); color: white; border-color: var(--primary-hover); font-weight: 600; }
+        .card-icon {
+            width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;
+            border-radius: 14px; font-size: 1.6rem; margin-bottom: 15px; transition: transform 0.3s;
+        }
+        .tool-card:hover .card-icon { transform: scale(1.1) rotate(5deg); }
 
-/* --- 表格 --- */
-.table-container { overflow-x: auto; overflow-y: auto; max-height: 50vh; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-card); margin-bottom: 16px; }
-table { width: 100%; border-collapse: collapse; white-space: nowrap; font-family: 'Consolas', monospace; font-size: 0.85rem; }
-th { background: var(--bg-body); padding: 12px 16px; text-align: left; font-weight: 600; color: var(--text-sub); border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
-th:hover { color: var(--primary); background: var(--border); }
-td { padding: 10px 16px; border-bottom: 1px solid var(--border); color: var(--text-main); vertical-align: middle; }
-tr:hover { background-color: var(--bg-body); }
-tr.selected { background-color: var(--primary); color: white; }
+        .card-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 8px; }
+        .card-text { color: #6c757d; font-size: 0.9rem; line-height: 1.5; margin-bottom: 20px; }
+        .stretched-link::after { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 1; content: ""; }
 
-/* 敏感信息伪装样式 */
-.secret-cell { display: flex; align-items: center; gap: 8px; max-width: 200px; }
+        /* 颜色主题类 */
+        .theme-admin .card-icon { background: rgba(111, 66, 193, 0.1); color: #6f42c1; }
+        .theme-game .card-icon { background: rgba(32, 201, 151, 0.1); color: #20c997; }
+        .theme-tool .card-icon { background: rgba(13, 202, 240, 0.1); color: #0dcaf0; }
+        .theme-edit .card-icon { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+        .theme-warn .card-icon { background: rgba(220, 53, 69, 0.1); color: #dc3545; }
+        .theme-other .card-icon { background: rgba(108, 117, 125, 0.1); color: #6c757d; }
 
-/* 时间详情样式 */
-.time-badges { display: flex; flex-wrap: wrap; gap: 4px; }
-.time-badge { display: inline-flex; align-items: center; gap: 3px; padding: 2px 6px; border-radius: 3px; font-size: 0.75rem; font-family: 'Segoe UI', sans-serif; }
-.time-badge.type-pass { color: #27ae60; background: rgba(39, 174, 96, 0.1); }
-.time-badge.type-key { color: #9333ea; background: rgba(147, 51, 234, 0.1); }
-.time-badge.type-token { color: #3498db; background: rgba(52, 152, 219, 0.1); }
-.time-badge.type-last { color: #95a5a6; background: rgba(149, 165, 166, 0.1); }
-.time-badge.expired { color: #dc2626; background: rgba(220, 38, 38, 0.15); animation: pulse 2s infinite; }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        /* 统计图表容器 */
+        .chart-container {
+            background: white; border-radius: 20px; padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.05);
+        }
 
-.secret-value {
-background: var(--bg-body);
-padding: 2px 6px;
-border-radius: 3px;
-overflow: hidden;
-text-overflow: ellipsis;
-max-width: 160px;
-color: var(--text-main);
-transition: all 0.2s;
-border: 1px solid transparent;
-cursor: pointer;
-}
+        /* 加载动画 */
+        #loading-spinner { text-align: center; padding: 60px 0; color: #adb5bd; }
+        
+        /* 动画效果 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translate3d(0, 20px, 0); }
+            to { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+        .fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
 
-.secret-value:hover {
-border-color: var(--border);
-background: var(--bg-card);
-}
-
-.secret-value:active {
-background: var(--border);
-transform: scale(0.98);
-}
-
-/* 模糊效果 */
-.secret-blur {
-color: transparent;
-text-shadow: 0 0 5px rgba(0,0,0,0.5);
-user-select: none;
-}
-
-/* 明文效果 */
-.secret-reveal {
-color: inherit;
-text-shadow: none;
-}
-
-/* --- 分页 --- */
-.pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 0.85rem; }
-.page-controls { display: flex; gap: 4px; }
-.page-btn { min-width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: var(--bg-card); color: var(--text-main); }
-.page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-
-/* --- 模态框 --- */
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(2px); }
-.modal-box { background: var(--bg-card); padding: 24px; border-radius: var(--radius); width: 90%; max-width: 600px; box-shadow: var(--shadow); max-height: 85vh; display: flex; flex-direction: column; color: var(--text-main); }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
-.json-viewer { background: #0f172a; color: #cbd5e1; padding: 16px; border-radius: 6px; overflow: auto; font-family: 'Consolas', monospace; font-size: 0.8rem; line-height: 1.4; }
-.json-viewer .comment { color: #64748b; font-style: italic; }
-.json-viewer .key { color: #60a5fa; }
-.json-viewer .string { color: #34d399; }
-.json-viewer .number { color: #fbbf24; }
-
-/* 硬件详情样式 */
-.hw-grid { display: grid; gap: 12px; }
-.hw-entry { display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--bg-body); border-radius: 6px; border-left: 3px solid var(--primary); }
-.hw-entry i { width: 20px; text-align: center; }
-
-.toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1100; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-.toast { pointer-events: auto; background: var(--bg-card); padding: 10px 16px; border-radius: 6px; box-shadow: var(--shadow); border-left: 3px solid var(--primary); display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s ease; font-size: 0.9rem; }
-.toast.success { border-color: var(--success); }
-.toast.error { border-color: var(--danger); }
-@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
-@media (max-width: 768px) {
-.login-grid { grid-template-columns: 1fr; }
-.toolbar { flex-direction: column; align-items: stretch; gap: 12px; }
-.header { flex-direction: column; align-items: flex-start; }
-}
-</style>
+        footer { margin-top: 60px; text-align: center; color: #adb5bd; font-size: 0.85rem; }
+    </style>
 </head>
 <body>
 
-<div class="container">
-<div class="header">
-<h1><i class="fas fa-server"></i> T-Node System Monitor</h1>
-<div class="header-actions">
-<button class="btn btn-ghost btn-sm" onclick="toggleTheme()" id="themeToggle" title="切换主题">
-    <i class="fas fa-moon"></i>
-</button>
-<span style="font-size: 0.8rem; color: var(--text-sub); font-family: monospace;">v2.5.4-stable</span>
-</div>
-</div>
-
-<!-- 登录/配置区域 -->
-<div class="card">
-<form id="loginForm" onsubmit="event.preventDefault(); fetchData();">
-<div class="login-grid">
-    <div class="form-group">
-        <label>API Access Key</label>
-        <div class="input-wrapper">
-            <i class="fas fa-terminal"></i>
-            <input type="password" id="giteeToken" class="form-control" placeholder="Authentication Key..." autocomplete="off">
-            <i class="fas fa-eye" style="left: auto; right: 12px; cursor: pointer; pointer-events: auto;" onclick="toggleTokenVisibility(this)"></i>
-        </div>
-    </div>
-    <div class="form-group">
-        <label>Region Endpoint</label>
-        <div class="input-wrapper">
-            <select id="serverSelect" class="form-control form-select" onchange="changeServer()">
-                <option value="cn">CN-East-1 (国服)</option>
-                <option value="en">US-West-2 (外服)</option>
-                <option value="test">Dev-Test (测试服)</option>
-            </select>
-        </div>
-    </div>
-    <div class="form-group" style="display: flex; gap: 10px;">
-        <button type="submit" class="btn btn-primary" id="fetchBtn" style="flex: 1;">
-            <i class="fas fa-network-wired"></i> Connect
-        </button>
-        <button type="button" class="btn btn-ghost" onclick="saveToken()" title="Cache Credentials">
-            <i class="fas fa-save"></i>
-        </button>
-    </div>
-</div>
-</form>
-</div>
-
-<!-- 统计面板 -->
-<div id="statsSection" class="stats-grid" style="display:none;">
-<div class="stat-item" style="border-color: var(--primary);">
-<div class="stat-value" id="totalCount">0</div>
-<div class="stat-label">Total Nodes</div>
-</div>
-<div class="stat-item" style="border-color: var(--success);">
-<div class="stat-value" id="withPassword">0</div>
-<div class="stat-label">Config Active</div>
-</div>
-<div class="stat-item" style="border-color: var(--warning);">
-<div class="stat-value" id="withToken">0</div>
-<div class="stat-label">Sessions</div>
-</div>
-<div class="stat-item" style="border-color: var(--danger);">
-<div class="stat-value" id="withFingerprint">0</div>
-<div class="stat-label">HWID Logs</div>
-</div>
-</div>
-
-<!-- 数据主区域 -->
-<div class="card" id="dataSection" style="display:none;">
-<div class="toolbar">
-<div class="search-box">
-    <div class="input-wrapper">
-        <i class="fas fa-search"></i>
-        <input type="text" id="searchInput" class="form-control" placeholder="Search Node ID..." oninput="handleSearch()">
-    </div>
-</div>
-
-<div class="filters">
-    <label class="filter-chip active" onclick="toggleFilter(this, 'all')">
-        <i class="fas fa-border-all"></i> All
-    </label>
-    <label class="filter-chip" onclick="toggleFilter(this, 'hasPass')">
-        <i class="fas fa-cube"></i> Type A
-    </label>
-    <label class="filter-chip" onclick="toggleFilter(this, 'hasToken')">
-        <i class="fas fa-code-branch"></i> Type B
-    </label>
-    <label class="filter-chip" onclick="toggleFilter(this, 'hasFingerprint')">
-        <i class="fas fa-fingerprint"></i> HWID
-    </label>
-    <label class="filter-chip" onclick="toggleFilter(this, 'emailUnconfirmed')">
-        <i class="fas fa-envelope"></i> none email
-    </label>
-    
-    <div style="width: 1px; height: 24px; background: var(--border); margin: 0 8px;"></div>
-
-    <button class="btn btn-ghost btn-sm" onclick="toggleSecrets()" title="Toggle Masking">
-        <i class="fas fa-low-vision" id="eyeIcon"></i> Masking
-    </button>
-
-    <!-- 【新增】自动清理按钮 -->
-    <button class="btn btn-warning btn-sm" onclick="autoCleanExpired()" style="background: var(--warning); color: white;">
-        <i class="fas fa-broom"></i> Clean Expired
-    </button>
-
-    <button class="btn btn-primary btn-sm" onclick="exportData()">
-        <i class="fas fa-file-export"></i> Export Log
-    </button>
-    <button class="btn btn-danger btn-sm" id="batchDeleteBtn" style="display:none;" onclick="batchDelete()">
-        <i class="fas fa-eraser"></i> Purge (<span id="selectCount">0</span>)
-    </button>
-</div>
-</div>
-
-<div class="table-container">
-<table id="dataTable">
-    <thead>
-        <tr>
-            <th width="40"><input type="checkbox" onchange="toggleSelectAll(this)"></th>
-            <th onclick="sortData('TankiName')" title="Click to sort">Node ID <i class="fas fa-sort"></i></th>
-            <th>更名历史</th>
-            <th onclick="sortData('Key')">Auth Signature <i class="fas fa-sort"></i></th>
-            <th onclick="sortData('Password')" id="passwordColumn">Payload / Config <i class="fas fa-sort"></i></th>
-            <th>Hardware Info</th>
-            <th>Device Hash</th>
-            <th onclick="sortData('LastUpdate')">Sync Time <i class="fas fa-sort"></i></th>
-            <th onclick="sortData('EmailConfirmed')">Email Confirmed <i class="fas fa-sort"></i></th>
-            <th>Time Details</th>
-            <th width="80">Opts</th>
-        </tr>
-    </thead>
-    <tbody id="dataBody">
-        <!-- JS Render -->
-    </tbody>
-</table>
-</div>
-
-<!-- 分页 -->
-<div class="pagination">
-<div class="page-info">
-    <span>Total <span id="totalFilterCount">0</span> records</span>
-    <select id="pageSize" onchange="changePageSize()" class="form-select" style="border: 1px solid var(--border); border-radius: 4px; padding: 2px; margin-left: 8px; font-size: 0.8rem;">
-        <option value="10">10</option>
-        <option value="20" selected>20</option>
-        <option value="50">50</option>
-        <option value="100">100</option>
-    </select>
-</div>
-<div class="page-controls" id="pageControls"></div>
-</div>
-</div>
-</div>
-
-<!-- Modal -->
-<div class="modal-overlay" id="jsonModal">
-<div class="modal-box">
-<div class="modal-header">
-<h3><i class="fas fa-terminal"></i> Raw Data Stream</h3>
-<button class="btn btn-ghost btn-sm" onclick="openJsonHelpModal()" title="查看字段说明" style="margin-right: 8px;">
-    <i class="fas fa-question-circle"></i> 说明
-</button>
-<button class="btn btn-ghost btn-icon" onclick="closeModal()"><i class="fas fa-times"></i></button>
-</div>
-<div id="jsonContent" class="json-viewer"></div>
-<div style="margin-top: 16px; display: flex; justify-content: flex-end;">
-<button class="btn btn-primary btn-sm" onclick="copyJsonContent()">Copy Buffer</button>
-</div>
-</div>
-</div>
-
-<!-- JSON字段说明模态框 -->
-<div class="modal-overlay" id="jsonHelpModal">
-<div class="modal-box" style="max-width: 700px;">
-<div class="modal-header">
-<h3><i class="fas fa-book"></i> JSON字段说明</h3>
-<button class="btn btn-ghost btn-icon" onclick="closeJsonHelpModal()"><i class="fas fa-times"></i></button>
-</div>
-<div class="json-viewer" style="background: var(--bg-body); color: var(--text-main); font-size: 0.85rem; padding: 20px;">
-<div style="display: grid; gap: 16px;">
-    <div style="border-left: 3px solid var(--primary); padding-left: 12px;">
-        <strong style="color: var(--primary);">TankiName</strong>
-        <div style="margin-top: 4px;">游戏内显示名称</div>
-    </div>
-    <div style="border-left: 3px solid var(--primary); padding-left: 12px;">
-        <strong style="color: var(--primary);">Key</strong>
-        <div style="margin-top: 4px;">登录密钥（用于Key模式登录）</div>
-    </div>
-    <div style="border-left: 3px solid var(--primary); padding-left: 12px;">
-        <strong style="color: var(--primary);">Token</strong>
-        <div style="margin-top: 4px;">会话令牌（用于Token模式登录，有效期约5分钟）</div>
-    </div>
-    <div style="border-left: 3px solid var(--primary); padding-left: 12px;">
-        <strong style="color: var(--primary);">Password</strong>
-        <div style="margin-top: 4px;">账号密码（用于密码模式登录）</div>
-    </div>
-    <div style="border-left: 3px solid var(--primary); padding-left: 12px;">
-        <strong style="color: var(--primary);">Fingerprint</strong>
-        <div style="margin-top: 4px;">设备指纹（用于识别和绑定设备）</div>
-    </div>
-    <div style="border-left: 3px solid var(--success); padding-left: 12px;">
-        <strong style="color: var(--success);">LastUpdate</strong>
-        <div style="margin-top: 4px;">最后更新时间（所有字段更新时间）</div>
-    </div>
-    <div style="border-left: 3px solid var(--success); padding-left: 12px;">
-        <strong style="color: var(--success);">KeyUpdate</strong>
-        <div style="margin-top: 4px;">Key字段最后更新时间</div>
-    </div>
-    <div style="border-left: 3px solid var(--success); padding-left: 12px;">
-        <strong style="color: var(--success);">TokenUpdate</strong>
-        <div style="margin-top: 4px;">Token字段最后更新时间</div>
-    </div>
-    <div style="border-left: 3px solid var(--success); padding-left: 12px;">
-        <strong style="color: var(--success);">PasswordUpdate</strong>
-        <div style="margin-top: 4px;">Password字段最后更新时间</div>
-    </div>
-    <div style="border-left: 3px solid var(--warning); padding-left: 12px;">
-        <strong style="color: var(--warning);">UserConfig</strong>
-        <div style="margin-top: 4px;">
-            <div>用户配置信息：</div>
-            <ul style="margin: 8px 0 0 20px; padding: 0;">
-                <li><code>userAgent</code>: 浏览器标识</li>
-                <li><code>platform</code>: 操作系统平台</li>
-                <li><code>language</code>: 系统语言</li>
-                <li><code>screen</code>: 屏幕信息（分辨率、颜色深度、像素比）</li>
-                <li><code>window</code>: 窗口尺寸</li>
-                <li><code>timezone</code>: 时区</li>
-                <li><code>hardwareConcurrency</code>: CPU核心数</li>
-                <li><code>deviceMemory</code>: 设备内存（GB）</li>
-            </ul>
-        </div>
-    </div>
-    <div style="border-left: 3px solid var(--warning); padding-left: 12px;">
-        <strong style="color: var(--warning);">HardwareInfo</strong>
-        <div style="margin-top: 4px;">
-            <div>硬件信息：</div>
-            <ul style="margin: 8px 0 0 20px; padding: 0;">
-                <li><code>hash</code>: 硬件哈希值（设备指纹）</li>
-                <li><code>gpu</code>: GPU信息（厂商、渲染器、版本等）</li>
-                <li><code>renderBase64</code>: WebGL渲染截图（Base64编码）</li>
-            </ul>
-        </div>
-    </div>
-    <div style="border-left: 3px solid var(--primary); padding-left: 12px;">
-        <strong style="color: var(--primary);">EmailConfirmed</strong>
-        <div style="margin-top: 4px;">邮箱确认状态（false表示邮箱未确认）</div>
-    </div>
-</div>
-</div>
-</div>
-</div>
-
-<div class="toast-container" id="toastContainer"></div>
-
-<!-- Edit Mapping Modal -->
-<div class="modal-overlay" id="editMappingModal">
-<div class="modal-box" style="max-width: 450px;">
-<div class="modal-header">
-<h3><i class="fas fa-edit"></i> 设置设备备注</h3>
-<button class="btn btn-ghost btn-icon" onclick="closeEditMappingModal()"><i class="fas fa-times"></i></button>
-</div>
-<div style="display: flex; flex-direction: column; gap: 16px;">
-<div>
-    <label style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase;">设备指纹</label>
-    <div id="editMappingHash" style="padding: 10px; background: var(--bg-body); border-radius: 6px; font-family: 'Consolas', monospace; font-size: 0.85rem; color: var(--text-main); word-break: break-all;"></div>
-</div>
-<div>
-    <label for="editMappingName" style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase;">备注名称</label>
-    <input type="text" id="editMappingName" class="form-control" placeholder="输入设备备注名称..." style="padding: 10px 12px;">
-</div>
-<div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-body); border-radius: 6px;">
-    <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-sub);">启用状态</span>
-    <div style="flex: 1;"></div>
-    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-        <input type="checkbox" id="editMappingStatus" style="width: 18px; height: 18px; cursor: pointer;">
-        <span id="editMappingStatusText" style="font-size: 0.85rem; color: var(--text-main);">启用</span>
-    </label>
-</div>
-<div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px;">
-    <button class="btn btn-ghost" onclick="closeEditMappingModal()">取消</button>
-    <button class="btn btn-primary" onclick="saveMapping()">
-        <i class="fas fa-save"></i> 保存
-    </button>
-</div>
-</div>
-</div>
-</div>
-
-<!-- Hardware Info Modal -->
-<div class="modal-overlay" id="hardwareModal">
-<div class="modal-box" style="max-width: 500px;">
-<div class="modal-header">
-<h3><i class="fas fa-microchip"></i> Hardware Details</h3>
-<button class="btn btn-ghost btn-icon" onclick="closeHardwareModal()"><i class="fas fa-times"></i></button>
-</div>
-<div id="hardwareContent" class="json-viewer" style="font-size: 0.9rem;"></div>
-</div>
-</div>
-
-<!-- Nickname History Modal -->
-<div class="modal-overlay" id="nicknameHistoryModal">
-<div class="modal-box" style="max-width: 450px;">
-<div class="modal-header">
-<h3><i class="fas fa-history"></i> 更名历史详情</h3>
-<button class="btn btn-ghost btn-icon" onclick="closeNicknameHistoryModal()"><i class="fas fa-times"></i></button>
-</div>
-<div id="nicknameHistoryContent" style="max-height: 400px; overflow-y: auto;"></div>
-</div>
-</div>
-
-<!-- Copy Choice Modal -->
-<div class="modal-overlay" id="copyChoiceModal">
-<div class="modal-box" style="max-width: 400px; border: 1px solid var(--primary);">
-<div class="modal-header">
-<h3><i class="fas fa-copy"></i> 选择复制内容</h3>
-<button class="btn btn-ghost btn-icon" onclick="closeCopyChoiceModal()"><i class="fas fa-times"></i></button>
-</div>
-<div style="display: flex; flex-direction: column; gap: 15px; padding: 10px 0;">
-<button class="btn btn-primary" id="copyUidBtn" style="justify-content: flex-start; padding: 12px; height: auto;">
-<i class="fas fa-fingerprint" style="font-size: 1.2rem;"></i>
-<div style="display: flex; flex-direction: column; align-items: flex-start; margin-left: 10px;">
-<span style="font-size: 0.7rem; opacity: 0.8;">复制 UID (Node ID)</span>
-<span id="modalUidVal" style="font-family: monospace; font-size: 0.9rem;"></span>
-</div>
-</button>
-
-<button class="btn btn-ghost" id="copyIdBtn" style="justify-content: flex-start; padding: 12px; height: auto; border: 1px solid var(--primary); color: var(--primary);">
-<i class="fas fa-user-tag" style="font-size: 1.2rem;"></i>
-<div style="display: flex; flex-direction: column; align-items: flex-start; margin-left: 10px;">
-<span style="font-size: 0.7rem; opacity: 0.8;">复制 ID (备注名称)</span>
-<span id="modalIdVal" style="font-size: 0.9rem; font-weight: bold;"></span>
-</div>
-</button>
-</div>
-<button class="btn btn-ghost btn-sm" onclick="closeCopyChoiceModal()" style="margin-top: 10px;">取消</button>
-</div>
-</div>
-
-<script>
-// 主题切换功能
-function toggleTheme() {
-const html = document.documentElement;
-const currentTheme = html.getAttribute('data-theme');
-const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-html.setAttribute('data-theme', newTheme);
-localStorage.setItem('theme', newTheme);
-updateThemeIcon(newTheme);
-}
-
-function updateThemeIcon(theme) {
-const icon = document.querySelector('#themeToggle i');
-if (icon) {
-icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-}
-}
-
-// 初始化主题
-function initTheme() {
-const savedTheme = localStorage.getItem('theme') || 'light';
-document.documentElement.setAttribute('data-theme', savedTheme);
-updateThemeIcon(savedTheme);
-}
-
-const state = {
-token: localStorage.getItem('giteeToken') || '',
-server: localStorage.getItem('currentServer') || 'cn',
-originalData: [],
-filteredData: [],
-idMapData: null, // 存储ID映射数据
-currentPage: 1,
-itemsPerPage: 20,
-sortField: 'LastUpdate',
-sortOrder: 'desc',
-showSecrets: localStorage.getItem('showSecrets') === 'true',
-selectedIds: new Set(),
-filterMode: 'all',
-urls: {
-cn: 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/entrance_hash_key.json',
-en: 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/entrance_hash_en_key.json',
-test: 'https://gitee.com/api/v5/repos/Kosto179/kosto-battle-clicker-new/contents/entrance_hash_test_key.json',
-idMap: 'https://gitee.com/api/v5/repos/Kosto179/kosto/contents/json/1.json'
-}
-};
-
-document.addEventListener('DOMContentLoaded', () => {
-if(state.token) document.getElementById('giteeToken').value = state.token;
-document.getElementById('serverSelect').value = state.server;
-
-// 初始化图标状态
-updateEyeIcon();
-
-// 初始化主题
-initTheme();
-
-if(state.token) fetchData();
-});
-
-async function fetchData() {
-const tokenInput = document.getElementById('giteeToken').value.trim();
-if (!tokenInput) return showToast('API Key required', 'error');
-state.token = tokenInput;
-
-const btn = document.getElementById('fetchBtn');
-btn.disabled = true;
-btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Connecting...';
-
-try {
-const url = `${state.urls[state.server]}?access_token=${state.token}`;
-const res = await fetch(url);
-if (!res.ok) throw new Error(`Connection Error: ${res.status}`);
-
-const data = await res.json();
-const content = JSON.parse(decodeURIComponent(escape(atob(data.content)))); 
-
-state.originalData = content.map((item, index) => ({
-    ...item, 
-    _id: index, 
-    LastUpdate: item.LastUpdate || '' 
-}));
-
-state.selectedIds.clear();
-state.currentPage = 1;
-updateStats();
-applyFilters();
-
-// 并行获取ID映射表
-fetchIdMap();
-
-document.getElementById('statsSection').style.display = 'grid';
-document.getElementById('dataSection').style.display = 'block';
-showToast(`Sync Complete: ${state.originalData.length} records`, 'success');
-
-} catch (err) {
-console.error(err);
-showToast(err.message, 'error');
-} finally {
-btn.disabled = false;
-btn.innerHTML = '<i class="fas fa-network-wired"></i> Connect';
-}
-}
-
-function applyFilters() {
-const query = document.getElementById('searchInput').value.toLowerCase();
-
-state.filteredData = state.originalData.filter(item => {
-// 优先使用 HardwareInfo.hash，其次使用 Fingerprint
-const deviceHash = item.HardwareInfo?.hash || item.Fingerprint;
-const matchSearch = (item.TankiName || '').toLowerCase().includes(query) ||
-                (item.NicknameHistory ? JSON.stringify(item.NicknameHistory).toLowerCase().includes(query) : false) ||
-                (deviceHash || '').toLowerCase().includes(query);
-
-let matchType = true;
-if (state.filterMode === 'hasPass') matchType = !!item.Password;
-if (state.filterMode === 'hasToken') matchType = !!item.Token;
-if (state.filterMode === 'hasFingerprint') matchType = !!deviceHash;
-if (state.filterMode === 'emailUnconfirmed') matchType = item.EmailConfirmed === false;
-
-return matchSearch && matchType;
-});
-
-state.filteredData.sort((a, b) => {
-if (state.sortField === 'LastUpdate') {
-    const timeA = new Date(a.LastUpdate).getTime() || 0;
-    const timeB = new Date(b.LastUpdate).getTime() || 0;
-    return state.sortOrder === 'asc' ? timeA - timeB : timeB - timeA;
-}
-let valA = (a[state.sortField] || '').toString().toLowerCase();
-let valB = (b[state.sortField] || '').toString().toLowerCase();
-if (valA < valB) return state.sortOrder === 'asc' ? -1 : 1;
-if (valA > valB) return state.sortOrder === 'asc' ? 1 : -1;
-return 0;
-});
-
-state.currentPage = 1;
-renderTable();
-renderPagination();
-}
-
-function renderTable() {
-const tbody = document.getElementById('dataBody');
-tbody.innerHTML = '';
-
-const start = (state.currentPage - 1) * state.itemsPerPage;
-const end = start + state.itemsPerPage;
-const pageData = state.filteredData.slice(start, end);
-
-document.getElementById('totalFilterCount').innerText = state.filteredData.length;
-
-const batchBtn = document.getElementById('batchDeleteBtn');
-if (state.selectedIds.size > 0) {
-batchBtn.style.display = 'inline-flex';
-document.getElementById('selectCount').innerText = state.selectedIds.size;
-} else {
-batchBtn.style.display = 'none';
-}
-
-if (pageData.length === 0) {
-const colSpanCount = state.server === 'test' ? 9 : 10;
-tbody.innerHTML = `<tr><td colspan="${colSpanCount}" style="text-align:center; padding: 40px; color: var(--text-sub);">No logs found</td></tr>`;
-return;
-}
-
-pageData.forEach(item => {
-const isSelected = state.selectedIds.has(item._id);
-const tr = document.createElement('tr');
-if(isSelected) tr.classList.add('selected');
-
-let authCol = '';
-const isTestServer = state.server === 'test';
-const authParts = [];
-
-// 测试服：可以同时显示 Token、Key、Password，全部清晰显示
-if (isTestServer) {
-    if (item.Token) {
-        authParts.push(createSecretHtml(item.Token, 'URL', true, true));
-    }
-    if (item.Password) {
-        authParts.push(createSecretHtml(item.Password, 'Pwd', false, true));
-    }
-    if (item.Key) {
-        authParts.push(createSecretHtml(item.Key, 'Sig', false, true));
-    }
-} else {
-    // 正式服：优先级 Token > Key，Password 单独列显示
-    if (item.Key) {
-        authParts.push(createSecretHtml(item.Key, 'Sig'));
-    } else if (item.Token) {
-        authParts.push(createSecretHtml(item.Token, 'Sess', true, false));
-    }
-}
-
-authCol = authParts.length > 0 ? authParts.join('<br>') : '<span style="color:#cbd5e1">-</span>';
-
-const timeBadgesHtml = createTimeBadges(item);
-
-const deviceHash = item.HardwareInfo?.hash || item.Fingerprint;
-const mapping = deviceHash ? getMappedName(item) : null;
-
-const uid = item.TankiName || '';
-const remarkId = mapping ? mapping.name : '';
-
-const displayNodeId = escapeHtml(uid);
-
-const nameHtml = `<div class="secret-cell">
-    <div class="secret-value" style="background:var(--bg-body); color:var(--primary); font-weight:600; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"
-        onclick="handleNodeIdClick('${escapeHtml(uid)}', '${escapeHtml(remarkId)}')"
-        title="点击复制内容">${displayNodeId}</div>
-</div>`;
-
-const historyHtml = createHistoryHtml(item.NicknameHistory, item._id);
-
-let fingerprintHtml = '<span style="color:#cbd5e1">-</span>';
-
-if (deviceHash) {
-    let contentHtml = '';
-    let btnText = '';
-    let btnColor = '';
-
-    if (mapping) {
-        // --- 有备注：根据状态判断颜色 ---
-        const isEnabled = mapping.status === 1;
-        const nameColor = isEnabled ? '#10b981' : '#ef4444'; // 启用=绿色，禁用=红色
-        const statusIcon = isEnabled ? '<i class="fas fa-check-circle" style="font-size:0.75rem;"></i>' : '<i class="fas fa-ban" style="font-size:0.75rem;"></i>';
-
-        btnText = '修改';
-        btnColor = 'var(--text-sub)';
-
-        contentHtml = `
-            <div style="display:flex; flex-direction:column; align-items:flex-start; line-height:1.2;">
-                <span style="color:${nameColor}; font-weight:600; font-size:0.9rem;" title="状态: ${isEnabled ? '启用' : '禁用 (Status: 0)'}">
-                    ${statusIcon} ${escapeHtml(mapping.name)}
-                </span>
-                <span style="font-size:0.75rem; color:#94a3b8; cursor:pointer;"
-                    title="点击复制完整指纹: ${escapeHtml(deviceHash)}"
-                    onclick="copyText('${escapeHtml(deviceHash)}')">
-                    ${escapeHtml(deviceHash.substring(0, 8))}...
-                </span>
-            </div>`;
-    } else {
-        // --- 无备注 ---
-        btnText = '备注';
-        btnColor = 'var(--primary)';
-        contentHtml = `
-            <div class="secret-value"
-                style="max-width: 100px; overflow:hidden; text-overflow:ellipsis; color:var(--text-main);"
-                onclick="copyText('${escapeHtml(deviceHash)}')"
-                title="点击复制: ${escapeHtml(deviceHash)}">
-                ${escapeHtml(deviceHash.substring(0, 10))}...
-            </div>`;
-    }
-
-    // 组合 HTML
-    fingerprintHtml = `
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-            ${contentHtml}
-            <button class="btn btn-ghost btn-sm"
-                    style="font-size:0.75rem; padding: 2px 6px; height:auto; color:${btnColor}; border:1px solid var(--border);"
-                    onclick="editMapping(this, '${escapeHtml(deviceHash)}', '${escapeHtml(mapping ? mapping.name : '')}', ${mapping ? mapping.status : 1})">
-                ${btnText}
+    <!-- 顶部导航 -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container">
+            <a class="navbar-brand brand-logo" href="#">
+                <i class="fas fa-cube"></i> Kosto Hub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
             </button>
-        </div>
-    `;
-}
-// --- 修改结束 ---
-
-const emailConfirmed = item.EmailConfirmed !== undefined ? item.EmailConfirmed : '-';
-const emailConfirmedClass = emailConfirmed === false ? 'style="background-color: rgba(220, 38, 38, 0.15); color: var(--danger); font-weight: 600;"' : '';
-
-tr.innerHTML = `
-    <td><input type="checkbox" ${isSelected ? 'checked' : ''} onchange="toggleSelect(${item._id})"</td>
-    <td>${nameHtml}</td>
-    <td>${historyHtml}</td>
-    <td>${authCol}</td>
-    ${!isTestServer ? `<td>${item.Password ? createSecretHtml(item.Password, 'Cfg') : '<span style="color:#cbd5e1">-</span>'}</td>` : ''}
-    <td>${createHardwareInfoHtml(item)}</td>
-    <td>${fingerprintHtml}</td>
-    <td style="font-size:0.8rem; color:var(--text-sub);">${formatDate(item.LastUpdate)}</td>
-    <td ${emailConfirmedClass}>${emailConfirmed}</td>
-    <td><div class="time-badges">${timeBadgesHtml}</div></td>
-    <td>
-        <button class="btn btn-ghost btn-sm btn-icon" onclick="viewJson(${item._id})" title="Raw View"><i class="fas fa-code"></i></button>
-        <button class="btn btn-ghost btn-sm btn-icon" style="color:var(--danger)" onclick="deleteItem(${item._id})" title="Purge"><i class="fas fa-times"></i></button>
-    </td>
-`;
-tbody.appendChild(tr);
-});
-
-// 测试服隐藏密码列
-const passwordColumn = document.getElementById('passwordColumn');
-if (passwordColumn) {
-passwordColumn.style.display = state.server === 'test' ? 'none' : '';
-}
-}
-
-function createTimeBadges(item) {
-const now = Date.now();
-const getTimeInfo = (timeStr, type) => {
-if (!timeStr) return null;
-try {
-    const d = new Date(timeStr);
-    if (isNaN(d.getTime())) return null;
-    const diffMinutes = (now - d.getTime()) / 60000;
-
-    let relative = '';
-    if (diffMinutes < 1) relative = '刚刚';
-    else if (diffMinutes < 60) relative = `${Math.floor(diffMinutes)}分`;
-    else if (diffMinutes < 1440) relative = `${Math.floor(diffMinutes/60)}时`;
-    else relative = `${Math.floor(diffMinutes/1440)}天`;
-
-    const isExpired = type === 'token' && diffMinutes > 5;
-
-    return { short: relative, full: timeStr, isExpired };
-} catch { return null; }
-};
-
-const badges = [];
-const passInfo = getTimeInfo(item.PasswordUpdate, 'password');
-const keyInfo = getTimeInfo(item.KeyUpdate, 'key');
-const tokenInfo = getTimeInfo(item.TokenUpdate, 'token');
-const lastInfo = getTimeInfo(item.LastUpdate, 'last');
-
-if (passInfo) {
-badges.push(`<span class="time-badge type-pass" title="密码更新: ${passInfo.full}"><i class="fas fa-lock"></i> ${passInfo.short}</span>`);
-}
-if (keyInfo) {
-badges.push(`<span class="time-badge type-key" title="Key更新: ${keyInfo.full}"><i class="fas fa-key"></i> ${keyInfo.short}</span>`);
-}
-if (tokenInfo) {
-const expiredClass = tokenInfo.isExpired ? ' expired' : '';
-badges.push(`<span class="time-badge type-token${expiredClass}" title="Token更新: ${tokenInfo.full}${tokenInfo.isExpired ? ' (可能已过期)' : ''}"><i class="fas fa-ticket-alt"></i> ${tokenInfo.short}</span>`);
-}
-if (lastInfo) {
-badges.push(`<span class="time-badge type-last" title="总更新: ${lastInfo.full}"><i class="fas fa-clock"></i> ${lastInfo.short}</span>`);
-}
-
-return badges.join('');
-}
-
-function createSecretHtml(val, type, isToken = false, isTestServer = false) {
-// 测试服：所有认证信息不模糊显示，方便查看账密
-if (isTestServer) {
-let displayStyle = '';
-let actionBtn = '';
-
-// Token是URL时显示绿色+外部链接
-if (val.startsWith('http://') || val.startsWith('https://')) {
-    const shortUrl = val.length > 50 ? val.substring(0, 50) + '...' : val;
-    displayStyle = 'color:var(--success); font-weight:600; max-width:200px;';
-    actionBtn = `<a href="${val}" target="_blank" title="打开测试服登录链接" style="color:var(--success); margin-left:4px;"><i class="fas fa-external-link-alt"></i></a>`;
-} else {
-    // 非URL的Key/Password也清晰显示
-    displayStyle = 'color:var(--text); font-weight:500; max-width:180px;';
-}
-
-// 类型标签显示名称
-const typeLabels = {
-    'URL': 'URL',
-    'Pwd': '密码',
-    'Sig': 'Key'
-};
-// 类型标签颜色
-const typeColors = {
-    'URL': '#3498db',
-    'Pwd': '#27ae60',
-    'Sig': '#9333ea'
-};
-const typeColor = typeColors[type] || '#64748b';
-const typeLabel = typeLabels[type] || type;
-
-return `
-    <div class="secret-cell" style="flex-direction: column; align-items: flex-start; gap: 2px;">
-        <div style="display: flex; align-items: center; gap: 6px; width: 100%;">
-            <span style="font-size: 0.7rem; color: ${typeColor}; font-weight: 700; background: rgba(0,0,0,0.05); padding: 1px 6px; border-radius: 2px; min-width: 32px; text-align: center;">${typeLabel}</span>
-            <div class="secret-value"
-                style="${displayStyle}"
-                data-val="${escapeHtml(val)}"
-                onclick="copyText(this.dataset.val)"
-                title="[${type}] 点击复制">${escapeHtml(val)}</div>
-            ${actionBtn}
-        </div>
-    </div>
-`;
-}
-
-// 正式服：应用Masking模糊效果
-const displayVal = state.showSecrets ? val : maskStr(val);
-const blurClass = state.showSecrets ? 'secret-reveal' : 'secret-blur';
-
-let actionBtn = '';
-if (isToken) {
-// 正式服：使用标准游戏链接
-actionBtn = `<a href="https://3dtank.com/play/?token=${encodeURIComponent(val)}&sub_partner_id=partner4399" target="_blank" title="Open Game Link" style="color:var(--secondary); margin-left:4px;"><i class="fas fa-external-link-alt"></i></a>`;
-}
-
-return `
-<div class="secret-cell">
-    <div class="secret-value ${blurClass}"
-        data-val="${escapeHtml(val)}"
-        onclick="copyText(this.dataset.val)"
-        title="Click to Copy">${displayVal}</div>
-    ${actionBtn}
-</div>
-`;
-}
-
-function renderPagination() {
-const totalPages = Math.ceil(state.filteredData.length / state.itemsPerPage);
-const container = document.getElementById('pageControls');
-container.innerHTML = '';
-
-if (totalPages <= 1) return;
-
-const createBtn = (page, text, active = false) => {
-const btn = document.createElement('button');
-btn.className = `page-btn ${active ? 'active' : ''}`;
-btn.innerText = text;
-btn.onclick = () => {
-    state.currentPage = page;
-    renderTable();
-    renderPagination();
-};
-return btn;
-};
-
-const prevBtn = createBtn(state.currentPage - 1, '<');
-prevBtn.disabled = state.currentPage === 1;
-container.appendChild(prevBtn);
-
-let startPage = Math.max(1, state.currentPage - 2);
-let endPage = Math.min(totalPages, startPage + 4);
-if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
-
-if (startPage > 1) {
-container.appendChild(createBtn(1, '1'));
-if (startPage > 2) container.appendChild(document.createTextNode('..'));
-}
-
-for (let i = startPage; i <= endPage; i++) {
-container.appendChild(createBtn(i, i, i === state.currentPage));
-}
-
-if (endPage < totalPages) {
-if (endPage < totalPages - 1) container.appendChild(document.createTextNode('..'));
-container.appendChild(createBtn(totalPages, totalPages));
-}
-
-const nextBtn = createBtn(state.currentPage + 1, '>');
-nextBtn.disabled = state.currentPage === totalPages;
-container.appendChild(nextBtn);
-}
-
-function changePageSize() {
-state.itemsPerPage = parseInt(document.getElementById('pageSize').value);
-state.currentPage = 1;
-renderTable();
-renderPagination();
-}
-
-function handleSearch() {
-clearTimeout(window.searchTimer);
-window.searchTimer = setTimeout(applyFilters, 300);
-}
-
-function sortData(field) {
-if (state.sortField === field) {
-state.sortOrder = state.sortOrder === 'asc' ? 'desc' : 'asc';
-} else {
-state.sortField = field;
-state.sortOrder = 'desc'; 
-}
-applyFilters();
-}
-
-function toggleFilter(el, mode) {
-document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-el.classList.add('active');
-state.filterMode = mode;
-applyFilters();
-}
-
-// 更新图标辅助函数
-function updateEyeIcon() {
-const icon = document.getElementById('eyeIcon');
-if(icon) {
-icon.className = state.showSecrets ? 'fas fa-eye' : 'fas fa-low-vision';
-}
-}
-
-function toggleSecrets() {
-state.showSecrets = !state.showSecrets;
-localStorage.setItem('showSecrets', state.showSecrets); // 保存状态到本地
-updateEyeIcon(); // 更新图标
-renderTable();
-}
-
-function toggleSelect(id) {
-if (state.selectedIds.has(id)) state.selectedIds.delete(id);
-else state.selectedIds.add(id);
-renderTable();
-}
-
-function toggleSelectAll(checkbox) {
-const start = (state.currentPage - 1) * state.itemsPerPage;
-const end = start + state.itemsPerPage;
-const pageData = state.filteredData.slice(start, end);
-
-if (checkbox.checked) {
-pageData.forEach(item => state.selectedIds.add(item._id));
-} else {
-pageData.forEach(item => state.selectedIds.delete(item._id));
-}
-renderTable();
-}
-
-async function deleteItem(id) {
-if (!confirm('Confirm purge of selected node log?')) return;
-await performDelete([id]);
-}
-
-async function batchDelete() {
-if (state.selectedIds.size === 0) return;
-if (!confirm(`Purge ${state.selectedIds.size} records?`)) return;
-await performDelete(Array.from(state.selectedIds));
-}
-
-async function performDelete(idsToDelete) {
-const idsSet = new Set(idsToDelete);
-const newData = state.originalData.filter(item => !idsSet.has(item._id));
-const dataToSave = newData.map(({_id, ...rest}) => rest);
-
-try {
-showToast('Syncing database...', 'info');
-const url = state.urls[state.server];
-
-const getRes = await fetch(`${url}?access_token=${state.token}`);
-const getData = await getRes.json();
-
-const contentStr = JSON.stringify(dataToSave, null, 2);
-const encodedContent = btoa(unescape(encodeURIComponent(contentStr)));
-
-const putRes = await fetch(url, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        access_token: state.token,
-        content: encodedContent,
-        sha: getData.sha,
-        message: `Purge ${idsToDelete.length} logs via Monitor`
-    })
-});
-
-if (!putRes.ok) throw new Error('Sync Failed');
-
-state.originalData = newData;
-state.selectedIds.clear();
-applyFilters();
-updateStats();
-showToast('Logs Purged', 'success');
-
-} catch (err) {
-console.error(err);
-showToast('Error: ' + err.message, 'error');
-}
-}
-
-function exportData() {
-if (state.filteredData.length === 0) return showToast('No data to export', 'error');
-
-const type = confirm("Export format: OK for CSV, Cancel for JSON") ? 'csv' : 'json';
-const data = state.filteredData.map(({_id, ...rest}) => rest);
-
-let content = '';
-let mime = '';
-let ext = '';
-
-if (type === 'json') {
-content = JSON.stringify(data, null, 2);
-mime = 'application/json';
-ext = 'json';
-} else {
-const headers = ['TankiName', 'Key', 'Token', 'Password', 'Fingerprint', 'LastUpdate'];
-content = headers.join(',') + '\n' + data.map(row => {
-    return headers.map(fieldName => `"${(row[fieldName] || '').replace(/"/g, '""')}"`).join(',');
-}).join('\n');
-mime = 'text/csv';
-ext = 'csv';
-}
-
-const blob = new Blob([content], { type: mime });
-const url = URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = `system_log_${new Date().toISOString().slice(0,10)}.${ext}`;
-a.click();
-URL.revokeObjectURL(url);
-}
-
-function updateStats() {
-document.getElementById('totalCount').innerText = state.originalData.length;
-document.getElementById('withPassword').innerText = state.originalData.filter(i => i.Password).length;
-document.getElementById('withToken').innerText = state.originalData.filter(i => i.Token).length;
-document.getElementById('withFingerprint').innerText = state.originalData.filter(i => i.HardwareInfo?.hash || i.Fingerprint).length;
-}
-
-function maskStr(str, visibleLen = 4) {
-if (!str) return '';
-if (str.length <= visibleLen * 2) return '●●●●●●';
-return str.substring(0, visibleLen) + '...' + str.substring(str.length - visibleLen);
-}
-
-function formatDate(str) {
-if (!str) return '-';
-try {
-const date = new Date(str);
-if (isNaN(date.getTime())) return str;
-const pad = (n) => n.toString().padStart(2, '0');
-return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
-} catch (e) {
-return str;
-}
-}
-
-function viewJson(id) {
-const item = state.originalData.find(i => i._id === id);
-const { _id, ...cleanItem } = item;
-
-// 提取硬件快照并格式化
-const hwInfo = extractHardwareInfo(item);
-let hardwareSnapshot = '';
-const hasHw = Object.values(hwInfo).some(v => v);
-
-if (hasHw) {
-const hwLines = [];
-if (hwInfo.cpu) hwLines.push(`├─ CPU: ${hwInfo.cpu}`);
-if (hwInfo.gpu) hwLines.push(`├─ GPU: ${translateGPU(hwInfo.gpu)}`);
-if (hwInfo.memory) hwLines.push(`├─ RAM: ${hwInfo.memory}`);
-if (hwInfo.resolution) hwLines.push(`└─ Screen: ${hwInfo.resolution}`);
-if (hwLines.length > 0) {
-    hardwareSnapshot = `\n╔════════════════════════════════════╗\n║     Hardware Snapshot              ║\n╠════════════════════════════════════╣\n${hwLines.join('\n')}\n╚════════════════════════════════════╝\n`;
-}
-}
-
-// 带注释的 JSON 格式化
-const explainedJson = formatJsonWithComments(cleanItem);
-document.getElementById('jsonContent').innerText = hardwareSnapshot + explainedJson;
-document.getElementById('jsonModal').style.display = 'flex';
-}
-
-function formatJsonWithComments(obj) {
-const comments = {
-TankiName: '// 游戏内显示名称',
-NicknameHistory: '// 账号更名历史记录',
-InternalID: '// 系统内部唯一ID',
-Key: '// 登录密钥（Key模式）',
-Token: '// 会话令牌（Token模式，有效期约5分钟）',
-Password: '// 账号密码',
-Fingerprint: '// 设备指纹',
-LastUpdate: '// 最后更新时间',
-KeyUpdate: '// Key最后更新时间',
-TokenUpdate: '// Token最后更新时间',
-PasswordUpdate: '// Password最后更新时间',
-LoginAccount: '// 登录账号',
-EmailConfirmed: '// 邮箱确认状态',
-UserConfig: '// 用户配置（浏览器、屏幕、CPU、内存等）',
-HardwareInfo: '// 硬件信息（GPU、指纹、渲染截图）'
-};
-
-const lines = [];
-lines.push('{');
-
-for (const [key, value] of Object.entries(obj)) {
-const comment = comments[key] || '';
-const valueStr = typeof value === 'object'
-    ? JSON.stringify(value, null, 4).split('\n').map(l => '    ' + l).join('\n')
-    : JSON.stringify(value);
-
-if (comment) {
-    lines.push(`    ${comment}`);
-}
-lines.push(`    "${key}": ${valueStr},`);
-}
-
-// 移除最后一个逗号并关闭
-const lastLine = lines.pop();
-lines.push(lastLine.endsWith(',') ? lastLine.slice(0, -1) : lastLine);
-lines.push('}');
-
-
-return lines.join('\n');
-}
-
-// GPU型号中英文映射表
-function translateGPU(gpuStr) {
-if (!gpuStr) return gpuStr;
-
-// 解析 ANGLE 包装器格式
-// 示例: ANGLE (NVIDIA, NVIDIA GeForce GTX 1070 (0x00001B81) Direct3D11 vs_5_0 ps_5_0, D3D11)
-let coreGpuStr = gpuStr;
-
-// 提取括号内的GPU信息
-const angleMatch = gpuStr.match(/ANGLE\s*\([^,]*,\s*([^)]+)\)/);
-if (angleMatch) {
-coreGpuStr = angleMatch[1].trim();
-}
-
-// 移除设备ID (0x00001B81)
-coreGpuStr = coreGpuStr.replace(/\(0x[0-9A-Fa-f]+\)/g, '').trim();
-
-// 移除 Direct3D 等后缀
-coreGpuStr = coreGpuStr.split('Direct')[0].split('OpenGL')[0].split('D3D')[0].trim();
-// 移除 "Laptop GPU" 后缀用于映射
-const shortGpuName = coreGpuStr.replace(/Laptop GPU/g, '').trim();
-
-const gpuMap = {
-// NVIDIA 显卡
-'NVIDIA GeForce RTX 5060': 'NVIDIA GeForce RTX 5060 笔记本显卡',
-'NVIDIA GeForce RTX 5070': 'NVIDIA GeForce RTX 5070 笔记本显卡',
-'NVIDIA GeForce RTX 5080': 'NVIDIA GeForce RTX 5080 笔记本显卡',
-'NVIDIA GeForce RTX 5090': 'NVIDIA GeForce RTX 5090 笔记本显卡',
-'NVIDIA GeForce RTX 4060': 'NVIDIA GeForce RTX 4060 笔记本显卡',
-'NVIDIA GeForce RTX 4070': 'NVIDIA GeForce RTX 4070 笔记本显卡',
-'NVIDIA GeForce RTX 4080': 'NVIDIA GeForce RTX 4080 笔记本显卡',
-'NVIDIA GeForce RTX 4090': 'NVIDIA GeForce RTX 4090 笔记本显卡',
-'NVIDIA GeForce RTX 3060': 'NVIDIA GeForce RTX 3060 笔记本显卡',
-'NVIDIA GeForce RTX 3070': 'NVIDIA GeForce RTX 3070 笔记本显卡',
-'NVIDIA GeForce RTX 3080': 'NVIDIA GeForce RTX 3080 笔记本显卡',
-'NVIDIA GeForce RTX 3090': 'NVIDIA GeForce RTX 3090 笔记本显卡',
-'NVIDIA GeForce RTX 2060': 'NVIDIA GeForce RTX 2060',
-'NVIDIA GeForce RTX 2070': 'NVIDIA GeForce RTX 2070',
-'NVIDIA GeForce RTX 2080': 'NVIDIA GeForce RTX 2080',
-'NVIDIA GeForce GTX 1650': 'NVIDIA GeForce GTX 1650',
-'NVIDIA GeForce GTX 1660': 'NVIDIA GeForce GTX 1660',
-'NVIDIA GeForce GTX 1060': 'NVIDIA GeForce GTX 1060',
-'NVIDIA GeForce GTX 1050': 'NVIDIA GeForce GTX 1050',
-'NVIDIA GeForce GTX 1070': 'NVIDIA GeForce GTX 1070',
-'NVIDIA GeForce GTX 1080': 'NVIDIA GeForce GTX 1080',
-'NVIDIA GeForce MX150': 'NVIDIA GeForce MX150',
-'NVIDIA GeForce MX250': 'NVIDIA GeForce MX250',
-'NVIDIA GeForce MX350': 'NVIDIA GeForce MX350',
-'NVIDIA GeForce MX450': 'NVIDIA GeForce MX450',
-
-// AMD 显卡
-'AMD Radeon RX 6800': 'AMD Radeon RX 6800',
-'AMD Radeon RX 6800 XT': 'AMD Radeon RX 6800 XT',
-'AMD Radeon RX 6900 XT': 'AMD Radeon RX 6900 XT',
-'AMD Radeon RX 7600': 'AMD Radeon RX 7600',
-'AMD Radeon RX 7700 XT': 'AMD Radeon RX 7700 XT',
-'AMD Radeon RX 7800 XT': 'AMD Radeon RX 7800 XT',
-'AMD Radeon RX 7900 XT': 'AMD Radeon RX 7900 XT',
-'AMD Radeon RX 7900 XTX': 'AMD Radeon RX 7900 XTX',
-'AMD Radeon RX 5600': 'AMD Radeon RX 5600',
-'AMD Radeon RX 5700': 'AMD Radeon RX 5700',
-'AMD Radeon RX 580': 'AMD Radeon RX 580',
-'AMD Radeon RX 570': 'AMD Radeon RX 570',
-'AMD Radeon RX 550': 'AMD Radeon RX 550',
-'AMD Radeon Vega 8': 'AMD Radeon Vega 8 核显',
-'AMD Radeon Vega 7': 'AMD Radeon Vega 7 核显',
-'AMD Radeon Graphics': 'AMD Radeon 核显',
-
-// Intel 显卡
-'Intel UHD Graphics 620': 'Intel UHD Graphics 620 核显',
-'Intel UHD Graphics 630': 'Intel UHD Graphics 630 核显',
-'Intel Iris Plus Graphics 655': 'Intel Iris Plus Graphics 655 核显',
-'Intel Iris Xe Graphics': 'Intel Iris Xe 核显',
-'Intel Arc A380': 'Intel Arc A380 独显',
-'Intel Arc A750': 'Intel Arc A750 独显',
-'Intel Arc A770': 'Intel Arc A770 独显',
-'Intel Arc Graphics': 'Intel Arc 独显',
-
-// 通用
-'Intel(R) UHD Graphics': 'Intel UHD 核显',
-'Intel(R) Iris(R) Xe Graphics': 'Intel Iris Xe 核显',
-};
-
-// 尝试精确匹配（优先匹配短名称）
-if (gpuMap[shortGpuName]) {
-return gpuMap[shortGpuName];
-}
-if (gpuMap[coreGpuStr]) {
-return gpuMap[coreGpuStr];
-}
-
-// 尝试包含匹配
-for (const [key, value] of Object.entries(gpuMap)) {
-if (coreGpuStr.includes(key)) {
-    return value;
-}
-}
-
-// 提取关键信息进行简单翻译
-let translated = gpuStr;
-if (coreGpuStr.includes('NVIDIA GeForce')) {
-translated = coreGpuStr.replace('NVIDIA GeForce', 'NVIDIA GeForce');
-if (coreGpuStr.includes('Laptop GPU')) {
-    translated += ' (笔记本显卡)';
-}
-} else if (coreGpuStr.includes('AMD Radeon')) {
-translated = coreGpuStr.replace('AMD Radeon', 'AMD Radeon');
-} else if (coreGpuStr.includes('Intel') && (coreGpuStr.includes('Graphics') || coreGpuStr.includes('Arc'))) {
-translated = coreGpuStr.replace(/Intel.*Graphics/i, 'Intel 核显').replace('Intel Arc', 'Intel Arc 独显');
-}
-
-return translated;
-}
-
-function closeModal() {
-document.getElementById('jsonModal').style.display = 'none';
-}
-
-function copyText(txt) {
-if (!txt) return showToast('Nothing to copy', 'error');
-if (navigator.clipboard && window.isSecureContext) {
-navigator.clipboard.writeText(txt)
-    .then(() => showToast('Node ID copied', 'success'))
-    .catch(() => fallbackCopy(txt));
-} else {
-fallbackCopy(txt);
-}
-}
-
-function fallbackCopy(txt) {
-const textArea = document.createElement("textarea");
-textArea.value = txt;
-textArea.style.top = "0";
-textArea.style.left = "0";
-textArea.style.position = "fixed";
-document.body.appendChild(textArea);
-textArea.focus();
-textArea.select();
-try {
-const successful = document.execCommand('copy');
-if (successful) showToast('Node ID copied', 'success');
-else showToast('Copy failed', 'error');
-} catch (err) {
-showToast('Browser blocked copy', 'error');
-}
-document.body.removeChild(textArea);
-}
-
-function copyJsonContent() {
-const txt = document.getElementById('jsonContent').innerText;
-copyText(txt);
-}
-
-function showToast(msg, type = 'info') {
-const container = document.getElementById('toastContainer');
-const el = document.createElement('div');
-el.className = `toast ${type}`;
-el.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'}"></i> ${msg}`;
-container.appendChild(el);
-setTimeout(() => el.remove(), 3000);
-}
-
-function saveToken() {
-const t = document.getElementById('giteeToken').value;
-if(t) {
-localStorage.setItem('giteeToken', t);
-showToast('Auth Key Cached', 'success');
-}
-}
-
-function changeServer() {
-state.server = document.getElementById('serverSelect').value;
-localStorage.setItem('currentServer', state.server);
-if(state.token) fetchData();
-}
-
-// --- 编辑映射逻辑（模态框版） ---
-let currentEditBtn = null;
-let currentEditHash = null;
-let currentEditStatus = 1; // 默认启用
-
-function editMapping(btnElement, hash, currentName, currentStatus = 1) {
-currentEditBtn = btnElement;
-currentEditHash = hash;
-currentEditStatus = currentStatus;
-
-document.getElementById('editMappingHash').textContent = hash;
-document.getElementById('editMappingName').value = currentName;
-// 回显状态
-document.getElementById('editMappingStatus').checked = (currentStatus === 1);
-document.getElementById('editMappingStatusText').textContent = currentStatus === 1 ? '启用' : '禁用';
-document.getElementById('editMappingModal').style.display = 'flex';
-document.getElementById('editMappingName').focus();
-}
-
-// 状态开关切换事件
-document.addEventListener('DOMContentLoaded', function() {
-const statusCheckbox = document.getElementById('editMappingStatus');
-if (statusCheckbox) {
-statusCheckbox.addEventListener('change', function() {
-    document.getElementById('editMappingStatusText').textContent = this.checked ? '启用' : '禁用';
-});
-}
-});
-
-function closeEditMappingModal() {
-document.getElementById('editMappingModal').style.display = 'none';
-currentEditBtn = null;
-currentEditHash = null;
-}
-
-async function saveMapping() {
-    const newName = document.getElementById('editMappingName').value.trim();
-    // 获取当前复选框的状态 (1=选中/启用, 0=未选中/禁用)
-    const newStatus = document.getElementById('editMappingStatus').checked ? 1 : 0;
-    
-    if (!newName) return showToast("名称不能为空", "error");
-
-    const hash = currentEditHash;
-    if (!hash) return;
-
-    // UI反馈
-    const originalText = currentEditBtn.innerText;
-    currentEditBtn.innerText = "保存中...";
-    currentEditBtn.disabled = true;
-
-    // 关闭模态框
-    closeEditMappingModal();
-
-    try {
-        const url = `${state.urls.idMap}?access_token=${state.token}`;
-
-        // 读取现有配置
-        const getRes = await fetch(url);
-        if (!getRes.ok) throw new Error("无法读取配置文件");
-
-        const getData = await getRes.json();
-        const contentStr = decodeURIComponent(escape(atob(getData.content)));
-        let jsonContent = JSON.parse(contentStr);
-
-        if (!jsonContent["5"]) jsonContent["5"] = [];
-        const list = jsonContent["5"];
-        const existingIndex = list.findIndex(item => item.id === hash);
-
-        if (existingIndex !== -1) {
-            // --- 修改场景 ---
-            list[existingIndex].name = newName;
-            
-            // 【修正点 1】: 这里原本被略过了，现在赋值为新的状态
-            list[existingIndex].status = newStatus; 
-            
-            console.log(`更新备注: ${newName}, 状态更新为: ${newStatus}`);
-        } else {
-            // --- 新增场景 ---
-            list.push({
-                "id": hash,
-                "name": newName,
-                // 【修正点 2】: 之前强制为0，现在使用用户选择的状态
-                "status": newStatus 
-            });
-            console.log(`新增备注: ${newName}, 状态设为: ${newStatus}`);
-        }
-
-        // 重新打包
-        const newContentStr = JSON.stringify(jsonContent, null, 2);
-        const encodedContent = btoa(unescape(encodeURIComponent(newContentStr)));
-
-        // 推送至 Gitee
-        const putRes = await fetch(url, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                access_token: state.token,
-                content: encodedContent,
-                sha: getData.sha,
-                message: `Update map: ${newName} (Status: ${newStatus})`
-            })
-        });
-
-        if (!putRes.ok) throw new Error("写入失败");
-
-        showToast("更新成功 (状态已同步)", "success");
-
-        // 更新本地数据并刷新表格
-        state.idMapData = jsonContent;
-        renderTable();
-
-    } catch (e) {
-        console.error(e);
-        showToast("失败: " + e.message, "error");
-        // 失败时恢复按钮文字
-        if(currentEditBtn) {
-            currentEditBtn.innerText = originalText;
-            currentEditBtn.disabled = false;
-        }
-    }
-}
-
-function toggleTokenVisibility(icon) {
-const input = document.getElementById('giteeToken');
-input.type = input.type === 'password' ? 'text' : 'password';
-icon.className = input.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
-}
-
-// 获取ID映射表
-async function fetchIdMap() {
-try {
-const url = state.urls.idMap;
-const res = await fetch(url);
-if (res.ok) {
-    const data = await res.json();
-    // API 返回的数据需要解码 content 字段（Base64 转 UTF-8）
-    const content = decodeURIComponent(escape(atob(data.content)));
-    state.idMapData = JSON.parse(content);
-    console.log('ID映射表加载成功，找到', state.idMapData[5] ? state.idMapData[5].length : 0, '条记录');
-    renderTable(); // 重新渲染表格以应用映射
-}
-} catch (err) {
-console.error('ID映射表加载失败:', err);
-state.idMapData = null;
-}
-}
-
-// 根据指纹获取对应的映射信息（返回对象 {name, status}）
-function getMappedName(item) {
-// 1. 基础检查
-if (!state.idMapData || !state.idMapData[5]) return null;
-
-const mapArray = state.idMapData[5];
-
-// 2. 获取可能的指纹 ID
-let hwHash = null;
-if (item.HardwareInfo) {
-if (typeof item.HardwareInfo === 'string') {
-    try {
-        const parsed = JSON.parse(item.HardwareInfo);
-        hwHash = parsed.hash;
-    } catch(e) {}
-} else {
-    hwHash = item.HardwareInfo.hash;
-}
-}
-
-const oldFingerprint = item.Fingerprint;
-
-// 3. 尝试匹配（优先匹配新版 Hash，其次匹配旧版 Fingerprint）
-let match = null;
-
-// 尝试匹配 HardwareInfo.hash
-if (hwHash) {
-match = mapArray.find(entry => entry.id === hwHash);
-}
-
-// 如果没找到，尝试匹配 Fingerprint
-if (!match && oldFingerprint) {
-match = mapArray.find(entry => entry.id === oldFingerprint);
-}
-
-// 4. 返回结果
-if (match && match.name) {
-return {
-    name: match.name,
-    // 如果 status 不存在，默认为 1 (启用)
-    status: (match.status === undefined || match.status === 1) ? 1 : 0
-};
-}
-
-return null;
-}
-
-// 硬件信息提取与展示
-function createHardwareInfoHtml(item) {
-const hwInfo = extractHardwareInfo(item);
-
-if (!hwInfo.gpu && !hwInfo.memory) {
-return '<span style="color:#cbd5e1; font-size:0.8rem;">-</span>';
-}
-
-const parts = [];
-if (hwInfo.gpu && hwInfo.gpu !== 'null' && hwInfo.gpu !== '[object Object]') {
-const shortGpu = hwInfo.gpu.length > 15 ? hwInfo.gpu.substring(0, 15) + '...' : hwInfo.gpu;
-parts.push(`<span style="color:#059669; font-weight:600;">${escapeHtml(shortGpu)}</span>`);
-}
-if (hwInfo.memory && hwInfo.memory !== 'null' && hwInfo.memory !== '[object Object]') {
-parts.push(`<span style="color:#d97706;">${escapeHtml(hwInfo.memory)}</span>`);
-}
-
-const hasDetails = Object.values(hwInfo).some(v => v && v !== 'null' && v !== '[object Object]');
-const onClickAttr = hasDetails ? `onclick="showHardwareModal(${item._id})"` : '';
-const cursorStyle = hasDetails ? 'cursor: pointer;' : '';
-
-return `<div style="font-size:0.75rem; display:flex; flex-direction:column; gap:2px; line-height:1.2; ${cursorStyle}" ${onClickAttr}>${parts.join('<br>')}</div>`;
-}
-
-function extractHardwareInfo(item) {
-const result = { gpu: '', memory: '', cpu: '', resolution: '' };
-
-// 从 HardwareInfo 字段提取
-if (item.HardwareInfo) {
-try {
-    const hw = typeof item.HardwareInfo === 'string'
-        ? JSON.parse(item.HardwareInfo)
-        : item.HardwareInfo;
-
-    // 提取显卡信息（多种可能的字段名），确保是字符串
-    let gpuValue = hw.gpu || hw.videoCard || hw.graphics || hw.GPU || hw.video || hw.adapter || '';
-
-    // 如果是对象，尝试从 renderer 字段提取
-    if (typeof gpuValue === 'object' && gpuValue !== null) {
-        gpuValue = gpuValue.renderer || gpuValue.name || gpuValue.model || gpuValue.vendor || JSON.stringify(gpuValue);
-    }
-    // 确保转换为字符串，并过滤掉无效值
-    result.gpu = (gpuValue && gpuValue !== '[object Object]') ? String(gpuValue) : '';
-
-    // 提取内存信息，确保是字符串
-    let memValue = hw.memory || hw.ram || hw.RAM || hw.mem || '';
-    if (typeof memValue === 'object' && memValue !== null) {
-        memValue = memValue.value || memValue.size || JSON.stringify(memValue);
-    }
-    result.memory = (memValue && memValue !== '[object Object]') ? String(memValue) : '';
-
-    // 提取CPU信息，确保是字符串
-    let cpuValue = hw.cpu || hw.processor || hw.CPU || hw.core || '';
-    if (typeof cpuValue === 'object' && cpuValue !== null) {
-        cpuValue = cpuValue.model || cpuValue.name || JSON.stringify(cpuValue);
-    }
-    result.cpu = (cpuValue && cpuValue !== '[object Object]') ? String(cpuValue) : '';
-
-    // 提取分辨率，确保是字符串
-    let resValue = hw.resolution || hw.screen || hw.display || '';
-    if (typeof resValue === 'object' && resValue !== null) {
-        resValue = `${resValue.width || ''}x${resValue.height || ''}` || JSON.stringify(resValue);
-    }
-    result.resolution = (resValue && resValue !== '[object Object]') ? String(resValue) : '';
-} catch (e) {
-    // 如果是字符串且包含显卡关键词，尝试直接提取
-    const hwStr = String(item.HardwareInfo);
-    const gpuMatch = hwStr.match(/(RTX|GTX|Radeon|Intel\s*(Arc|HD|UHD|Iris|Graphics)|NVIDIA|AMD|GeForce)\s*\d*/i);
-    if (gpuMatch) result.gpu = gpuMatch[0];
-
-    const memMatch = hwStr.match(/(\d+\.?\d*)\s*(GB|G|MB|M)/i);
-    if (memMatch) result.memory = memMatch[0];
-}
-}
-
-// 从 UserConfig 字段提取
-if (item.UserConfig && (!result.gpu || !result.memory)) {
-try {
-    const uc = typeof item.UserConfig === 'string'
-        ? JSON.parse(item.UserConfig)
-        : item.UserConfig;
-
-    if (!result.gpu) {
-        let gpuValue = uc.gpu || uc.videoCard || uc.graphics || uc.GPU || '';
-        if (typeof gpuValue === 'object' && gpuValue !== null) {
-            gpuValue = gpuValue.renderer || gpuValue.name || gpuValue.model || JSON.stringify(gpuValue);
-        }
-        if (gpuValue && gpuValue !== '[object Object]') result.gpu = String(gpuValue);
-    }
-    if (!result.memory) {
-        let memValue = uc.memory || uc.ram || uc.RAM || uc.mem || '';
-        if (typeof memValue === 'object' && memValue !== null) {
-            memValue = memValue.value || memValue.size || JSON.stringify(memValue);
-        }
-        if (memValue && memValue !== '[object Object]') result.memory = String(memValue);
-    }
-    if (!result.cpu) {
-        let cpuValue = uc.cpu || uc.processor || uc.CPU || '';
-        if (typeof cpuValue === 'object' && cpuValue !== null) {
-            cpuValue = cpuValue.model || cpuValue.name || JSON.stringify(cpuValue);
-        }
-        if (cpuValue && cpuValue !== '[object Object]') result.cpu = String(cpuValue);
-    }
-} catch (e) {
-    const ucStr = String(item.UserConfig);
-    if (!result.gpu) {
-        const gpuMatch = ucStr.match(/(RTX|GTX|Radeon|Intel\s*(Arc|HD|UHD|Iris|Graphics)|NVIDIA|AMD|GeForce)\s*\d*/i);
-        if (gpuMatch) result.gpu = gpuMatch[0];
-    }
-    if (!result.memory) {
-        const memMatch = ucStr.match(/(\d+\.?\d*)\s*(GB|G|MB|M)/i);
-        if (memMatch) result.memory = memMatch[0];
-    }
-}
-}
-
-return result;
-}
-
-// 显示硬件详情模态框
-function showHardwareModal(id) {
-const item = state.originalData.find(i => i._id === id);
-if (!item) return;
-
-const hwInfo = extractHardwareInfo(item);
-const hasDetails = Object.values(hwInfo).some(v => v && v !== 'null' && v !== '[object Object]');
-
-let content = '';
-if (!hasDetails) {
-content = '<div style="text-align:center; padding:40px; color:#94a3b8;">No hardware data available</div>';
-} else {
-const entries = [];
-if (hwInfo.cpu) {
-    entries.push(`<div class="hw-entry"><i class="fas fa-microchip" style="color:#3b82f6;"></i> <strong>CPU:</strong> ${escapeHtml(hwInfo.cpu)}</div>`);
-}
-if (hwInfo.gpu) {
-    const translatedGPU = translateGPU(hwInfo.gpu);
-    entries.push(`<div class="hw-entry"><i class="fas fa-tv" style="color:#059669;"></i> <strong>GPU:</strong> ${escapeHtml(translatedGPU)}</div>`);
-}
-if (hwInfo.memory) {
-    entries.push(`<div class="hw-entry"><i class="fas fa-memory" style="color:#d97706;"></i> <strong>RAM:</strong> ${escapeHtml(hwInfo.memory)}</div>`);
-}
-if (hwInfo.resolution) {
-    entries.push(`<div class="hw-entry"><i class="fas fa-desktop" style="color:#8b5cf6;"></i> <strong>Resolution:</strong> ${escapeHtml(hwInfo.resolution)}</div>`);
-}
-
-// 添加原始数据展示
-const originalHw = item.HardwareInfo ? JSON.stringify(item.HardwareInfo, null, 2) : 'N/A';
-const originalUc = item.UserConfig ? JSON.stringify(item.UserConfig, null, 2) : 'N/A';
-
-content = `
-    <div class="hw-grid">
-        ${entries.join('')}
-    </div>
-    <div style="margin-top:20px; padding-top:20px; border-top:1px solid #334155;">
-        <div style="font-size:0.75rem; color:#94a3b8; margin-bottom:8px;">RAW DATA:</div>
-        <div style="max-height:200px; overflow:auto; font-size:0.7rem; background:#0f172a; padding:12px; border-radius:4px;">
-            <div style="color:#60a5fa; margin-bottom:8px;">// HardwareInfo</div>
-            <pre style="margin:0; color:#cbd5e1;">${escapeHtml(originalHw)}</pre>
-            <div style="color:#60a5fa; margin:12px 0 8px 0;">// UserConfig</div>
-            <pre style="margin:0; color:#cbd5e1;">${escapeHtml(originalUc)}</pre>
-        </div>
-    </div>
-`;
-}
-
-document.getElementById('hardwareContent').innerHTML = content;
-document.getElementById('hardwareModal').style.display = 'flex';
-}
-
-function closeHardwareModal() {
-document.getElementById('hardwareModal').style.display = 'none';
-}
-
-// 显示更名历史详情模态框
-function showNicknameHistoryModal(itemId) {
-const item = state.originalData.find(i => i._id === itemId);
-if (!item || !item.NicknameHistory || item.NicknameHistory.length === 0) return;
-
-const history = item.NicknameHistory;
-const currentName = escapeHtml(item.TankiName);
-
-let contentHtml = `
-    <div style="margin-bottom: 16px; padding: 12px; background: var(--bg-body); border-radius: 6px; border-left: 3px solid var(--primary);">
-        <div style="font-size: 0.75rem; color: var(--text-sub); margin-bottom: 4px;">当前名称</div>
-        <div style="font-size: 1rem; font-weight: 600; color: var(--primary);">${currentName}</div>
-    </div>
-    <div style="font-size: 0.75rem; color: var(--text-sub); margin-bottom: 12px; text-transform: uppercase; font-weight: 600;">历史记录 (${history.length} 条)</div>
-`;
-
-// 按时间倒序排列（最新的在前）
-const sortedHistory = [...history].sort((a, b) => {
-    const timeA = new Date(a.replacedAt || 0).getTime();
-    const timeB = new Date(b.replacedAt || 0).getTime();
-    return timeB - timeA;
-});
-
-sortedHistory.forEach((h, index) => {
-    const name = escapeHtml(h.name);
-    const replacedAt = h.replacedAt ? formatDate(h.replacedAt) : '未知时间';
-    const timeAgo = getTimeAgo(h.replacedAt);
-    const isLatest = index === 0;
-    
-    contentHtml += `
-        <div style="display: flex; align-items: center; gap: 12px; padding: 12px; margin-bottom: 8px; background: var(--bg-body); border-radius: 6px; ${isLatest ? 'border: 1px solid var(--primary);' : ''}">
-            <div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; font-size: 0.85rem; font-weight: 600;">
-                ${history.length - index}
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item me-3">
+                        <span class="badge bg-light text-secondary border">v2.1 Auto</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://github.com/Kosto179cn/Kosto179cn.github.io" target="_blank">
+                            <i class="fab fa-github"></i> GitHub 仓库
+                        </a>
+                    </li>
+                </ul>
             </div>
-            <div style="flex: 1;">
-                <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">${name}</div>
-                <div style="font-size: 0.75rem; color: var(--text-sub); display: flex; align-items: center; gap: 6px;">
-                    <i class="fas fa-clock" style="font-size: 0.65rem;"></i>
-                    ${replacedAt}
-                    ${timeAgo ? `<span style="color: var(--secondary);">(${timeAgo})</span>` : ''}
+        </div>
+    </nav>
+
+    <div class="container">
+        
+        <!-- Bilibili 专属板块 -->
+        <div class="hero-section text-center">
+            <i class="fab fa-bilibili hero-bg-icon"></i>
+            <div style="position: relative; z-index: 1;">
+                <img src="https://ui-avatars.com/api/?name=Kosto&background=fb7299&color=fff&size=100&rounded=true&bold=true" alt="Avatar" class="mb-3 shadow-sm" style="border-radius: 50%; border: 4px solid white; width: 80px;">
+                <h2 class="fw-bold mb-2">Kosto 的 Bilibili 主页</h2>
+                <p class="text-muted mb-4">关注最新动态、脚本发布与技术分享</p>
+                
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="https://space.bilibili.com/509510039" target="_blank" class="bilibili-btn">
+                        <i class="fab fa-bilibili me-2"></i> 访问我的主页
+                    </a>
+                    <!-- 新增引导按钮 -->
+                    <button type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#guideModal" style="background: linear-gradient(45deg, #007bff, #6610f2); border:none; box-shadow: 0 4px 15px rgba(0,123,255,0.3);">
+                        <i class="fas fa-book-open me-2"></i> 脚本安装与使用指南
+                    </button>
+                    <a href="https://message.bilibili.com/" target="_blank" class="btn btn-outline-secondary rounded-pill px-4 py-2" style="background: white;">
+                        <i class="fas fa-envelope me-2"></i> 私信联系
+                    </a>
                 </div>
             </div>
-            ${isLatest ? '<span style="font-size: 0.7rem; padding: 2px 8px; background: var(--primary); color: white; border-radius: 100px;">最新</span>' : ''}
         </div>
-    `;
-});
 
-document.getElementById('nicknameHistoryContent').innerHTML = contentHtml;
-document.getElementById('nicknameHistoryModal').style.display = 'flex';
-}
+        <!-- 动态加载指示器 -->
+        <div id="loading-spinner">
+            <div class="spinner-border text-primary" role="status"></div>
+            <div class="mt-2 small">正在同步仓库数据...</div>
+        </div>
 
-// 计算时间差（多久以前）
-function getTimeAgo(timeStr) {
-if (!timeStr) return '';
-try {
-    const date = new Date(timeStr);
-    if (isNaN(date.getTime())) return '';
-    
-    const now = Date.now();
-    const diffMs = now - date.getTime();
-    const diffMinutes = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-    
-    if (diffMinutes < 1) return '刚刚';
-    if (diffMinutes < 60) return `${diffMinutes} 分钟前`;
-    if (diffHours < 24) return `${diffHours} 小时前`;
-    if (diffDays < 30) return `${diffDays} 天前`;
-    if (diffDays < 365) return `${Math.floor(diffDays / 30)} 个月前`;
-    return `${Math.floor(diffDays / 365)} 年前`;
-} catch (e) {
-    return '';
-}
-}
-
-function closeNicknameHistoryModal() {
-document.getElementById('nicknameHistoryModal').style.display = 'none';
-}
-
-function handleNodeIdClick(uid, remarkId) {
-if (!remarkId) {
-copyText(uid);
-} else {
-openCopyChoiceModal(uid, remarkId);
-}
-}
-
-function openCopyChoiceModal(uid, remarkId) {
-document.getElementById('modalUidVal').textContent = uid;
-document.getElementById('modalIdVal').textContent = remarkId;
-
-document.getElementById('copyUidBtn').onclick = function() {
-copyText(uid);
-closeCopyChoiceModal();
-};
-
-document.getElementById('copyIdBtn').onclick = function() {
-copyText(remarkId);
-closeCopyChoiceModal();
-};
-
-document.getElementById('copyChoiceModal').style.display = 'flex';
-}
-
-function closeCopyChoiceModal() {
-document.getElementById('copyChoiceModal').style.display = 'none';
-}
-
-async function autoCleanExpired() {
-    if (!state.originalData || state.originalData.length === 0) {
-        return showToast('No data loaded', 'error');
-    }
-
-    const now = Date.now();
-
-    // 1. 筛选符合条件的 ID
-    const candidates = state.originalData.filter(item => {
-        // 核心修改：只匹配 TankiName 为 WAITING_TOKEN 的数据
-        const isWaiting = item.TankiName === 'WAITING_TOKEN';
+        <!-- ================= 动态内容容器 ================= -->
         
-        if (!isWaiting) return false;
+        <!-- 1. 核心管理区 -->
+        <h4 class="section-title admin" id="title-admin">核心管理后台</h4>
+        <div class="row" id="container-admin"></div>
 
-        // 检查时间是否超过 5 分钟 (Token 通常 5 分钟过期)
-        if (!item.LastUpdate) return true; 
+        <!-- 2. 游戏工具区 -->
+        <h4 class="section-title tools" id="title-game">游戏工具箱</h4>
+        <div class="row" id="container-game"></div>
 
-        const lastTime = new Date(item.LastUpdate).getTime();
-        if (isNaN(lastTime)) return true; 
+        <!-- 3. 编辑与工具 -->
+        <h4 class="section-title res" id="title-tool">编辑与工具</h4>
+        <div class="row" id="container-tool"></div>
 
-        const diffMinutes = (now - lastTime) / 60000;
-        return diffMinutes > 5; 
-    });
+        <!-- 4. 其他发现 (Workflow自动发现的页面) -->
+        <h4 class="section-title other" id="title-other">其他页面</h4>
+        <div class="row" id="container-other"></div>
 
-    const count = candidates.length;
+        <!-- ================= 静态资源与统计 ================= -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <h4 class="section-title res" style="display:block">资源与统计</h4>
+            </div>
 
-    // 2. 交互反馈
-    if (count === 0) {
-        return showToast('未发现过期的 WAITING_TOKEN 节点', 'info');
-    }
+            <!-- 统计图表 -->
+            <div class="col-md-8 mb-4">
+                <div class="chart-container h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold m-0"><i class="fas fa-chart-line text-primary me-2"></i>使用趋势</h5>
+                        <span class="badge bg-light text-dark">实时数据</span>
+                    </div>
+                    <div style="height: 250px;">
+                        <canvas id="usageChart"></canvas>
+                    </div>
+                </div>
+            </div>
 
-    // 3. 确认删除
-    if (!confirm(`发现 ${count} 个过期的待处理节点 (名称为 WAITING_TOKEN 且超过5分钟)。\n确认要永久清除这些垃圾数据吗？`)) {
-        return;
-    }
+            <!-- 下载与版本 -->
+            <div class="col-md-4 mb-4">
+                <div class="d-flex flex-column gap-4 h-100">
+                    <!-- 脚本下载 -->
+                    <div class="card tool-card h-100 border-0" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color: white;">
+                        <div class="card-body d-flex flex-column justify-content-center align-items-center text-center">
+                            <i class="fas fa-file-code fa-3x mb-3 opacity-75"></i>
+                            <h5 class="fw-bold">最新脚本下载</h5>
+                            <p class="small opacity-75 mb-3">cloudversion.script.user.js</p>
+                            <a href="cloudversion.script.user.js" target="_blank" class="btn btn-light rounded-pill px-4 fw-bold text-primary">
+                                <i class="fas fa-download me-2"></i>立即下载
+                            </a>
+                        </div>
+                    </div>
 
-    // 4. 执行删除
-    const idsToDelete = candidates.map(item => item._id);
-
-    const btn = document.querySelector('button[onclick="autoCleanExpired()"]');
-    const originText = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Cleaning...`;
-
-    try {
-        await performDelete(idsToDelete);
-    } catch (e) {
-        showToast('清理失败: ' + e.message, 'error');
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = originText;
-    }
-}
-function createHistoryHtml(history, itemId) {
-    if (!history || !Array.isArray(history) || history.length === 0) {
-        return '<span style="color:var(--text-sub); font-size:0.8rem;">暂无记录</span>';
-    }
-    
-    const displayCount = Math.min(history.length, 2);
-    const hasMore = history.length > 2;
-    const historyItems = history.slice(0, displayCount).map(h => `
-        <div style="font-size:0.75rem; line-height:1.2; margin-bottom:2px;">
-            <i class="fas fa-history" style="font-size:0.65rem; color:var(--secondary);"></i>
-            <span style="color:var(--text-main);">${escapeHtml(h.name)}</span>
+                    <!-- 版本检查 -->
+                    <div class="card tool-card h-100">
+                        <div class="card-body d-flex flex-column justify-content-center align-items-center text-center">
+                            <i class="fas fa-sync-alt fa-2x text-success mb-2"></i>
+                            <h6 class="fw-bold">环境检测</h6>
+                            <button id="checkVersionBtn" class="btn btn-sm btn-outline-success rounded-pill px-3 mt-2">
+                                检查版本
+                            </button>
+                            <div id="versionInfo" class="small mt-2 text-muted" style="font-size: 0.8rem;">等待操作...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    `).join('');
-    
-    const moreIndicator = hasMore ? `<div style="font-size:0.7rem; color:var(--primary); margin-top:2px;">+${history.length - 2} 更多</div>` : '';
-    
-    return `<div style="cursor:pointer;" onclick="showNicknameHistoryModal(${itemId})" title="点击查看完整历史">${historyItems}${moreIndicator}</div>`;
-}
 
-function escapeHtml(str) {
-if (!str) return '';
-var s = String(str);
-return s
-.replace(/&/g, "&amp;")
-.replace(/</g, "&lt;")
-.replace(/>/g, "&gt;")
-.replace(/"/g, "&quot;")
-.replace(/'/g, "&#039;");
-}
+        <footer>
+            <div class="border-top pt-4">
+                <p class="mb-2">© 2025 Kosto Studio | Powered by GitHub Workflow</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="https://space.bilibili.com/509510039" class="text-secondary text-decoration-none"><i class="fab fa-bilibili"></i> Bilibili</a>
+                    <a href="https://github.com/Kosto179cn" class="text-secondary text-decoration-none"><i class="fab fa-github"></i> GitHub</a>
+                </div>
+            </div>
+        </footer>
 
-window.onclick = function(e) {
-if (e.target == document.getElementById('jsonModal')) closeModal();
-if (e.target == document.getElementById('hardwareModal')) closeHardwareModal();
-if (e.target == document.getElementById('jsonHelpModal')) closeJsonHelpModal();
-if (e.target == document.getElementById('nicknameHistoryModal')) closeNicknameHistoryModal();
-if (e.target == document.getElementById('copyChoiceModal')) closeCopyChoiceModal();
-}
+    </div>
 
-function openJsonHelpModal() {
-document.getElementById('jsonHelpModal').style.display = 'flex';
-}
+    <!-- 脚本逻辑 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ================= 配置区域 =================
 
-function closeJsonHelpModal() {
-document.getElementById('jsonHelpModal').style.display = 'none';
-}
-</script>
+        // 允许的管理员用户名 (必须修改为你自己的 GitHub/Gitee 用户名)
+        // 只有 Token 有效且属于这些用户之一，才会加载管理员数据
+        const ALLOWED_ADMINS = ['Kosto179cn'];
+
+        // 管理员数据文件名 (建议文件名复杂一点，防止被猜到)
+        const ADMIN_DATA_FILE = 'admin_data.json';
+
+        // ===========================================
+
+        // ================= 核心动态加载逻辑 =================
+
+        // 全局标记：是否为管理员模式
+        let isAdminMode = false;
+
+        async function initPage() {
+            const loading = document.getElementById('loading-spinner');
+
+            let files = [];
+
+            // 步骤 B: 静默检查管理员身份
+            const adminIdentity = await checkAdminToken();
+
+            // 步骤 C: 如果验证通过，使用管理员模式（从 GitHub API 获取所有文件）
+            if (adminIdentity.isValid) {
+                console.log(`[系统] 身份验证通过: ${adminIdentity.user} (${adminIdentity.platform})`);
+
+                // 设置管理员模式标记
+                isAdminMode = true;
+
+                // 改变 UI 状态 (例如显示 Admin 版本号)
+                showAdminBadge(adminIdentity.user);
+
+                // 从 GitHub API 获取仓库中的所有 HTML 文件
+                try {
+                    const ghToken = localStorage.getItem('githubToken');
+                    const token = Utils.decodeTokenSafe(ghToken).trim();
+                    const response = await fetch('https://api.github.com/repos/Kosto179cn/Kosto179cn.github.io/contents?ref=main', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+
+                    if (response.status === 200) {
+                        const repoFiles = await response.json();
+                        // 过滤出 HTML 文件并转换为卡片格式
+                        files = repoFiles
+                            .filter(file => file.name.endsWith('.html') && file.name !== 'index.html' && file.name !== '主页.html')
+                            .map(file => ({
+                                title: file.name.replace('.html', ''),
+                                desc: '网页文件',
+                                filename: file.name,
+                                category: 'other',
+                                theme: 'theme-other',
+                                icon: 'fa-file-code'
+                            }));
+                        console.log(`[系统] 管理员模式：从 GitHub API 加载了 ${files.length} 个文件`);
+                    } else {
+                        console.warn('[系统] GitHub API 请求失败:', response.status);
+                    }
+                } catch (e) {
+                    console.error("[系统] 加载 GitHub 文件列表出错:", e);
+                }
+
+                // 尝试加载 pages.json (如果存在的话，可以包含更详细的元数据)
+                try {
+                    const publicResp = await fetch('pages.json?t=' + Date.now());
+                    if (publicResp.ok) {
+                        const pagesJson = await publicResp.json();
+                        // 合并详细信息
+                        files = files.map(file => {
+                            const meta = pagesJson.find(p => p.filename === file.filename);
+                            return meta ? { ...file, ...meta } : file;
+                        });
+                    }
+                } catch (e) {
+                    console.log("[系统] pages.json 不存在或加载失败，使用默认元数据");
+                }
+
+                // 尝试加载管理员数据文件
+                try {
+                    const adminResp = await fetch(ADMIN_DATA_FILE + '?t=' + Date.now());
+                    if (adminResp.ok) {
+                        const adminFiles = await adminResp.json();
+                        // 将管理员数据合并到总数据中
+                        files = files.concat(adminFiles);
+                    }
+                } catch (e) {
+                    console.warn("加载管理员数据出错");
+                }
+            } else {
+                // 访客模式：只加载公共数据
+                console.log("[系统] 访客模式");
+
+                // 步骤 A: 加载公共数据 (pages.json)
+                try {
+                    // 加时间戳 ?t=... 防止缓存
+                    const publicResp = await fetch('pages.json?t=' + Date.now());
+                    if (publicResp.ok) files = await publicResp.json();
+                } catch (e) {
+                    console.error("公共数据加载失败:", e);
+                }
+            }
+
+            // 步骤 D: 渲染卡片
+            renderCards(files);
+
+            // 隐藏加载动画
+            if (loading) loading.style.display = 'none';
+        }
+
+        // ================= 身份验证核心逻辑 =================
+
+        // ================= 工具函数 =================
+        const Utils = {
+            // 兼容型解密函数：
+            // 1. 尝试按"JSON + Base64"解密 (字典网页的逻辑)
+            // 2. 失败则尝试按"纯 Base64"解密 (结合版网页的逻辑)
+            // 3. 再失败则返回原值 (明文)
+            decodeTokenSafe: (str) => {
+                if (!str) return '';
+                try {
+                    // 第一步：尝试 Base64 解码
+                    const rawDecoded = atob(str);
+                    
+                    // 第二步：尝试解析 JSON (针对字典网页的 {"token":..., "salt":...} 结构)
+                    if (rawDecoded.startsWith('{') && rawDecoded.includes('"token"')) {
+                        try {
+                            const json = JSON.parse(rawDecoded);
+                            if (json.token) return json.token;
+                        } catch(e) { /* 不是 JSON，继续往下走 */ }
+                    }
+                    
+                    // 如果不是 JSON，那说明是纯 Base64 (针对结合版网页)
+                    return rawDecoded;
+
+                } catch (e) {
+                    // 如果 atob 报错，说明根本不是 Base64，直接返回明文
+                    return str;
+                }
+            }
+        };
+
+        async function checkAdminToken() {
+            // 读取本地存储
+            const rawGitee = localStorage.getItem('giteeToken');
+            const rawGithub = localStorage.getItem('githubToken'); // 字典网页用的是这个 Key
+
+            // 1. 验证 GitHub (字典网页生成的 Token)
+            if (rawGithub) {
+                const token = Utils.decodeTokenSafe(rawGithub);
+                // 去掉可能存在的空格
+                const result = await verifyGitHub(token.trim());
+                if (result.isValid) return result;
+            }
+
+            // 2. 验证 Gitee
+            if (rawGitee) {
+                const token = Utils.decodeTokenSafe(rawGitee);
+                const result = await verifyGitee(token.trim());
+                if (result.isValid) return result;
+            }
+
+            return { isValid: false };
+        }
+
+        // 验证 GitHub Token
+        async function verifyGitHub(token) {
+            try {
+                console.log('[调试] 验证 GitHub Token...');
+
+                const response = await fetch('https://api.github.com/user', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                console.log('[调试] GitHub API 响应状态:', response.status);
+
+                if (response.status === 200) {
+                    const data = await response.json();
+                    console.log('[调试] GitHub 用户信息:', { login: data.login, name: data.name });
+
+                    // 核心安全检查：验证用户名是否在白名单内
+                    if (ALLOWED_ADMINS.includes(data.login)) {
+                        console.log('[调试] ✓ 验证通过，用户:', data.login);
+                        return { isValid: true, platform: 'GitHub', user: data.login };
+                    } else {
+                        console.warn(`[调试] ✗ Token有效，但用户 ${data.login} 不是管理员`);
+                        console.warn(`[调试] 允许的管理员列表:`, ALLOWED_ADMINS);
+                    }
+                } else {
+                    console.warn('[调试] ✗ GitHub API 返回非200状态:', response.status);
+                }
+            } catch (e) {
+                console.error("[调试] GitHub 验证出错:", e);
+            }
+            return { isValid: false };
+        }
+
+        // ================= 辅助功能：显示管理员标记 =================
+
+        function showAdminBadge(username) {
+            // 找到导航栏的版本徽章，改成红色 Admin 样式
+            const badge = document.querySelector('.navbar .badge');
+            if (badge) {
+                badge.className = 'badge bg-danger border'; // 变红
+                badge.innerHTML = `<i class="fas fa-user-secret"></i> ${username}`;
+            }
+            // 给 Body 加个 class，方便你写 CSS 做特殊处理
+            document.body.classList.add('admin-mode');
+        }
+
+        function renderCards(files) {
+            // 清空容器 (防止重复渲染)
+            document.querySelectorAll('[id^="container-"]').forEach(el => el.innerHTML = '');
+
+            // 如果是管理员模式，直接显示所有分类标签
+            if (isAdminMode) {
+                console.log('[系统] 管理员模式：显示所有分类');
+                document.querySelectorAll('[id^="title-"]').forEach(title => {
+                    title.style.display = 'block';
+                });
+            } else {
+                // 访客模式：记录哪些分类有内容
+                const categoriesHasContent = new Set();
+                files.forEach(meta => {
+                    if (meta.category) categoriesHasContent.add(meta.category);
+                });
+                // 仅显示有内容的分类标题
+                categoriesHasContent.forEach(cat => {
+                    const title = document.getElementById(`title-${cat}`);
+                    if (title) title.style.display = 'block';
+                });
+            }
+
+            files.forEach((meta, index) => {
+                // 构建卡片 HTML
+                // 使用 style animation-delay 实现交错动画效果
+                const cardHtml = `
+                    <div class="col-md-6 col-lg-3 mb-4 fade-in-up" style="animation-delay: ${index * 0.05}s">
+                        <div class="card tool-card ${meta.theme || 'theme-other'} h-100">
+                            <div class="card-body">
+                                <div class="card-icon"><i class="fas ${meta.icon || 'fa-file'}"></i></div>
+                                <h5 class="card-title">${meta.title}</h5>
+                                <p class="card-text">${meta.desc || '暂无描述'}</p>
+                                <a href="${meta.filename}" class="stretched-link"></a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // 确定容器 ID
+                const containerId = `container-${meta.category}`;
+                let container = document.getElementById(containerId);
+
+                // 容错：如果分类不存在，放入 "other"
+                if (!container) container = document.getElementById('container-other');
+
+                if (container) {
+                    container.innerHTML += cardHtml;
+                }
+            });
+        }
+
+        // ================= 统计图表 =================
+        function initCharts() {
+            const ctx = document.getElementById('usageChart').getContext('2d');
+            let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(0, 123, 255, 0.2)');
+            gradient.addColorStop(1, 'rgba(0, 123, 255, 0)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '23:59'],
+                    datasets: [{
+                        label: '活跃趋势',
+                        data: [12, 5, 25, 80, 65, 95, 45], 
+                        borderColor: '#007bff',
+                        backgroundColor: gradient,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#007bff',
+                        pointRadius: 4,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { borderDash: [5, 5] }, ticks: { display: false } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // ================= 版本检查 =================
+        function checkVersion() {
+            const infoEl = document.getElementById('versionInfo');
+            infoEl.innerHTML = '<span class="spinner-border spinner-border-sm text-success"></span> 连接中...';
+
+            fetch('https://raw.githubusercontent.com/Kosto179cn/Kosto.github.io/main/versioncheck.json')
+                .then(res => res.json())
+                .then(data => {
+                    const currentVer = '2025.7.26'; // 假设当前页面版本
+                    const latestVer = data.version;
+                    
+                    if (latestVer !== currentVer) {
+                        infoEl.innerHTML = `<span class="text-warning">新版本: ${latestVer}</span>`;
+                    } else {
+                        infoEl.innerHTML = `<span class="text-success">已是最新 (${currentVer})</span>`;
+                    }
+                })
+                .catch(err => {
+                    infoEl.innerHTML = `<span class="text-danger">检查失败</span>`;
+                    console.error(err);
+                });
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initPage();    // 1. 加载动态页面卡片
+            initCharts();  // 2. 加载图表
+            
+            document.getElementById('checkVersionBtn').addEventListener('click', checkVersion);
+            
+            // 检查是否是第一次访问
+            if (!localStorage.getItem('kosto_guide_seen')) {
+                const guideModal = new bootstrap.Modal(document.getElementById('guideModal'));
+                guideModal.show();
+                // 记录已查看，下次不再自动弹出
+                localStorage.setItem('kosto_guide_seen', 'true');
+            }
+        });
+    </script>
+
+    <!-- 使用指南模态框 -->
+    <div class="modal fade" id="guideModal" tabindex="-1" aria-labelledby="guideModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header border-0 bg-light" style="border-radius: 20px 20px 0 0;">
+                    <h5 class="modal-title fw-bold text-primary" id="guideModalLabel">
+                        <i class="fas fa-rocket me-2"></i>Kosto 脚本使用手册
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- 第一步：环境安装 -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold"><span class="badge bg-primary me-2">Step 1</span> 安装脚本管理器</h6>
+                        <p class="text-muted small">脚本必须运行在“篡改猴”插件之上，请先安装：</p>
+                        <div class="d-grid gap-2 d-md-block">
+                            <a href="https://www.tampermonkey.net/" target="_blank" class="btn btn-sm btn-outline-dark">
+                                <i class="fas fa-plug me-1"></i> Tampermonkey 官网下载
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 第二步：开启开发者模式 -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold"><span class="badge bg-warning text-dark me-2">Step 2</span> 开启浏览器开发者模式 (重要)</h6>
+                        <div class="alert alert-warning border-0 small py-2">
+                            某些浏览器（如 Edge/Chrome）为了安全会拦截第三方扩展，必须开启开发者模式：
+                        </div>
+                        <ul class="text-muted small">
+                            <li>在浏览器地址栏输入 <code>chrome://extensions/</code> (Chrome) 或 <code>edge://extensions/</code> (Edge)</li>
+                            <li>在页面右上角找到 <strong>“开发者模式”</strong> 开关并开启。</li>
+                            <li>重新刷新本页面。</li>
+                        </ul>
+                    </div>
+
+                    <!-- 第三步：安装脚本 -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold"><span class="badge bg-success me-2">Step 3</span> 确认安装脚本</h6>
+                        <p class="text-muted small">点击主页的“立即下载”按钮，篡改猴会自动弹出安装界面，点击“安装”或“更新”即可。</p>
+                    </div>
+
+                    <!-- 第四步：安装脚本 -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold"><span class="badge bg-info me-2">Step 4</span> 安装脚本</h6>
+                        <p class="text-muted small">安装完篡改猴后，点击以下链接安装 Kosto 脚本：</p>
+                        <div class="d-grid gap-2 d-md-block">
+                            <a href="https://gitee.com/Kosto179/kosto/raw/master/js/cloudversion.script.user.js" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-download me-1"></i> 安装 Kosto 脚本
+                            </a>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- 第五步：操作指南 -->
+                    <div class="mb-2">
+                        <h6 class="fw-bold text-danger"><i class="fas fa-keyboard me-2"></i>游戏内快捷键及功能</h6>
+                        <div class="table-responsive mt-3">
+                            <table class="table table-sm table-hover border">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>按键</th>
+                                        <th>功能说明</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="small">
+                                    <tr><td><span class="badge bg-secondary">M</span></td><td><strong>呼出/关闭菜单</strong> (录屏模式下需长按2秒)</td></tr>
+                                    <tr><td><span class="badge bg-secondary">A</span> / <span class="badge bg-secondary">B</span></td><td>在大厅自动加入 A队 或 B队</td></tr>
+                                    <tr><td><span class="badge bg-secondary">H</span></td><td>自动加入任意有空位的队伍</td></tr>
+                                    <tr><td><span class="badge bg-secondary">X</span></td><td><strong>紧急停止</strong> 所有自动线程 (抢位、点击器等)</td></tr>
+                                    <tr><td><span class="badge bg-secondary">T</span></td><td><strong>一键闪退</strong> (从战场瞬间返回大厅)</td></tr>
+                                    <tr><td><span class="badge bg-secondary">F10</span></td><td>屏幕截图 (可配置保存到剪贴板或下载)</td></tr>
+                                    <tr><td><span class="badge bg-secondary">F5</span></td><td>手动刷新游戏页面</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 特殊说明 -->
+                    <div class="bg-info bg-opacity-10 p-3 rounded-3 mt-3">
+                        <h6 class="fw-bold" style="font-size: 0.9rem;"><i class="fas fa-info-circle me-1"></i> 特色功能提示</h6>
+                        <ul class="mb-0 text-muted" style="font-size: 0.8rem;">
+                            <li><strong>录屏/直播模式：</strong> 开启后将隐藏所有脚本 UI 和关键个人信息，防止被封号。</li>
+                            <li><strong>防封挂机：</strong> 模拟真实随机按键，通过自定义动作防止被判定为 2.5 挂机。</li>
+                            <li><strong>管理员意淫：</strong> 仅在本地生效的管理员模式 但在游戏里无效</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">我知道了</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
