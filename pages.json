@@ -30,5 +30,13 @@
     "icon": "fa-server",
     "category": "game",
     "theme": "theme-game"
+  },
+  {
+    "filename": "black.html",
+    "title": "Kosto 黑名单云管理后台",
+    "desc": "自动发现的新页面",
+    "icon": "fa-file",
+    "category": "other",
+    "theme": "theme-other"
   }
 ]
