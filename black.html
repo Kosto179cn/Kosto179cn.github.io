@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kosto 黑名单云管理后台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #0b0f1a; color: #cbd5e1; font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+        .glass-card { background: rgba(22, 30, 46, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .rank-img { width: 32px; height: 16px; object-fit: contain; filter: drop-shadow(0 0 3px rgba(255,255,255,0.2)); }
+        input, select, textarea { background: #1e293b !important; color: white !important; border: 1px solid #334155 !important; }
+        input:focus { border-color: #3b82f6 !important; outline: none; }
+        .history-tag { background: rgba(51, 65, 85, 0.5); padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-right: 4px; display: inline-block; margin-bottom: 2px; }
+        .btn-action { transition: all 0.2s; }
+        .btn-action:hover { transform: translateY(-1px); }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-6">
+        <div>
+            <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 italic">
+                KOSTO CLOUD MANAGER
+            </h1>
+            <p class="text-slate-500 text-xs tracking-widest uppercase mt-1">3D Tank Player Blacklist System</p>
+        </div>
+        <div class="flex flex-wrap gap-3 justify-center">
+            <input type="password" id="giteeToken" placeholder="Gitee Token" class="px-4 py-2 rounded-lg text-sm w-48 shadow-inner">
+            <button onclick="fetchData()" class="bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-lg font-bold text-white btn-action shadow-lg shadow-blue-900/20">
+                <i class="fas fa-sync-alt mr-2"></i>拉取云端名单
+            </button>
+        </div>
+    </div>
+
+    <!-- Server Tabs -->
+    <div class="flex gap-1 mb-6 bg-slate-900/50 p-1 rounded-xl w-fit border border-white/5">
+        <button id="tabCN" onclick="switchServer('cn')" class="px-6 py-2 rounded-lg font-bold text-sm transition bg-blue-600 text-white shadow-lg">国服 (3DTank)</button>
+        <button id="tabEN" onclick="switchServer('en')" class="px-6 py-2 rounded-lg font-bold text-sm transition text-slate-400 hover:text-white">外服 (TankiOnline)</button>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+        <div class="glass-card p-4 rounded-xl flex items-center justify-between border-l-4 border-blue-500">
+            <div>
+                <p class="text-slate-500 text-[10px] uppercase font-bold">已封锁总人数</p>
+                <p class="text-2xl font-black text-white" id="statCount">0</p>
+            </div>
+            <i class="fas fa-user-shield text-blue-500/30 text-3xl"></i>
+        </div>
+        <div class="lg:col-span-2 glass-card p-2 rounded-xl flex items-center">
+            <i class="fas fa-search ml-3 text-slate-500"></i>
+            <input type="text" id="searchInput" oninput="renderTable()" placeholder="搜索 ID、昵称、曾用名、军团..." class="w-full bg-transparent border-none focus:ring-0 p-2 text-md">
+        </div>
+        <div class="flex gap-2">
+            <button onclick="batchClearByClan()" class="flex-1 bg-rose-900/30 hover:bg-rose-900/50 text-rose-400 border border-rose-500/30 rounded-xl font-bold text-sm btn-action">
+                <i class="fas fa-users-slash mr-2"></i>按军团清理
+            </button>
+        </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="glass-card rounded-2xl overflow-hidden shadow-2xl">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-slate-900/50 text-slate-400 text-[11px] uppercase tracking-wider">
+                    <tr>
+                        <th class="p-4 font-bold">等级</th>
+                        <th class="p-4 font-bold">基本信息 (ID/昵称)</th>
+                        <th class="p-4 font-bold">所属军团</th>
+                        <th class="p-4 font-bold">数据演变历史</th>
+                        <th class="p-4 font-bold text-right">管理</th>
+                    </tr>
+                </thead>
+                <tbody id="blacklistBody" class="divide-y divide-slate-800">
+                    <!-- JS Data Rendering -->
+                </tbody>
+            </table>
+        </div>
+        <div id="loadingState" class="p-24 text-center hidden">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+            <p class="text-slate-500 text-sm animate-pulse">正在安全连接至 Gitee 节点...</p>
+        </div>
+    </div>
+
+    <!-- Bottom Actions -->
+    <div class="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="text-slate-500 text-xs">
+            <i class="fas fa-info-circle mr-1"></i> 修改后请务必点击“推送至云端”按钮，否则更改不会生效。
+        </div>
+        <div class="flex gap-3">
+            <button onclick="openAddModal()" class="bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-xl font-bold transition btn-action">
+                <i class="fas fa-user-plus mr-2"></i>手动添加
+            </button>
+            <button onclick="saveToCloud()" id="saveBtn" class="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white px-10 py-3 rounded-xl font-black transition hidden shadow-xl shadow-blue-900/40 btn-action">
+                <i class="fas fa-cloud-upload-alt mr-2"></i>推送至云端同步
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="editModal" class="fixed inset-0 bg-slate-950/90 hidden items-center justify-center z-50 p-4">
+    <div class="glass-card w-full max-w-lg rounded-3xl shadow-2xl p-8 border border-white/10">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-black text-white flex items-center">
+                <i class="fas fa-user-edit mr-3 text-blue-400"></i>编辑档案
+            </h2>
+            <button onclick="closeModal()" class="text-slate-500 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+        </div>
+        
+        <div class="space-y-5">
+            <div class="grid grid-cols-1 gap-5">
+                <div>
+                    <label class="block text-[10px] uppercase font-black text-slate-500 mb-2 tracking-widest">唯一数字标识 (ID)</label>
+                    <input type="text" id="editId" disabled class="w-full px-4 py-3 rounded-xl opacity-40 cursor-not-allowed font-mono text-sm">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase font-black text-slate-500 mb-2 tracking-widest">当前游戏昵称</label>
+                    <input type="text" id="editNickname" class="w-full px-4 py-3 rounded-xl font-bold">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-[10px] uppercase font-black text-slate-500 mb-2 tracking-widest">军团 TAG</label>
+                    <input type="text" id="editClan" placeholder="例如: M.W" class="w-full px-4 py-3 rounded-xl font-bold">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase font-black text-slate-500 mb-2 tracking-widest">军衔等级</label>
+                    <select id="editRank" class="w-full px-4 py-3 rounded-xl font-bold appearance-none">
+                        <!-- Options will be added by JS -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="pt-6 flex gap-3">
+                <button onclick="closeModal()" class="flex-1 bg-slate-800 text-slate-400 py-3 rounded-xl font-bold hover:bg-slate-700 transition">取消返回</button>
+                <button onclick="applyChanges()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-black hover:bg-blue-500 transition shadow-lg shadow-blue-900/30">确认应用修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentServer = 'cn'; // 默认国服
+
+    const CONFIG = {
+        repo: "Kosto179/kosto-battle-clicker-new",
+        // 动态返回路径
+        getPath: () => currentServer === 'cn' ? "player_blacklist_cn.json" : "player_blacklist_en.json"
+    };
+
+    const RANK_DATA = [
+        "新兵", "二等兵", "一等兵", "下士", "中士", "上士", "三级军士长", "二级军士长", "一级军士长", "军士长", 
+        "五级准尉", "四级准尉", "三级准尉", "二级准尉", "一级准尉", "特级准尉", "少尉", "中尉", "上尉", "少校", 
+        "中校", "上校", "准将", "少将", "中将", "上将", "元帅", "陆军元帅", "统帅", "大元帅", "传奇"
+    ];
+    
+    const RANK_HASHES = [
+        "0171bce6", "14eac60d", "4d22497b", "7c510976", "c136316c", "59fac2c8", "2d5dc20c", "b563130a", "2e8435ba", "4aa99791",
+        "747eb099", "12e6efa4", "b14aa84c", "499e0cc4", "70cf8f5b", "dfdc6796", "7c89e529", "1e5f0eb2", "dca802d5", "4d07ac16",
+        "67355bb5", "02ac56c6", "99d83bfa", "3244a43f", "717ff925", "1b80d1fb", "72e4bb3d", "6ee30e89", "cc76cbcc", "acaaced1", "06d52fbe"
+    ];
+
+    let blacklistData = {};
+    let clanBlacklistData = []; // 军团黑名单数据
+    let currentSha = "";
+
+    // 切换服务器函数
+    function switchServer(srv) {
+        currentServer = srv;
+        // 样式切换
+        document.getElementById('tabCN').className = srv === 'cn' ? 'px-6 py-2 rounded-lg font-bold text-sm transition bg-blue-600 text-white shadow-lg' : 'px-6 py-2 rounded-lg font-bold text-sm transition text-slate-400 hover:text-white';
+        document.getElementById('tabEN').className = srv === 'en' ? 'px-6 py-2 rounded-lg font-bold text-sm transition bg-blue-600 text-white shadow-lg' : 'px-6 py-2 rounded-lg font-bold text-sm transition text-slate-400 hover:text-white';
+        
+        // 重新拉取数据
+        fetchData();
+    }
+
+    window.onload = () => {
+        const savedToken = localStorage.getItem("gitee_token");
+        if(savedToken) document.getElementById("giteeToken").value = savedToken;
+        
+        // 填充等级下拉菜单
+        const select = document.getElementById("editRank");
+        RANK_DATA.forEach((name, index) => {
+            const opt = document.createElement("option");
+            opt.value = index + 1;
+            opt.textContent = name;
+            select.appendChild(opt);
+        });
+    };
+
+    function getRankIconUrl(rank) {
+        let r = parseInt(rank) || 1;
+        r = Math.max(1, Math.min(31, r));
+        const prefix = r < 10 ? "0" + r : r;
+        return `https://s.eu.tankionline.com/static/images/${prefix}.${RANK_HASHES[r-1]}.webp`;
+    }
+
+    async function fetchData() {
+        const token = document.getElementById("giteeToken").value;
+        if(!token) return alert("请输入 Gitee Token！");
+        localStorage.setItem("gitee_token", token);
+
+        document.getElementById("loadingState").classList.remove("hidden");
+        document.getElementById("blacklistBody").innerHTML = "";
+
+        try {
+            const fileName = CONFIG.getPath();
+            const url = `https://gitee.com/api/v5/repos/${CONFIG.repo}/contents/${fileName}?access_token=${token}&t=${Date.now()}`;
+            const res = await fetch(url);
+            
+            if(res.status === 404) {
+                // 如果文件不存在，初始化空数据
+                blacklistData = {};
+                clanBlacklistData = [];
+                currentSha = "";
+                renderTable();
+                document.getElementById("saveBtn").classList.remove("hidden");
+                return;
+            }
+            
+            if(!res.ok) throw new Error("连接失败: 请检查 Token 权限或仓库地址是否正确");
+            
+            const json = await res.json();
+            currentSha = json.sha;
+            const contentText = decodeURIComponent(atob(json.content).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+            const rawData = JSON.parse(contentText);
+
+            // 关键兼容逻辑：支持新格式 {"players":..., "clans":...} 和老格式直接映射
+            if (rawData.players) {
+                blacklistData = rawData.players;
+                clanBlacklistData = rawData.clans || [];
+            } else {
+                blacklistData = rawData; // 兼容老格式
+                clanBlacklistData = [];
+            }
+            
+            renderTable();
+            document.getElementById("saveBtn").classList.remove("hidden");
+        } catch (e) {
+            console.error(e);
+            alert("加载失败: " + e.message);
+        } finally {
+            document.getElementById("loadingState").classList.add("hidden");
+        }
+    }
+
+    function renderTable() {
+        const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+        const tbody = document.getElementById("blacklistBody");
+        tbody.innerHTML = "";
+        
+        let count = 0;
+        Object.keys(blacklistData).forEach(id => {
+            const user = blacklistData[id];
+            const nickname = user.nickname || "";
+            const clan = user.clan || "";
+            const history = (user.history || []).join(" ");
+            const clanHistory = (user.clanHistory || []).join(" ");
+            
+            // 搜索过滤
+            const match = id.includes(searchTerm) || 
+                          nickname.toLowerCase().includes(searchTerm) || 
+                          clan.toLowerCase().includes(searchTerm) ||
+                          history.toLowerCase().includes(searchTerm) ||
+                          clanHistory.toLowerCase().includes(searchTerm);
+            
+            if(!match) return;
+            
+            count++;
+            const tr = document.createElement("tr");
+            tr.className = "hover:bg-slate-800/30 transition transition-colors group";
+            
+            // 渲染历史标签
+            const renderHistory = (list, icon, title) => {
+                if(!list || list.length === 0) return '';
+                return `<div class="flex flex-wrap items-center mt-1">
+                            <span class="text-[9px] text-slate-600 mr-2 uppercase font-bold">${title}:</span>
+                            ${list.map(h => `<span class="history-tag">${h}</span>`).join('')}
+                        </div>`;
+            };
+
+            tr.innerHTML = `
+                <td class="p-4">
+                    <div class="flex flex-col items-start gap-1">
+                        <img src="${getRankIconUrl(user.rank)}" class="rank-img">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase">${RANK_DATA[user.rank-1]}</span>
+                    </div>
+                </td>
+                <td class="p-4">
+                    <div class="font-mono text-[10px] text-blue-500/80 mb-1"># ${id}</div>
+                    <div class="text-white font-black text-lg">${nickname}</div>
+                </td>
+                <td class="p-4 text-sm">
+                    ${clan ? `<span class="bg-indigo-900/30 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/20 font-bold">${clan}</span>` : '<span class="text-slate-700 italic">散人</span>'}
+                </td>
+                <td class="p-4">
+                    <div class="max-w-xs">
+                        ${renderHistory(user.history, 'user', '更名')}
+                        ${renderHistory(user.clanHistory, 'shield', '军团')}
+                        <div class="text-[9px] text-slate-600 mt-2 italic"><i class="far fa-clock mr-1"></i>封锁于: ${user.addedAt || '未知'}</div>
+                    </div>
+                </td>
+                <td class="p-4 text-right">
+                    <div class="flex justify-end gap-2">
+                        <button onclick="openEditModal('${id}')" class="w-9 h-9 flex items-center justify-center bg-slate-800 hover:bg-amber-600 text-slate-400 hover:text-white rounded-lg transition"><i class="fas fa-edit"></i></button>
+                        <button onclick="deleteUser('${id}')" class="w-9 h-9 flex items-center justify-center bg-slate-800 hover:bg-red-600 text-slate-400 hover:text-white rounded-lg transition"><i class="fas fa-trash"></i></button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        document.getElementById("statCount").textContent = count;
+    }
+
+    // 批量按军团删除
+    function batchClearByClan() {
+        const clanName = prompt("请输入要清理的军团名 (完全匹配):");
+        if(!clanName) return;
+        
+        let toDelete = [];
+        Object.keys(blacklistData).forEach(id => {
+            if(blacklistData[id].clan === clanName) {
+                toDelete.push(id);
+            }
+        });
+
+        if(toDelete.length === 0) {
+            alert(`未找到军团为 [${clanName}] 的用户。`);
+            return;
+        }
+
+        if(confirm(`检测到该军团共有 ${toDelete.length} 名成员，确定全部移除吗？`)) {
+            toDelete.forEach(id => delete blacklistData[id]);
+            renderTable();
+            alert("已从本地列表移除，请记得同步到云端！");
+        }
+    }
+
+    function deleteUser(id) {
+        if(confirm(`确定要解除对 ${blacklistData[id].nickname} 的封锁吗？`)) {
+            delete blacklistData[id];
+            renderTable();
+        }
+    }
+
+    function openEditModal(id) {
+        const user = blacklistData[id];
+        document.getElementById("editId").value = id;
+        document.getElementById("editNickname").value = user.nickname;
+        document.getElementById("editClan").value = user.clan || "";
+        document.getElementById("editRank").value = user.rank;
+        document.getElementById("editModal").style.display = "flex";
+    }
+
+    function openAddModal() {
+        const id = prompt("请输入新用户的 Internal ID:");
+        if(!id) return;
+        if(blacklistData[id]) return alert("此 ID 已存在于名单中！");
+        
+        blacklistData[id] = {
+            nickname: "新封锁用户",
+            rank: 31,
+            clan: "",
+            history: [],
+            clanHistory: [],
+            addedAt: new Date().toLocaleString('zh-CN')
+        };
+        openEditModal(id);
+    }
+
+    function applyChanges() {
+        const id = document.getElementById("editId").value;
+        const user = blacklistData[id];
+        const newNick = document.getElementById("editNickname").value.trim();
+        const newClan = document.getElementById("editClan").value.trim();
+        
+        // 自动历史记录逻辑
+        if(user.nickname !== newNick) {
+            if(!user.history) user.history = [];
+            if(!user.history.includes(user.nickname)) user.history.push(user.nickname);
+        }
+
+        if(user.clan !== newClan) {
+            if(!user.clanHistory) user.clanHistory = [];
+            if(user.clan && !user.clanHistory.includes(user.clan)) user.clanHistory.push(user.clan);
+        }
+
+        user.nickname = newNick;
+        user.clan = newClan;
+        user.rank = parseInt(document.getElementById("editRank").value);
+
+        closeModal();
+        renderTable();
+    }
+
+    function closeModal() {
+        document.getElementById("editModal").style.display = "none";
+    }
+
+    async function saveToCloud() {
+        const token = document.getElementById("giteeToken").value;
+        if(!confirm("警告：此操作将永久修改云端黑名单数据，确定继续吗？")) return;
+
+        const btn = document.getElementById("saveBtn");
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>正在同步数据流...';
+
+        try {
+            // 使用新格式保存：{"players":..., "clans":...}
+            const saveData = {
+                players: blacklistData,
+                clans: clanBlacklistData
+            };
+            const jsonStr = JSON.stringify(saveData, null, 2);
+            // 兼容中文的 Base64 编码
+            const content = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)));
+
+            const url = `https://gitee.com/api/v5/repos/${CONFIG.repo}/contents/${CONFIG.getPath()}`;
+            const res = await fetch(url, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    access_token: token,
+                    content: content,
+                    sha: currentSha,
+                    message: "Blacklist updated via Kosto Web UI: " + new Date().toLocaleString()
+                })
+            });
+
+            if(!res.ok) throw new Error("同步失败：SHA 令牌过期或网络中断，请刷新页面重新加载");
+            
+            const resJson = await res.json();
+            currentSha = resJson.content.sha;
+            alert("🚀 云端数据已同步成功！");
+        } catch (e) {
+            alert(e.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-cloud-upload-alt mr-2"></i>推送至云端同步';
+        }
+    }
+</script>
+</body>
+</html>
