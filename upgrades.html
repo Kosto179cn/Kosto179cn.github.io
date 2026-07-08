@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>3D坦克装备升级计算器</title>
+    <style>
+        :root { --primary: #ffcc00; --bg: #0a0a0a; --card: #161616; --text: #eee; --accent: #00ff88; --danger: #ff4444; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; padding-bottom: 120px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        
+        /* 顶部面板 */
+        .header-panel { background: var(--card); padding: 20px; border-radius: 12px; border-bottom: 3px solid var(--primary); display: flex; flex-wrap: wrap; gap: 20px; align-items: center; position: sticky; top: 10px; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .btn { cursor: pointer; border: none; border-radius: 4px; font-weight: bold; padding: 10px 15px; transition: 0.2s; background: #333; color: white; }
+        .btn-outline { border: 1px solid var(--primary); color: var(--primary); background: transparent; }
+        .btn-outline:hover { background: var(--primary); color: #000; }
+        
+        /* 分类块 */
+        .category-block { background: var(--card); border-radius: 10px; margin-top: 15px; border: 1px solid #333; overflow: hidden; }
+        .cat-header { background: #222; padding: 12px 20px; cursor: pointer; color: var(--primary); font-weight: bold; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+        .cat-header:hover { background: #2a2a2a; }
+        .cat-tools { display: flex; align-items: center; gap: 15px; }
+        
+        .cat-content { display: none; padding: 5px 0; }
+        .cat-content.active { display: block; }
+        
+        /* 行样式 */
+        .item-row { display: grid; grid-template-columns: 40px 1.5fr 1.3fr 1.3fr 1fr; gap: 10px; padding: 10px 20px; border-bottom: 1px solid #222; align-items: center; }
+        .item-row.selected { background: rgba(0, 255, 136, 0.05); }
+        .item-name { font-weight: bold; font-size: 15px; }
+        
+        .lvl-box { display: flex; align-items: center; gap: 5px; background: #222; padding: 5px; border-radius: 6px; }
+        .lvl-box label { font-size: 11px; color: #888; width: 25px; }
+        select { background: #333; color: white; border: 1px solid #555; padding: 4px; border-radius: 4px; outline: none; }
+        
+        /* 价格显示 */
+        .cost-box { text-align: right; font-family: monospace; }
+        .orig-price { color: #777; text-decoration: line-through; font-size: 11px; display: block; }
+        .disc-price { color: var(--accent); font-weight: bold; font-size: 16px; }
+
+        /* 底部栏 */
+        .summary-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #111; border-top: 2px solid var(--primary); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -10px 30px rgba(0,0,0,0.8); z-index: 1000; }
+        .total-info { display: flex; gap: 40px; align-items: baseline; }
+        #totalDisc { font-size: 24px; color: var(--primary); font-weight: 900; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 style="text-align:center; color:var(--primary); letter-spacing: 2px;">3D坦克装备升级计算器</h1>
+    
+    <div class="header-panel">
+        <div>折扣: <input type="number" id="globalDiscount" value="50" style="width:45px; background:#333; color:#fff; border:1px solid #555;"> %</div>
+        <button class="btn btn-outline" onclick="document.getElementById('fileInput').click()">导入扫描 JSON</button>
+        <button class="btn btn-outline" onclick="exportJSON()">导出存档</button>
+        <button class="btn" style="background:var(--danger)" onclick="resetAll()">重置</button>
+        <input type="file" id="fileInput" style="display:none" onchange="importJSON(event)">
+    </div>
+
+    <div id="garage-container"></div>
+</div>
+
+<div class="summary-bar">
+    <div class="total-info">
+        <div>总额: <span id="totalDisc">0</span> <small>💎</small></div>
+        <div style="font-size:13px; color:#888;">原价: <span id="totalOrig">0</span></div>
+        <div style="font-size:13px; color:var(--accent);">节省: <span id="savedVal">0</span></div>
+    </div>
+    <div style="font-size:14px; display:flex; align-items:center; gap:10px;">
+        <input type="checkbox" id="calcSwitch" checked onchange="calculateAll()"> 应用折扣
+    </div>
+</div>
+
+<script>
+/** 1. 核心数据库 **/
+const COSTS = {
+    "STANDARD": {
+        "MK1": [0, 100, 1000, 1900], "MK2": [0, 1000, 2000, 3000, 4000, 5000],
+        "MK3": [0, 1000, 2140, 3290, 4430, 5570, 6710, 7860, 9000],
+        "MK4": [0, 1000, 2330, 3670, 5000, 6330, 7670, 9000, 10330, 11670, 13000],
+        "MK5": [0, 1000, 2800, 4600, 6400, 8200, 10000, 11800, 13600, 15400, 17200, 19000],
+        "MK6": [0, 3000, 4730, 6450, 8180, 9910, 11640, 13360, 15090, 16820, 18550, 20270, 22000],
+        "MK7": [0, 5000, 6870, 8750, 10620, 12490, 14370, 16240, 18120, 19990, 21860, 23740, 25610, 27480, 29360, 31230, 33110, 34980, 36850, 38730, 40600]
+    },
+    "DRONE": {
+        "布鲁特斯": [0, 100, 620, 1130, 1650, 2160, 2680, 3190, 3710, 4230, 4740, 5260, 5770, 6290, 6810, 7320, 7840, 8350, 8870, 9380, 9900],
+        "PRO": [0, 1000, 6160, 11320, 16470, 21630, 26790, 31950, 37110, 42260, 47420, 52580, 57740, 62890, 68050, 73210, 78370, 83530, 88680, 93840, 99000]
+    },
+    "MODULE": {
+        "犰狳": [0, ...Array.from({length: 45}, (_, i) => 30000 + (i * 5000))],
+        "NORMAL": [0, ...Array.from({length: 45}, (_, i) => 6000 + (i * 1000))]
+    }
+};
+
+const GARAGE = {
+    "炮塔": ["火焰炮", "冰风暴", "磁力炮", "特斯拉", "滑膛炮", "离子炮", "火龙珠", "轰天炮", "极速炮", "火箭炮", "雷暴炮", "海啸", "蝎子", "马格南", "激光炮", "电磁炮", "镭射炮"],
+    "底盘": ["黄蜂轻甲", "霍珀", "蜂王", "维京", "猎人中甲", "十字军", "圣骑士", "独裁者", "泰坦", "阿瑞斯", "猛犸象"],
+    "手榴弹": ["炸弹", "迫击炮", "南瓜", "雪球", "沙皇", "礼炮"],
+    "辅助无人机": ["布鲁特斯", "机械师", "守卫者", "助推器", "魔术师", "破坏者", "亥伯龙神", "危机"],
+    "防御模块": ["蜘蛛", "犰狳", "狐狸", "獾", "山猫", "鼬", "狼", "黑豹", "狮子", "海豚", "虎鲸", "鲨鱼", "灰熊", "乌鸦", "秃鹰", "猎鹰", "狮鹫", "猫头鹰", "鹰"]
+};
+
+/** 2. 价格引擎 **/
+function getItemPrice(name, cat, sMK, sS, eMK, eS) {
+    let sum = 0;
+    if (cat === "辅助无人机" || cat === "防御模块") {
+        const list = (name === "布鲁特斯") ? COSTS.DRONE.布鲁特斯 : (name === "犰狳") ? COSTS.MODULE.犰狳 : (cat === "辅助无人机" ? COSTS.DRONE.PRO : COSTS.MODULE.NORMAL);
+        for (let i = sS + 1; i <= eS; i++) sum += list[i] || 0;
+    } else {
+        const mks = ["MK1","MK2","MK3","MK4","MK5","MK6","MK7"];
+        let active = false;
+        for (let m of mks) {
+            if (m === sMK) active = true;
+            if (active) {
+                let from = (m === sMK) ? sS + 1 : 1;
+                let to = (m === eMK) ? eS : (COSTS.STANDARD[m]?.length - 1 || 0);
+                for (let j = from; j <= to; j++) sum += COSTS.STANDARD[m][j] || 0;
+                if (m === eMK) break;
+            }
+        }
+    }
+    return sum;
+}
+
+/** 3. 初始化渲染 **/
+function init() {
+    const container = document.getElementById('garage-container');
+    const saved = JSON.parse(localStorage.getItem('tanki_final_save') || '{}');
+    container.innerHTML = '';
+
+    Object.keys(GARAGE).forEach(cat => {
+        let catDiv = document.createElement('div');
+        catDiv.className = 'category-block';
+        catDiv.innerHTML = `
+            <div class="cat-header">
+                <span>${cat}</span>
+                <div class="cat-tools" onclick="event.stopPropagation()">
+                    <input type="checkbox" onchange="toggleCatAll(this)"> <small>全选</small>
+                    <span style="font-size:12px; color:#666; margin-left:10px;">[折叠/展开]</span>
+                </div>
+            </div>`;
+        
+        let contentDiv = document.createElement('div');
+        contentDiv.className = 'cat-content active';
+
+        GARAGE[cat].forEach(name => {
+            const d = saved[name] || { sel:false, sMK:'MK1', sS:0, eMK:'MK7', eS:20 };
+            const isLinear = (cat === "辅助无人机" || cat === "防御模块");
+            if (isLinear && !saved[name]) { d.sMK = null; d.eMK = null; d.eS = (cat==="辅助无人机"?20:45); }
+
+            let row = document.createElement('div');
+            row.className = `item-row ${d.sel?'selected':''}`;
+            row.dataset.id = name; row.dataset.cat = cat;
+            row.innerHTML = `
+                <input type="checkbox" class="row-sel" ${d.sel?'checked':''} onchange="syncRow(this)">
+                <div class="item-name">${name}</div>
+                <div class="lvl-box"><label>现</label>${!isLinear ? `<select class="sMK">${genMK(d.sMK)}</select>` : ''}<select class="sS">${genS(cat, d.sMK, d.sS)}</select></div>
+                <div class="lvl-box"><label>目</label>${!isLinear ? `<select class="eMK">${genMK(d.eMK)}</select>` : ''}<select class="eS">${genS(cat, d.eMK, d.eS)}</select></div>
+                <div class="cost-box"><span class="orig-price">0</span><span class="disc-price">0</span></div>`;
+            contentDiv.appendChild(row);
+        });
+
+        catDiv.appendChild(contentDiv);
+        catDiv.querySelector('.cat-header').onclick = function() { contentDiv.classList.toggle('active'); };
+        container.appendChild(catDiv);
+    });
+    calculateAll();
+}
+
+function genMK(sel) { return ["MK1","MK2","MK3","MK4","MK5","MK6","MK7"].map(m => `<option ${m==sel?'selected':''}>${m}</option>`).join(''); }
+function genS(cat, mk, sel) {
+    let max = 20;
+    if (cat === "防御模块") max = 45;
+    if (mk && COSTS.STANDARD[mk]) max = COSTS.STANDARD[mk].length - 1;
+    let h = ''; for(let i=0; i<=max; i++) h += `<option value="${i}" ${i==sel?'selected':''}>${i}级</option>`;
+    return h;
+}
+
+/** 4. 核心计算与同步 **/
+function syncRow(el) { el.closest('.item-row').classList.toggle('selected', el.checked); calculateAll(); }
+function toggleCatAll(el) {
+    const isChecked = el.checked;
+    el.closest('.category-block').querySelectorAll('.row-sel').forEach(cb => {
+        cb.checked = isChecked;
+        cb.closest('.item-row').classList.toggle('selected', isChecked);
+    });
+    calculateAll();
+}
+
+function calculateAll() {
+    const factor = (100 - (document.getElementById('globalDiscount')?.value || 50)) / 100;
+    const applyDisc = document.getElementById('calcSwitch')?.checked;
+    let tOrig = 0, tDisc = 0;
+
+    document.querySelectorAll('.item-row').forEach(row => {
+        const name = row.dataset.id, cat = row.dataset.cat;
+        const sm = row.querySelector('.sMK')?.value, ss = parseInt(row.querySelector('.sS').value);
+        const em = row.querySelector('.eMK')?.value, es = parseInt(row.querySelector('.eS').value);
+
+        const pOrig = getItemPrice(name, cat, sm, ss, em, es);
+        const pDisc = Math.floor(pOrig * factor);
+
+        row.querySelector('.orig-price').innerText = pOrig.toLocaleString();
+        row.querySelector('.disc-price').innerText = pDisc.toLocaleString();
+
+        if (row.querySelector('.row-sel').checked) { tOrig += pOrig; tDisc += pDisc; }
+    });
+
+    const el1 = document.getElementById('totalOrig'), el2 = document.getElementById('totalDisc'), el3 = document.getElementById('savedVal');
+    if (el1) el1.innerText = tOrig.toLocaleString();
+    if (el2) el2.innerText = (applyDisc ? tDisc : tOrig).toLocaleString();
+    if (el3) el3.innerText = (tOrig - tDisc).toLocaleString();
+
+    // 自动保存
+    const data = {};
+    document.querySelectorAll('.item-row').forEach(row => {
+        data[row.dataset.id] = {
+            sel: row.querySelector('.row-sel').checked,
+            sMK: row.querySelector('.sMK')?.value || null, sS: parseInt(row.querySelector('.sS').value),
+            eMK: row.querySelector('.eMK')?.value || null, eS: parseInt(row.querySelector('.eS').value)
+        };
+    });
+    localStorage.setItem('tanki_final_save', JSON.stringify(data));
+}
+
+/** 5. 导入导出 **/
+function importJSON(e) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        try {
+            const raw = JSON.parse(ev.target.result);
+            const clean = {};
+            Object.keys(raw).forEach(key => {
+                // 正则过滤：去除 MKx-x, 等级-x, MAX, 以及所有空格
+                let base = key.replace(/MK\d+-\d+|等级-\d+|MAX/gi, '').trim();
+                clean[base] = raw[key];
+            });
+            localStorage.setItem('tanki_final_save', JSON.stringify(clean));
+            location.reload();
+        } catch (err) { alert("文件格式错误！"); }
+    };
+    reader.readAsText(e.target.files[0]);
+}
+
+function exportJSON() {
+    const blob = new Blob([localStorage.getItem('tanki_final_save')], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'tanki_save.json'; a.click();
+}
+
+function resetAll() { if(confirm("确定清空吗？")) { localStorage.clear(); location.reload(); } }
+
+// 事件监听
+document.addEventListener('change', (e) => {
+    if (e.target.tagName === 'SELECT' || e.target.id === 'globalDiscount') {
+        if (e.target.classList.contains('sMK') || e.target.classList.contains('eMK')) {
+            const row = e.target.closest('.item-row');
+            e.target.nextElementSibling.innerHTML = genS(row.dataset.cat, e.target.value, e.target.nextElementSibling.value);
+        }
+        calculateAll();
+    }
+});
+
+window.onload = init;
+</script>
+</body>
+</html>
