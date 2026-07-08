@@ -4,833 +4,511 @@
     <meta charset="UTF-8">
     <title>3D坦克装备升级计算器</title>
     <style>
-        :root {
-            --primary: #ffcc00;
-            --bg: #0a0a0a;
-            --card: #161616;
-            --text: #eee;
-            --accent: #00ff88;
-            --danger: #ff4444;
-        }
-        * {
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            padding-bottom: 120px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
+        :root { --primary: #ffcc00; --bg: #0a0a0a; --card: #161616; --text: #eee; --accent: #00ff88; --danger: #ff4444; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; padding-bottom: 120px; }
+        .container { max-width: 1200px; margin: 0 auto; }
         .header-panel {
-            background: var(--card);
-            padding: 20px;
-            border-radius: 12px;
-            border-bottom: 3px solid var(--primary);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            align-items: center;
-            position: sticky;
-            top: 10px;
-            z-index: 1000;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            background: var(--card); padding: 20px; border-radius: 12px; border-bottom: 3px solid var(--primary);
+            display: flex; flex-wrap: wrap; gap: 20px; align-items: center; position: sticky; top: 10px; z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
-        .btn {
-            cursor: pointer;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            padding: 10px 15px;
-            transition: 0.2s;
-            background: #333;
-            color: white;
-        }
-        .btn-outline {
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            background: transparent;
-        }
-        .btn-outline:hover {
-            background: var(--primary);
-            color: #000;
-        }
-        .btn-danger {
-            background: var(--danger);
-            color: #fff;
-        }
-        .btn-danger:hover {
-            background: #cc0000;
-        }
-
-        .category-block {
-            background: var(--card);
-            border-radius: 10px;
-            margin-top: 15px;
-            border: 1px solid #333;
-            overflow: hidden;
-        }
-        .cat-header {
-            background: #222;
-            padding: 12px 20px;
-            cursor: pointer;
-            color: var(--primary);
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            user-select: none;
-        }
-        .cat-header:hover {
-            background: #2a2a2a;
-        }
-        .cat-tools {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .cat-tools label {
-            font-size: 13px;
-            color: #aaa;
-            cursor: pointer;
-        }
-
-        .cat-content {
-            display: none;
-            padding: 5px 0;
-        }
-        .cat-content.active {
-            display: block;
-        }
-
-        /* 行样式 - 6列布局 */
+        .btn { cursor: pointer; border: none; border-radius: 4px; font-weight: bold; padding: 10px 15px; transition: 0.2s; background: #333; color: white; }
+        .btn-outline { border: 1px solid var(--primary); color: var(--primary); background: transparent; }
+        .btn-outline:hover { background: var(--primary); color: #000; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-danger:hover { background: #cc0000; }
+        .category-block { background: var(--card); border-radius: 10px; margin-top: 15px; border: 1px solid #333; overflow: hidden; }
+        .cat-header { background: #222; padding: 12px 20px; cursor: pointer; color: var(--primary); font-weight: bold; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+        .cat-header:hover { background: #2a2a2a; }
+        .cat-tools { display: flex; align-items: center; gap: 15px; }
+        .cat-content { display: none; padding: 5px 0; }
+        .cat-content.active { display: block; }
         .item-row {
-            display: grid;
-            grid-template-columns: 36px 1.2fr 0.7fr 1.2fr 1.2fr 0.9fr;
-            gap: 8px;
-            padding: 8px 16px;
-            border-bottom: 1px solid #222;
-            align-items: center;
+            display: grid; grid-template-columns: 36px 1.2fr 0.7fr 1.2fr 1.2fr 0.9fr;
+            gap: 8px; padding: 8px 16px; border-bottom: 1px solid #222; align-items: center;
         }
-        .item-row.selected {
-            background: rgba(0, 255, 136, 0.06);
-        }
-        .item-name {
-            font-weight: bold;
-            font-size: 14px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .lvl-box {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            background: #222;
-            padding: 4px 6px;
-            border-radius: 6px;
-            flex-wrap: wrap;
-        }
-        .lvl-box label {
-            font-size: 10px;
-            color: #888;
-            width: 20px;
-        }
-        select {
-            background: #333;
-            color: white;
-            border: 1px solid #555;
-            padding: 3px 4px;
-            border-radius: 4px;
-            outline: none;
-            font-size: 12px;
-            max-width: 70px;
-        }
-
-        .cost-box {
-            text-align: right;
-            font-family: monospace;
-            min-width: 70px;
-        }
-        .orig-price {
-            color: #777;
-            text-decoration: line-through;
-            font-size: 11px;
-            display: block;
-        }
-        .disc-price {
-            color: var(--accent);
-            font-weight: bold;
-            font-size: 15px;
-        }
-
-        /* 已购买列 */
-        .purchased-cell {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            font-size: 12px;
-        }
-        .purchased-cell input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-            accent-color: var(--primary);
-        }
-        .purchased-cell input[type="checkbox"]:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .purchased-cell .free-tag {
-            color: #888;
-            font-size: 11px;
-            background: #222;
-            padding: 1px 8px;
-            border-radius: 10px;
-        }
-        .purchased-cell .owned-tag {
-            color: var(--accent);
-            font-size: 11px;
-            background: #1a3a2a;
-            padding: 1px 8px;
-            border-radius: 10px;
-        }
-
-        /* 底部栏 */
+        .item-row.selected { background: rgba(0, 255, 136, 0.06); }
+        .item-name { font-weight: bold; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .lvl-box { display: flex; align-items: center; gap: 4px; background: #222; padding: 4px 6px; border-radius: 6px; flex-wrap: wrap; }
+        .lvl-box label { font-size: 10px; color: #888; width: 20px; }
+        select { background: #333; color: white; border: 1px solid #555; padding: 3px 4px; border-radius: 4px; outline: none; font-size: 12px; max-width: 70px; }
+        .cost-box { text-align: right; font-family: monospace; min-width: 70px; }
+        .orig-price { color: #777; text-decoration: line-through; font-size: 11px; display: block; }
+        .disc-price { color: var(--accent); font-weight: bold; font-size: 15px; }
+        .purchased-cell { display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 12px; }
+        .purchased-cell input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary); }
+        .purchased-cell .owned-tag { color: var(--accent); font-size: 11px; background: #1a3a2a; padding: 1px 8px; border-radius: 10px; }
         .summary-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #111;
-            border-top: 2px solid var(--primary);
-            padding: 15px 30px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.8);
-            z-index: 1000;
+            position: fixed; bottom: 0; left: 0; right: 0; background: #111; border-top: 2px solid var(--primary);
+            padding: 15px 30px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.8); z-index: 1000;
         }
-        .total-info {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 25px;
-            align-items: baseline;
-        }
-        #totalDisc {
-            font-size: 24px;
-            color: var(--primary);
-            font-weight: 900;
-        }
-        .summary-controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            font-size: 14px;
-        }
-        .summary-controls label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-            color: #ccc;
-        }
-
+        .total-info { display: flex; flex-wrap: wrap; gap: 25px; align-items: baseline; }
+        #totalDisc { font-size: 24px; color: var(--primary); font-weight: 900; }
+        .summary-controls { display: flex; align-items: center; gap: 15px; font-size: 14px; }
+        .summary-controls label { display: flex; align-items: center; gap: 5px; cursor: pointer; color: #ccc; }
         @media (max-width: 768px) {
-            .item-row {
-                grid-template-columns: 30px 1fr 0.5fr 1fr 1fr 0.7fr;
-                gap: 4px;
-                padding: 6px 10px;
-                font-size: 12px;
-            }
-            .item-name {
-                font-size: 12px;
-            }
-            select {
-                font-size: 10px;
-                max-width: 55px;
-                padding: 2px 3px;
-            }
-            .lvl-box label {
-                font-size: 9px;
-                width: 16px;
-            }
-            .disc-price {
-                font-size: 13px;
-            }
-            .summary-bar {
-                padding: 10px 15px;
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .total-info {
-                gap: 12px;
-                justify-content: center;
-            }
-            #totalDisc {
-                font-size: 20px;
-            }
-            .header-panel {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 10px;
-            }
-            .header-panel>div {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 8px;
-                align-items: center;
-            }
-        }
-        @media (max-width: 480px) {
-            .item-row {
-                grid-template-columns: 26px 0.9fr 0.5fr 0.9fr 0.9fr 0.6fr;
-                gap: 3px;
-                padding: 5px 6px;
-                font-size: 11px;
-            }
-            .item-name {
-                font-size: 11px;
-            }
-            select {
-                font-size: 9px;
-                max-width: 45px;
-                padding: 1px 2px;
-            }
-            .lvl-box {
-                padding: 2px 4px;
-            }
-            .lvl-box label {
-                font-size: 8px;
-                width: 14px;
-            }
-            .disc-price {
-                font-size: 11px;
-            }
-            .orig-price {
-                font-size: 9px;
-            }
-            .purchased-cell .free-tag,
-            .purchased-cell .owned-tag {
-                font-size: 9px;
-                padding: 0 5px;
-            }
-            .purchased-cell input[type="checkbox"] {
-                width: 14px;
-                height: 14px;
-            }
+            .item-row { grid-template-columns: 30px 1fr 0.5fr 1fr 1fr 0.7fr; gap: 4px; padding: 6px 10px; font-size: 12px; }
+            .item-name { font-size: 12px; }
+            select { font-size: 10px; max-width: 55px; padding: 2px 3px; }
+            .lvl-box label { font-size: 9px; width: 16px; }
+            .disc-price { font-size: 13px; }
+            .summary-bar { padding: 10px 15px; flex-direction: column; align-items: stretch; }
+            .total-info { gap: 12px; justify-content: center; }
+            #totalDisc { font-size: 20px; }
+            .header-panel { flex-direction: column; align-items: stretch; gap: 10px; }
+            .header-panel>div { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
         }
     </style>
 </head>
 <body>
+<div class="container">
+    <h1 style="text-align:center; color:var(--primary); letter-spacing:2px; margin-top:0;">⚙ 3D坦克装备升级计算器</h1>
+    <div class="header-panel">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span>折扣:</span>
+            <input type="number" id="globalDiscount" value="50" style="width:55px;background:#333;color:#fff;border:1px solid #555;border-radius:4px;padding:4px 6px;"> %
+        </div>
+        <button class="btn btn-outline" onclick="document.getElementById('fileInput').click()">📂 导入扫描</button>
+        <button class="btn btn-outline" onclick="exportJSON()">💾 导出存档</button>
+        <button class="btn btn-danger" onclick="resetAll()">🗑 重置</button>
+        <input type="file" id="fileInput" style="display:none" onchange="importJSON(event)">
+    </div>
+    <div id="garage-container"></div>
+</div>
+<div class="summary-bar">
+    <div class="total-info">
+        <div>总额: <span id="totalDisc">0</span> <small>💎</small></div>
+        <div style="font-size:13px;color:#888;">原价: <span id="totalOrig">0</span></div>
+        <div style="font-size:13px;color:var(--accent);">节省: <span id="savedVal">0</span></div>
+    </div>
+    <div class="summary-controls">
+        <label><input type="checkbox" id="calcSwitch" checked onchange="calculateAll()"> 应用折扣</label>
+        <span style="color:#666;font-size:12px;">💡 勾选即计入总额</span>
+    </div>
+</div>
 
-    <div class="container">
-        <h1 style="text-align:center; color:var(--primary); letter-spacing:2px; margin-top:0;">⚙ 3D坦克装备升级计算器</h1>
+<script>
+// ================================================================
+// 1. 核心数据库（完整成本数据）
+// ================================================================
+const COSTS = {
+    // 炮塔（所有炮塔成本相同，故共用）
+    "STANDARD": {
+        "MK1": [0, 100, 1000, 1900],
+        "MK2": [0, 1000, 2000, 3000, 4000, 5000],
+        "MK3": [0, 1000, 2140, 3290, 4430, 5570, 6710, 7860, 9000],
+        "MK4": [0, 1000, 2330, 3670, 5000, 6330, 7670, 9000, 10330, 11670, 13000],
+        "MK5": [0, 1000, 2800, 4600, 6400, 8200, 10000, 11800, 13600, 15400, 17200, 19000],
+        "MK6": [0, 3000, 4730, 6450, 8180, 9910, 11640, 13360, 15090, 16820, 18550, 20270, 22000],
+        "MK7": [0, 5000, 6870, 8750, 10620, 12490, 14370, 16240, 18120, 19990, 21860, 23740, 25610, 27480, 29360, 31230, 33110, 34980, 36850, 38730, 40600]
+    },
+    // 底盘
+    "CHASSIS": {
+        "MK1": [0, 100, 1000, 1900],
+        "MK2": [0, 1000, 2000, 3000, 4000, 5000],
+        "MK3": [0, 1000, 1930, 2860, 3790, 4710, 5640, 6570, 7500],
+        "MK4": [0, 1000, 2110, 3220, 4330, 5440, 6560, 7670, 8780, 9890, 11000],
+        "MK5": [0, 1000, 2400, 3800, 5200, 6600, 8000, 9400, 10800, 12200, 13600, 15000],
+        "MK6": [0, 3000, 4410, 5820, 7230, 8640, 10050, 11450, 12860, 14270, 15680, 17090, 18500],
+        "MK7": [0, 5000, 6520, 8030, 9550, 11060, 12580, 14090, 15610, 17130, 18640, 20160, 21670, 23190, 24710, 26220, 27740, 29250, 30770, 32280, 33800]
+    },
+    // 手榴弹
+    "GRENADE": {
+        "MK1": [0, 100, 1000, 1900],
+        "MK2": [0, 1000, 2000, 3000, 4000, 5000],
+        "MK3": [0, 1000, 1710, 2430, 3140, 3860, 4570, 5290, 6000],
+        "MK4": [0, 1000, 1890, 2780, 3670, 4560, 5440, 6330, 7220, 8110, 9000],
+        "MK5": [0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000],
+        "MK6": [0, 3000, 4090, 5180, 6270, 7360, 8450, 9550, 10640, 11730, 12820, 13910, 15000],
+        "MK7": [0, 5000, 6160, 7320, 8470, 9630, 10790, 11950, 13110, 14260, 15420, 16580, 17740, 18890, 20050, 21210, 22370, 23530, 24680, 25840, 27000]
+    },
+    // 无人机
+    "DRONE": {
+        "布鲁特斯": [0, 100, 620, 1130, 1650, 2160, 2680, 3190, 3710, 4230, 4740, 5260, 5770, 6290, 6810, 7320, 7840, 8350, 8870, 9380, 9900],
+        "PRO": [0, 1000, 6160, 11320, 16470, 21630, 26790, 31950, 37110, 42260, 47420, 52580, 57740, 62890, 68050, 73210, 78370, 83530, 88680, 93840, 99000]
+    },
+    // 防御模块
+    "MODULE": {
+        "犰狳": [0, ...Array.from({length: 45}, (_, i) => 30000 + (i * 5000))],
+        "NORMAL": [0, ...Array.from({length: 45}, (_, i) => 6000 + (i * 1000))]
+    }
+};
 
-        <div class="header-panel">
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                <span>折扣:</span>
-                <input type="number" id="globalDiscount" value="50" style="width:55px;background:#333;color:#fff;border:1px solid #555;border-radius:4px;padding:4px 6px;">
-                <span>%</span>
+// 购买价格
+const PURCHASE_PRICES = {
+    "炸弹": 0,
+    "迫击炮": 10100,
+    "南瓜": 0,
+    "雪球": 0,
+    "沙皇": 0,
+    "礼炮": 183000,
+    "医护兵": 118000,
+    "布鲁特斯": 1000,
+    "机械师": 20000,
+    "守卫者": 20000,
+    "助推器": 20000,
+    "魔术师": 20000,
+    "破坏者": 20000,
+    "亥伯龙神": 320000,
+    "危机": 365000
+};
+function getPurchasePrice(name, cat) {
+    if (cat === "手榴弹" || cat === "辅助无人机") return PURCHASE_PRICES[name] || 0;
+    if (cat === "防御模块") {
+        if (name === "犰狳") return 275000;
+        if (name === "蜘蛛") return 5000;
+        return 55000;
+    }
+    return 0;
+}
+function needsPurchaseControl(cat) { return cat === "手榴弹" || cat === "辅助无人机" || cat === "防御模块"; }
+
+// ================================================================
+// 2. 装备分类
+// ================================================================
+const GARAGE = {
+    "炮塔": ["火焰炮", "冰风暴", "磁力炮", "特斯拉", "滑膛炮", "离子炮", "火龙珠", "轰天炮", "极速炮", "火箭炮", "雷暴炮", "海啸", "蝎子", "马格南", "激光炮", "电磁炮", "镭射炮"],
+    "底盘": ["黄蜂轻甲", "霍珀", "蜂王", "维京", "猎人中甲", "十字军", "圣骑士", "独裁者", "泰坦", "阿瑞斯", "猛犸象"],
+    "手榴弹": ["炸弹", "迫击炮", "南瓜", "雪球", "沙皇", "礼炮", "医护兵"],
+    "辅助无人机": ["布鲁特斯", "机械师", "守卫者", "助推器", "魔术师", "破坏者", "亥伯龙神", "危机"],
+    "防御模块": ["蜘蛛", "犰狳", "狐狸", "獾", "山猫", "鼬", "狼", "黑豹", "狮子", "海豚", "虎鲸", "鲨鱼", "灰熊", "乌鸦", "秃鹰", "猎鹰", "狮鹫", "猫头鹰", "鹰"]
+};
+
+// ================================================================
+// 3. 价格引擎（支持多阶段 MK）
+// ================================================================
+function getItemPrice(name, cat, sMK, sS, eMK, eS) {
+    // 确定成本字典
+    let costDict;
+    if (cat === "炮塔") costDict = COSTS.STANDARD;
+    else if (cat === "底盘") costDict = COSTS.CHASSIS;
+    else if (cat === "手榴弹") costDict = COSTS.GRENADE;
+    else if (cat === "辅助无人机") {
+        const list = (name === "布鲁特斯") ? COSTS.DRONE.布鲁特斯 : COSTS.DRONE.PRO;
+        let sum = 0;
+        for (let i = sS + 1; i <= eS; i++) sum += list[i] || 0;
+        return sum;
+    } else if (cat === "防御模块") {
+        const list = (name === "犰狳") ? COSTS.MODULE.犰狳 : COSTS.MODULE.NORMAL;
+        let sum = 0;
+        for (let i = sS + 1; i <= eS; i++) sum += list[i] || 0;
+        return sum;
+    } else return 0;
+
+    // 多阶段计算
+    const mks = ["MK1","MK2","MK3","MK4","MK5","MK6","MK7"];
+    let sum = 0, active = false;
+    for (let m of mks) {
+        if (m === sMK) active = true;
+        if (active) {
+            const from = (m === sMK) ? sS + 1 : 1;
+            const to = (m === eMK) ? eS : (costDict[m]?.length - 1 || 0);
+            for (let j = from; j <= to; j++) {
+                sum += costDict[m][j] || 0;
+            }
+            if (m === eMK) break;
+        }
+    }
+    return sum;
+}
+
+// ================================================================
+// 4. 渲染引擎
+// ================================================================
+function init() {
+    const container = document.getElementById('garage-container');
+    const saved = JSON.parse(localStorage.getItem('tanki_final_save') || '{}');
+    container.innerHTML = '';
+
+    Object.keys(GARAGE).forEach(cat => {
+        const catDiv = document.createElement('div');
+        catDiv.className = 'category-block';
+
+        const header = document.createElement('div');
+        header.className = 'cat-header';
+        header.innerHTML = `
+            <span>${cat}</span>
+            <div class="cat-tools" onclick="event.stopPropagation()">
+                <label><input type="checkbox" onchange="toggleCatAll(this)"> 全选</label>
+                <span style="font-size:12px;color:#666;margin-left:6px;">[折叠/展开]</span>
             </div>
-            <button class="btn btn-outline" onclick="document.getElementById('fileInput').click()">📂 导入扫描</button>
-            <button class="btn btn-outline" onclick="exportJSON()">💾 导出存档</button>
-            <button class="btn btn-danger" onclick="resetAll()">🗑 重置</button>
-            <input type="file" id="fileInput" style="display:none" onchange="importJSON(event)">
-        </div>
+        `;
 
-        <div id="garage-container"></div>
-    </div>
+        const content = document.createElement('div');
+        content.className = 'cat-content active';
 
-    <div class="summary-bar">
-        <div class="total-info">
-            <div>总额: <span id="totalDisc">0</span> <small>💎</small></div>
-            <div style="font-size:13px;color:#888;">原价: <span id="totalOrig">0</span></div>
-            <div style="font-size:13px;color:var(--accent);">节省: <span id="savedVal">0</span></div>
-        </div>
-        <div class="summary-controls">
-            <label><input type="checkbox" id="calcSwitch" checked onchange="calculateAll()"> 应用折扣</label>
-            <span style="color:#666;font-size:12px;">💡 勾选即计入总额</span>
-        </div>
-    </div>
-
-    <script>
-        // ================================================================
-        //  1. 核心数据库
-        // ================================================================
-        const COSTS = {
-            "STANDARD": {
-                "MK1": [0, 100, 1000, 1900],
-                "MK2": [0, 1000, 2000, 3000, 4000, 5000],
-                "MK3": [0, 1000, 2140, 3290, 4430, 5570, 6710, 7860, 9000],
-                "MK4": [0, 1000, 2330, 3670, 5000, 6330, 7670, 9000, 10330, 11670, 13000],
-                "MK5": [0, 1000, 2800, 4600, 6400, 8200, 10000, 11800, 13600, 15400, 17200, 19000],
-                "MK6": [0, 3000, 4730, 6450, 8180, 9910, 11640, 13360, 15090, 16820, 18550, 20270, 22000],
-                "MK7": [0, 5000, 6870, 8750, 10620, 12490, 14370, 16240, 18120, 19990, 21860, 23740, 25610, 27480, 29360,
-                    31230, 33110, 34980, 36850, 38730, 40600
-                ]
-            },
-            "DRONE": {
-                "布鲁特斯": [0, 100, 620, 1130, 1650, 2160, 2680, 3190, 3710, 4230, 4740, 5260, 5770, 6290, 6810, 7320,
-                    7840, 8350, 8870, 9380, 9900
-                ],
-                "PRO": [0, 1000, 6160, 11320, 16470, 21630, 26790, 31950, 37110, 42260, 47420, 52580, 57740, 62890, 68050,
-                    73210, 78370, 83530, 88680, 93840, 99000
-                ]
-            },
-            "MODULE": {
-                "犰狳": [0, ...Array.from({ length: 45 }, (_, i) => 30000 + (i * 5000))],
-                "NORMAL": [0, ...Array.from({ length: 45 }, (_, i) => 6000 + (i * 1000))]
-            },
-            // 手榴弹升级费用（与无人机PRO相同，20级）
-            "HAND_GRENADE": [0, 1000, 6160, 11320, 16470, 21630, 26790, 31950, 37110, 42260, 47420, 52580, 57740, 62890,
-                68050, 73210, 78370, 83530, 88680, 93840, 99000
-            ]
-        };
-
-        // ================================================================
-        //  2. 装备分类
-        // ================================================================
-        const GARAGE = {
-            "炮塔": ["火焰炮", "冰风暴", "磁力炮", "特斯拉", "滑膛炮", "离子炮", "火龙珠", "轰天炮", "极速炮", "火箭炮", "雷暴炮", "海啸", "蝎子",
-                "马格南", "激光炮", "电磁炮", "镭射炮"
-            ],
-            "底盘": ["黄蜂轻甲", "霍珀", "蜂王", "维京", "猎人中甲", "十字军", "圣骑士", "独裁者", "泰坦", "阿瑞斯", "猛犸象"],
-            "手榴弹": ["炸弹", "迫击炮", "南瓜", "雪球", "沙皇", "礼炮", "医护兵"],
-            "辅助无人机": ["布鲁特斯", "机械师", "守卫者", "助推器", "魔术师", "破坏者", "亥伯龙神", "危机"],
-            "防御模块": ["蜘蛛", "犰狳", "狐狸", "獾", "山猫", "鼬", "狼", "黑豹", "狮子", "海豚", "虎鲸", "鲨鱼", "灰熊", "乌鸦", "秃鹰",
-                "猎鹰", "狮鹫", "猫头鹰", "鹰"
-            ]
-        };
-
-        // ================================================================
-        //  3. 购买价格映射
-        // ================================================================
-        const PURCHASE_PRICES = {
-            // 手榴弹
-            "炸弹": 0,
-            "迫击炮": 10100,
-            "南瓜": 0,
-            "雪球": 0,
-            "沙皇": 0,
-            "礼炮": 183000,
-            "医护兵": 118000,
-            // 无人机
-            "布鲁特斯": 1000,
-            "机械师": 20000,
-            "守卫者": 20000,
-            "助推器": 20000,
-            "魔术师": 20000,
-            "破坏者": 20000,
-            "亥伯龙神": 320000,
-            "危机": 365000,
-            // 防御模块（特殊处理在函数里）
-        };
-
-        function getPurchasePrice(name, cat) {
-            if (cat === "手榴弹" || cat === "辅助无人机") {
-                return PURCHASE_PRICES[name] || 0;
-            }
-            if (cat === "防御模块") {
-                if (name === "犰狳") return 275000;
-                if (name === "蜘蛛") return 5000;
-                return 55000;
-            }
-            return 0;
-        }
-
-        // 判断某项目是否需要显示"已购买"控制
-        function needsPurchaseControl(cat) {
-            return cat === "手榴弹" || cat === "辅助无人机" || cat === "防御模块";
-        }
-
-        // 判断某项目是否"免费"（购买价格为0且无购买渠道）
-        function isFreeItem(name, cat) {
-            if (cat === "手榴弹") {
-                return ["炸弹", "南瓜", "雪球", "沙皇"].includes(name);
-            }
-            return false;
-        }
-
-        // ================================================================
-        //  4. 价格引擎
-        // ================================================================
-        function getItemPrice(name, cat, sMK, sS, eMK, eS) {
-            let sum = 0;
-            // 手榴弹使用 HAND_GRENADE 列表
-            if (cat === "手榴弹") {
-                const list = COSTS.HAND_GRENADE;
-                for (let i = sS + 1; i <= eS; i++) {
-                    sum += list[i] || 0;
-                }
-                return sum;
-            }
-            // 辅助无人机 & 防御模块 线性
-            if (cat === "辅助无人机" || cat === "防御模块") {
-                let list;
-                if (cat === "辅助无人机") {
-                    list = (name === "布鲁特斯") ? COSTS.DRONE.布鲁特斯 : COSTS.DRONE.PRO;
-                } else { // 防御模块
-                    list = (name === "犰狳") ? COSTS.MODULE.犰狳 : COSTS.MODULE.NORMAL;
-                }
-                for (let i = sS + 1; i <= eS; i++) {
-                    sum += list[i] || 0;
-                }
-                return sum;
-            }
-            // 炮塔 & 底盘 标准 MK 多段
-            const mks = ["MK1", "MK2", "MK3", "MK4", "MK5", "MK6", "MK7"];
-            let active = false;
-            for (let m of mks) {
-                if (m === sMK) active = true;
-                if (active) {
-                    let from = (m === sMK) ? sS + 1 : 1;
-                    let to = (m === eMK) ? eS : (COSTS.STANDARD[m]?.length - 1 || 0);
-                    for (let j = from; j <= to; j++) {
-                        sum += COSTS.STANDARD[m][j] || 0;
-                    }
-                    if (m === eMK) break;
-                }
-            }
-            return sum;
-        }
-
-        // ================================================================
-        //  5. 渲染引擎
-        // ================================================================
-        function init() {
-            const container = document.getElementById('garage-container');
-            const saved = JSON.parse(localStorage.getItem('tanki_final_save') || '{}');
-            container.innerHTML = '';
-
-            Object.keys(GARAGE).forEach(cat => {
-                const catDiv = document.createElement('div');
-                catDiv.className = 'category-block';
-
-                const header = document.createElement('div');
-                header.className = 'cat-header';
-                header.innerHTML = `
-                    <span>${cat}</span>
-                    <div class="cat-tools" onclick="event.stopPropagation()">
-                        <label><input type="checkbox" onchange="toggleCatAll(this)"> 全选</label>
-                        <span style="font-size:12px;color:#666;margin-left:6px;">[折叠/展开]</span>
-                    </div>
-                `;
-
-                const content = document.createElement('div');
-                content.className = 'cat-content active';
-
-                GARAGE[cat].forEach(name => {
-                    const d = saved[name] || {};
-                    // 默认值
-                    const isLinear = (cat === "辅助无人机" || cat === "防御模块" || cat === "手榴弹");
-                    const def = {
-                        sel: false,
-                        sMK: 'MK1',
-                        sS: 0,
-                        eMK: 'MK7',
-                        eS: (cat === "防御模块") ? 45 : 20,
-                        purchased: false
-                    };
-                    // 如果是线性项目，sMK/eMK 为 null
-                    if (isLinear) {
-                        def.sMK = null;
-                        def.eMK = null;
-                    }
-                    // 合并保存的数据
-                    const data = { ...def, ...d };
-                    // 兼容旧数据：如果 purchased 未定义，默认为 false
-                    if (data.purchased === undefined) data.purchased = false;
-                    // 对于免费项目，默认已购买
-                    if (isFreeItem(name, cat)) {
-                        data.purchased = true;
-                    }
-
-                    const row = document.createElement('div');
-                    row.className = `item-row ${data.sel ? 'selected' : ''}`;
-                    row.dataset.id = name;
-                    row.dataset.cat = cat;
-
-                    // 判断是否需要显示已购买控制
-                    const showPurchased = needsPurchaseControl(cat);
-                    const price = getPurchasePrice(name, cat);
-                    const isFree = isFreeItem(name, cat);
-
-                    // 构建行
-                    let html = `
-                        <input type="checkbox" class="row-sel" ${data.sel ? 'checked' : ''} onchange="syncRow(this)">
-                        <div class="item-name" title="${name}">${name}</div>
-                        <div class="purchased-cell">
-                    `;
-
-                    if (showPurchased) {
-                        if (isFree || price === 0) {
-                            // 免费或无需购买：显示"已拥有"标记
-                            html += `<span class="owned-tag">✓ 已拥有</span>`;
-                            // 仍然放一个隐藏的checkbox保持数据结构一致
-                            html += `<input type="checkbox" class="purchased" style="display:none;" checked disabled>`;
-                        } else {
-                            html += `<input type="checkbox" class="purchased" ${data.purchased ? 'checked' : ''} onchange="calculateAll()">`;
-                            html += `<span style="font-size:10px;color:#666;">已购</span>`;
-                        }
-                    } else {
-                        html += `<span style="color:#444;font-size:12px;">—</span>`;
-                    }
-                    html += `</div>`;
-
-                    // 等级选择
-                    if (!isLinear) {
-                        html += `<div class="lvl-box"><label>现</label><select class="sMK">${genMK(data.sMK)}</select><select class="sS">${genS(cat, data.sMK, data.sS)}</select></div>`;
-                        html += `<div class="lvl-box"><label>目</label><select class="eMK">${genMK(data.eMK)}</select><select class="eS">${genS(cat, data.eMK, data.eS)}</select></div>`;
-                    } else {
-                        html += `<div class="lvl-box"><label>现</label><select class="sS">${genS(cat, null, data.sS)}</select></div>`;
-                        html += `<div class="lvl-box"><label>目</label><select class="eS">${genS(cat, null, data.eS)}</select></div>`;
-                    }
-
-                    html += `
-                        <div class="cost-box">
-                            <span class="orig-price">0</span>
-                            <span class="disc-price">0</span>
-                        </div>
-                    `;
-
-                    row.innerHTML = html;
-                    content.appendChild(row);
-                });
-
-                catDiv.appendChild(header);
-                catDiv.appendChild(content);
-                header.onclick = function(e) {
-                    // 防止点击内部checkbox触发折叠
-                    if (e.target.closest('.cat-tools')) return;
-                    content.classList.toggle('active');
-                };
-                container.appendChild(catDiv);
-            });
-
-            calculateAll();
-        }
-
-        function genMK(sel) {
-            return ["MK1", "MK2", "MK3", "MK4", "MK5", "MK6", "MK7"]
-                .map(m => `<option ${m === sel ? 'selected' : ''}>${m}</option>`)
-                .join('');
-        }
-
-        function genS(cat, mk, sel) {
-            let max = 20;
-            if (cat === "防御模块") max = 45;
-            if (cat === "手榴弹") max = 20;
-            if (cat === "辅助无人机") max = 20;
-            if (mk && COSTS.STANDARD[mk]) {
-                max = COSTS.STANDARD[mk].length - 1;
-            }
-            let h = '';
-            for (let i = 0; i <= max; i++) {
-                h += `<option value="${i}" ${i === sel ? 'selected' : ''}>${i}级</option>`;
-            }
-            return h;
-        }
-
-        // ================================================================
-        //  6. 计算与同步
-        // ================================================================
-        function syncRow(el) {
-            const row = el.closest('.item-row');
-            row.classList.toggle('selected', el.checked);
-            calculateAll();
-        }
-
-        function toggleCatAll(el) {
-            const checked = el.checked;
-            const block = el.closest('.category-block');
-            block.querySelectorAll('.row-sel').forEach(cb => {
-                cb.checked = checked;
-                cb.closest('.item-row').classList.toggle('selected', checked);
-            });
-            calculateAll();
-        }
-
-        function calculateAll() {
-            const factor = (100 - (document.getElementById('globalDiscount')?.value || 50)) / 100;
-            const applyDisc = document.getElementById('calcSwitch')?.checked || false;
-            let tOrig = 0,
-                tDisc = 0;
-
-            document.querySelectorAll('.item-row').forEach(row => {
-                const name = row.dataset.id;
-                const cat = row.dataset.cat;
-                const isLinear = (cat === "辅助无人机" || cat === "防御模块" || cat === "手榴弹");
-
-                // 读取等级
-                let sMK = null,
-                    eMK = null,
-                    sS = 0,
-                    eS = 0;
-                if (!isLinear) {
-                    sMK = row.querySelector('.sMK')?.value || 'MK1';
-                    eMK = row.querySelector('.eMK')?.value || 'MK7';
-                    sS = parseInt(row.querySelector('.sS')?.value || 0);
-                    eS = parseInt(row.querySelector('.eS')?.value || 0);
-                } else {
-                    sS = parseInt(row.querySelector('.sS')?.value || 0);
-                    eS = parseInt(row.querySelector('.eS')?.value || 0);
-                }
-
-                // 升级费用
-                const pUpgrade = getItemPrice(name, cat, sMK, sS, eMK, eS);
-
-                // 购买价格（如果未购买且行被选中）
-                let pPurchase = 0;
-                const cbPurchased = row.querySelector('.purchased');
-                const isPurchased = cbPurchased ? cbPurchased.checked : true;
-                const showPurchased = needsPurchaseControl(cat);
-                const purchasePrice = getPurchasePrice(name, cat);
-
-                // 只有需要购买控制、行被选中、且未购买 才加购买价格
-                const rowSelected = row.querySelector('.row-sel').checked;
-                if (showPurchased && rowSelected && !isPurchased) {
-                    pPurchase = purchasePrice;
-                }
-
-                const pOrig = pUpgrade + pPurchase;
-                const pDisc = Math.floor(pOrig * factor);
-
-                // 更新显示
-                row.querySelector('.orig-price').innerText = pOrig.toLocaleString();
-                row.querySelector('.disc-price').innerText = pDisc.toLocaleString();
-
-                if (rowSelected) {
-                    tOrig += pOrig;
-                    tDisc += pDisc;
-                }
-            });
-
-            document.getElementById('totalOrig').innerText = tOrig.toLocaleString();
-            document.getElementById('totalDisc').innerText = (applyDisc ? tDisc : tOrig).toLocaleString();
-            document.getElementById('savedVal').innerText = (tOrig - tDisc).toLocaleString();
-
-            // 自动保存
-            saveState();
-        }
-
-        function saveState() {
-            const data = {};
-            document.querySelectorAll('.item-row').forEach(row => {
-                const name = row.dataset.id;
-                const cat = row.dataset.cat;
-                const isLinear = (cat === "辅助无人机" || cat === "防御模块" || cat === "手榴弹");
-                const sMK = !isLinear ? (row.querySelector('.sMK')?.value || 'MK1') : null;
-                const eMK = !isLinear ? (row.querySelector('.eMK')?.value || 'MK7') : null;
-                const sS = parseInt(row.querySelector('.sS')?.value || 0);
-                const eS = parseInt(row.querySelector('.eS')?.value || 0);
-                const sel = row.querySelector('.row-sel').checked;
-                const cb = row.querySelector('.purchased');
-                const purchased = cb ? cb.checked : true;
-                data[name] = { sel, sMK, sS, eMK, eS, purchased };
-            });
-            localStorage.setItem('tanki_final_save', JSON.stringify(data));
-        }
-
-        // ================================================================
-        //  7. 导入 / 导出 / 重置
-        // ================================================================
-        function importJSON(e) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                try {
-                    const raw = JSON.parse(ev.target.result);
-                    const clean = {};
-                    Object.keys(raw).forEach(key => {
-                        let base = key.replace(/MK\d+-\d+|等级-\d+|MAX/gi, '').trim();
-                        clean[base] = raw[key];
-                    });
-                    localStorage.setItem('tanki_final_save', JSON.stringify(clean));
-                    location.reload();
-                } catch (err) {
-                    alert("❌ 文件格式错误！请确保是有效的JSON存档。");
-                }
+        GARAGE[cat].forEach(name => {
+            const d = saved[name] || {};
+            const isLinear = (cat === "辅助无人机" || cat === "防御模块");
+            const def = {
+                sel: false,
+                sMK: 'MK1',
+                sS: 0,
+                eMK: 'MK7',
+                eS: (cat === "防御模块") ? 45 : 20,
+                purchased: false
             };
-            reader.readAsText(e.target.files[0]);
-            e.target.value = '';
-        }
+            if (isLinear) { def.sMK = null; def.eMK = null; }
+            // 手榴弹是线性？不，手榴弹也有MK，但升级是连续的，我们仍用MK阶段
+            // 但手榴弹的等级也包含MK，所以不设为线性
+            // 对于无人机和防御模块，是线性无MK
+            const data = { ...def, ...d };
+            if (data.purchased === undefined) data.purchased = false;
 
-        function exportJSON() {
-            const data = localStorage.getItem('tanki_final_save');
-            if (!data) {
-                alert("⚠️ 没有可导出的数据。");
-                return;
+            // 免费物品默认已购买（如炸弹）
+            if (cat === "手榴弹" && ["炸弹","南瓜","雪球","沙皇"].includes(name)) {
+                data.purchased = true;
             }
-            const blob = new Blob([data], { type: 'application/json' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'tanki_save.json';
-            a.click();
-            URL.revokeObjectURL(a.href);
-        }
 
-        function resetAll() {
-            if (confirm("⚠️ 确定要清空所有数据吗？此操作不可撤销！")) {
-                localStorage.removeItem('tanki_final_save');
-                location.reload();
-            }
-        }
+            const row = document.createElement('div');
+            row.className = `item-row ${data.sel ? 'selected' : ''}`;
+            row.dataset.id = name;
+            row.dataset.cat = cat;
 
-        // ================================================================
-        //  8. 事件监听
-        // ================================================================
-        document.addEventListener('change', (e) => {
-            const target = e.target;
-            if (target.tagName === 'SELECT') {
-                const row = target.closest('.item-row');
-                if (!row) return;
-                const cat = row.dataset.cat;
-                const isLinear = (cat === "辅助无人机" || cat === "防御模块" || cat === "手榴弹");
-                // 如果切换了MK，刷新等级下拉
-                if (target.classList.contains('sMK') || target.classList.contains('eMK')) {
-                    const isS = target.classList.contains('sMK');
-                    const otherSelect = isS ? target.parentElement.querySelector('.eMK') : null;
-                    // 重新生成等级选项
-                    const mkVal = target.value;
-                    const sSSelect = row.querySelector('.sS');
-                    const eSSelect = row.querySelector('.eS');
-                    if (sSSelect) {
-                        const curS = parseInt(sSSelect.value);
-                        sSSelect.innerHTML = genS(cat, mkVal, curS);
-                    }
-                    if (eSSelect && otherSelect) {
-                        const curE = parseInt(eSSelect.value);
-                        eSSelect.innerHTML = genS(cat, otherSelect.value, curE);
-                    }
+            const showPurchased = needsPurchaseControl(cat);
+            const isFree = (cat === "手榴弹" && ["炸弹","南瓜","雪球","沙皇"].includes(name));
+
+            let html = `
+                <input type="checkbox" class="row-sel" ${data.sel ? 'checked' : ''} onchange="syncRow(this)">
+                <div class="item-name" title="${name}">${name}</div>
+                <div class="purchased-cell">
+            `;
+            if (showPurchased) {
+                if (isFree) {
+                    html += `<span class="owned-tag">✓ 已拥有</span>`;
+                    html += `<input type="checkbox" class="purchased" style="display:none;" checked disabled>`;
+                } else {
+                    html += `<input type="checkbox" class="purchased" ${data.purchased ? 'checked' : ''} onchange="calculateAll()">`;
+                    html += `<span style="font-size:10px;color:#666;">已购</span>`;
                 }
-                calculateAll();
+            } else {
+                html += `<span style="color:#444;font-size:12px;">—</span>`;
             }
-            if (target.id === 'globalDiscount' || target.id === 'calcSwitch') {
-                calculateAll();
+            html += `</div>`;
+
+            // 等级选择
+            if (!isLinear) {
+                html += `<div class="lvl-box"><label>现</label><select class="sMK">${genMK(data.sMK)}</select><select class="sS">${genS(cat, data.sMK, data.sS)}</select></div>`;
+                html += `<div class="lvl-box"><label>目</label><select class="eMK">${genMK(data.eMK)}</select><select class="eS">${genS(cat, data.eMK, data.eS)}</select></div>`;
+            } else {
+                html += `<div class="lvl-box"><label>现</label><select class="sS">${genS(cat, null, data.sS)}</select></div>`;
+                html += `<div class="lvl-box"><label>目</label><select class="eS">${genS(cat, null, data.eS)}</select></div>`;
             }
+
+            html += `
+                <div class="cost-box">
+                    <span class="orig-price">0</span>
+                    <span class="disc-price">0</span>
+                </div>
+            `;
+
+            row.innerHTML = html;
+            content.appendChild(row);
         });
 
-        // 监听"已购买"复选框变化（动态生成的，使用事件代理）
-        document.addEventListener('change', (e) => {
-            if (e.target.classList.contains('purchased')) {
-                calculateAll();
-            }
-        });
+        catDiv.appendChild(header);
+        catDiv.appendChild(content);
+        header.onclick = function(e) {
+            if (e.target.closest('.cat-tools')) return;
+            content.classList.toggle('active');
+        };
+        container.appendChild(catDiv);
+    });
 
-        // ================================================================
-        //  9. 启动
-        // ================================================================
-        window.onload = init;
-    </script>
+    calculateAll();
+}
+
+function genMK(sel) {
+    return ["MK1","MK2","MK3","MK4","MK5","MK6","MK7"]
+        .map(m => `<option ${m === sel ? 'selected' : ''}>${m}</option>`).join('');
+}
+
+function genS(cat, mk, sel) {
+    let max = 20;
+    if (cat === "防御模块") max = 45;
+    if (cat === "辅助无人机") max = 20;
+    if (cat === "手榴弹") max = 20;
+    if (mk && COSTS.STANDARD[mk]) max = COSTS.STANDARD[mk].length - 1;
+    if (mk && COSTS.CHASSIS[mk]) max = COSTS.CHASSIS[mk].length - 1;
+    if (mk && COSTS.GRENADE[mk]) max = COSTS.GRENADE[mk].length - 1;
+    let h = '';
+    for (let i = 0; i <= max; i++) {
+        h += `<option value="${i}" ${i === sel ? 'selected' : ''}>${i}级</option>`;
+    }
+    return h;
+}
+
+// ================================================================
+// 5. 计算与同步
+// ================================================================
+function syncRow(el) {
+    const row = el.closest('.item-row');
+    row.classList.toggle('selected', el.checked);
+    calculateAll();
+}
+
+function toggleCatAll(el) {
+    const checked = el.checked;
+    const block = el.closest('.category-block');
+    block.querySelectorAll('.row-sel').forEach(cb => {
+        cb.checked = checked;
+        cb.closest('.item-row').classList.toggle('selected', checked);
+    });
+    calculateAll();
+}
+
+function calculateAll() {
+    const factor = (100 - (document.getElementById('globalDiscount')?.value || 50)) / 100;
+    const applyDisc = document.getElementById('calcSwitch')?.checked || false;
+    let tOrig = 0, tDisc = 0;
+
+    document.querySelectorAll('.item-row').forEach(row => {
+        const name = row.dataset.id;
+        const cat = row.dataset.cat;
+        const isLinear = (cat === "辅助无人机" || cat === "防御模块");
+
+        let sMK = null, eMK = null, sS = 0, eS = 0;
+        if (!isLinear) {
+            sMK = row.querySelector('.sMK')?.value || 'MK1';
+            eMK = row.querySelector('.eMK')?.value || 'MK7';
+            sS = parseInt(row.querySelector('.sS')?.value || 0);
+            eS = parseInt(row.querySelector('.eS')?.value || 0);
+        } else {
+            sS = parseInt(row.querySelector('.sS')?.value || 0);
+            eS = parseInt(row.querySelector('.eS')?.value || 0);
+        }
+
+        const pUpgrade = getItemPrice(name, cat, sMK, sS, eMK, eS);
+
+        // 购买价格
+        let pPurchase = 0;
+        const cbPurchased = row.querySelector('.purchased');
+        const isPurchased = cbPurchased ? cbPurchased.checked : true;
+        const showPurchased = needsPurchaseControl(cat);
+        const purchasePrice = getPurchasePrice(name, cat);
+        const rowSelected = row.querySelector('.row-sel').checked;
+        if (showPurchased && rowSelected && !isPurchased) {
+            pPurchase = purchasePrice;
+        }
+
+        const pOrig = pUpgrade + pPurchase;
+        const pDisc = Math.floor(pOrig * factor);
+
+        row.querySelector('.orig-price').innerText = pOrig.toLocaleString();
+        row.querySelector('.disc-price').innerText = pDisc.toLocaleString();
+
+        if (rowSelected) {
+            tOrig += pOrig;
+            tDisc += pDisc;
+        }
+    });
+
+    document.getElementById('totalOrig').innerText = tOrig.toLocaleString();
+    document.getElementById('totalDisc').innerText = (applyDisc ? tDisc : tOrig).toLocaleString();
+    document.getElementById('savedVal').innerText = (tOrig - tDisc).toLocaleString();
+
+    saveState();
+}
+
+function saveState() {
+    const data = {};
+    document.querySelectorAll('.item-row').forEach(row => {
+        const name = row.dataset.id;
+        const cat = row.dataset.cat;
+        const isLinear = (cat === "辅助无人机" || cat === "防御模块");
+        const sMK = !isLinear ? (row.querySelector('.sMK')?.value || 'MK1') : null;
+        const eMK = !isLinear ? (row.querySelector('.eMK')?.value || 'MK7') : null;
+        const sS = parseInt(row.querySelector('.sS')?.value || 0);
+        const eS = parseInt(row.querySelector('.eS')?.value || 0);
+        const sel = row.querySelector('.row-sel').checked;
+        const cb = row.querySelector('.purchased');
+        const purchased = cb ? cb.checked : true;
+        data[name] = { sel, sMK, sS, eMK, eS, purchased };
+    });
+    localStorage.setItem('tanki_final_save', JSON.stringify(data));
+}
+
+// ================================================================
+// 6. 导入 / 导出 / 重置
+// ================================================================
+function importJSON(e) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        try {
+            const raw = JSON.parse(ev.target.result);
+            // 兼容旧格式，但保留所有字段
+            localStorage.setItem('tanki_final_save', JSON.stringify(raw));
+            location.reload();
+        } catch (err) {
+            alert("❌ 文件格式错误！请确保是有效的JSON存档。");
+        }
+    };
+    reader.readAsText(e.target.files[0]);
+    e.target.value = '';
+}
+
+function exportJSON() {
+    const data = localStorage.getItem('tanki_final_save');
+    if (!data) {
+        alert("⚠️ 没有可导出的数据。");
+        return;
+    }
+    const blob = new Blob([data], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'tanki_save.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+function resetAll() {
+    if (confirm("⚠️ 确定要清空所有数据吗？此操作不可撤销！")) {
+        localStorage.removeItem('tanki_final_save');
+        location.reload();
+    }
+}
+
+// ================================================================
+// 7. 事件监听
+// ================================================================
+document.addEventListener('change', (e) => {
+    const target = e.target;
+    if (target.tagName === 'SELECT') {
+        const row = target.closest('.item-row');
+        if (!row) return;
+        const cat = row.dataset.cat;
+        const isLinear = (cat === "辅助无人机" || cat === "防御模块");
+        if (target.classList.contains('sMK') || target.classList.contains('eMK')) {
+            // 重新生成等级选项
+            const mkVal = target.value;
+            const sSSelect = row.querySelector('.sS');
+            const eSSelect = row.querySelector('.eS');
+            if (sSSelect) {
+                const curS = parseInt(sSSelect.value);
+                sSSelect.innerHTML = genS(cat, mkVal, curS);
+            }
+            if (eSSelect) {
+                const eMKVal = row.querySelector('.eMK')?.value || 'MK7';
+                const curE = parseInt(eSSelect.value);
+                eSSelect.innerHTML = genS(cat, eMKVal, curE);
+            }
+        }
+        calculateAll();
+    }
+    if (target.id === 'globalDiscount' || target.id === 'calcSwitch') {
+        calculateAll();
+    }
+});
+
+document.addEventListener('change', (e) => {
+    if (e.target.classList.contains('purchased')) {
+        calculateAll();
+    }
+});
+
+window.onload = init;
+</script>
 </body>
 </html>
