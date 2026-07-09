@@ -1,0 +1,954 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS String Diff Tool</title>
+    
+    <!-- Google Fonts: Roboto (UI), M PLUS 1p (Code), Material Symbols Rounded (Icons) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;500;700&family=Rubik:wght@400;500;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Custom Palette mapped to M3 Tokens */
+            --color-custom-bg: #001926;
+            --color-custom-primary: #76FF33;
+            --color-custom-secondary: #BFD5FF;
+            
+            /* M3 Dark Theme System Colors Override */
+            --md-sys-color-background: var(--color-custom-bg);
+            --md-sys-color-on-background: #E2E2E9;
+            
+            --md-sys-color-primary: var(--color-custom-primary);
+            --md-sys-color-on-primary: #002800; /* Dark green for contrast on neon green */
+            --md-sys-color-primary-container: rgba(118, 255, 51, 0.15);
+            --md-sys-color-on-primary-container: #ccffb3;
+            
+            --md-sys-color-error: #FFB4AB;
+            --md-sys-color-on-error: #690005;
+            --md-sys-color-error-container: #93000A;
+            --md-sys-color-on-error-container: #FFDAD6;
+            
+            /* Surface Tones based on Dark Blue #001926 */
+            --md-sys-color-surface: #001926;
+            --md-sys-color-surface-container: #002233; /* Slightly lighter than bg */
+            --md-sys-color-surface-container-high: #002b40;
+            --md-sys-color-surface-container-highest: #00334d;
+            
+            --md-sys-color-outline: var(--color-custom-secondary);
+            --md-sys-color-outline-variant: rgba(191, 213, 255, 0.2);
+            
+            --md-ref-typeface-brand: 'Rubik', sans-serif;
+            --md-ref-typeface-plain: 'Rubik', sans-serif;
+            --md-ref-typeface-code: 'M PLUS 1p', monospace;
+            
+            --md-sys-shape-corner-large: 24px;
+            --md-sys-shape-corner-medium: 16px;
+            --md-sys-shape-corner-small: 12px;
+            --md-sys-shape-corner-extra-small: 8px;
+
+            --md-sys-elevation-2: 0px 4px 8px 3px rgba(0,0,0,0.15), 0px 1px 3px rgba(0,0,0,0.3);
+            --md-sys-elevation-3: 0px 4px 8px 3px rgba(0,0,0,0.15), 0px 1px 3px rgba(0,0,0,0.3);
+        }
+
+        /* Base Reset */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        
+        body {
+            font-family: var(--md-ref-typeface-plain);
+            background-color: var(--md-sys-color-background);
+            color: var(--md-sys-color-on-background);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Material Symbols Utility */
+        .material-symbols-rounded {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 24px;
+            vertical-align: middle;
+        }
+
+        .icon-filled { font-variation-settings: 'FILL' 1; }
+
+        /* Font Loading State */
+        body > header, body > main {
+            opacity: 0;
+            transition: opacity 0.8s cubic-bezier(0.2, 0, 0, 1);
+        }
+
+        body.fonts-loaded > header, body.fonts-loaded > main {
+            opacity: 1;
+        }
+
+        #startup-loader {
+            position: fixed; inset: 0;
+            background: var(--md-sys-color-background);
+            z-index: 9999;
+            display: flex;
+            justify-content: center; align-items: center;
+            transition: opacity 0.5s ease, visibility 0.5s;
+        }
+
+        body.fonts-loaded #startup-loader {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* App Bar */
+        header {
+            padding: 24px 24px 24px 24px;
+            background: var(--md-sys-color-surface);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 2.25rem; /* Display Small/Medium */
+            margin: 0;
+            font-weight: 400;
+            color: var(--md-sys-color-on-background);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h1 .brand-icon {
+            color: var(--md-sys-color-primary);
+            font-size: 32px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--color-custom-secondary); /* Use the specific light blue */
+            margin-left: 44px;
+            opacity: 0.8;
+        }
+
+        main {
+            padding: 0 24px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            flex: 1;
+            max-width: 1600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Card System */
+        .card {
+            background: var(--md-sys-color-surface-container);
+            border-radius: var(--md-sys-shape-corner-large);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+
+        /* Control Section */
+        .controls-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 16px;
+            align-items: stretch;
+        }
+
+        /* File Input Card */
+        .file-card {
+            cursor: pointer;
+            border: 1px solid transparent;
+            min-height: 120px;
+            justify-content: center;
+        }
+
+        .file-card:hover {
+            background: var(--md-sys-color-surface-container-high);
+        }
+
+        .file-card.has-file {
+            background: var(--md-sys-color-surface-container-highest);
+            border: 1px solid var(--md-sys-color-primary);
+        }
+
+        .file-card input {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 2;
+        }
+
+        .file-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .file-icon-box {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            background: var(--md-sys-color-surface-container-high);
+            color: var(--md-sys-color-outline);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+
+        .file-card.has-file .file-icon-box {
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+        }
+
+        .file-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow: hidden;
+        }
+
+        .file-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+            color: var(--color-custom-secondary); /* Adjusted to match palette preference */
+            opacity: 0.7;
+        }
+
+        .file-name {
+            font-family: var(--md-ref-typeface-code);
+            font-size: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--md-sys-color-on-background);
+        }
+
+        /* Action Buttons */
+        .actions-col {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            justify-content: center;
+            min-width: 200px;
+        }
+
+        .btn {
+            height: 56px;
+            border-radius: 28px; /* Full pill */
+            border: none;
+            font-family: var(--md-ref-typeface-plain);
+            font-size: 1rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: 0.2s cubic-bezier(0.2, 0, 0, 1);
+            padding: 0 24px;
+        }
+
+        .btn:disabled {
+            opacity: 0.38;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* Filled Button (Primary) */
+        .btn-filled {
+            background: var(--md-sys-color-primary);
+            color: #001926; /* Force dark text on bright neon green */
+            font-weight: 700;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .btn-filled:hover {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            filter: brightness(1.05);
+        }
+        .btn-filled:active {
+            transform: scale(0.98);
+        }
+
+        /* Tonal Button (Secondary) */
+        .btn-tonal {
+            background: var(--md-sys-color-surface-container-highest);
+            color: var(--md-sys-color-on-background);
+        }
+        .btn-tonal:hover {
+            background: rgba(226, 226, 233, 0.15);
+        }
+
+        /* Hidden / Active State */
+        .hidden { display: none !important; }
+
+        /* Results Area */
+        .results-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            flex: 1;
+            min-height: 0; /* Important for scroll */
+        }
+
+        .result-panel {
+            background: var(--md-sys-color-surface-container);
+            border-radius: var(--md-sys-shape-corner-large);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--md-sys-color-outline-variant);
+        }
+
+        .panel-header {
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .badge-count {
+            background: var(--md-sys-color-background);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-family: var(--md-ref-typeface-code);
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        /* List Styling */
+        .list-viewport {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .list-item {
+            font-family: var(--md-ref-typeface-code);
+            font-size: 0.9rem;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: var(--md-sys-color-on-background);
+            word-break: break-all;
+            transition: background 0.1s;
+        }
+        
+        .list-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* Specific Colors for Add/Remove */
+        .col-added .panel-title { color: var(--md-sys-color-primary); }
+        .col-added .badge-count { color: #001926; background: var(--md-sys-color-primary); }
+        .col-added .list-item { color: #D7FFC4; }
+        
+        /* UPDATED: User requested FF6666 for Removed Content text and badge */
+        .col-removed .panel-title { color: #FF6666; }
+        .col-removed .badge-count { color: #001926; background: #FF6666; }
+        .col-removed .list-item { color: #FFDADB; }
+
+        /* States */
+        .empty-state {
+            padding: 48px;
+            text-align: center;
+            color: var(--md-sys-color-outline);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        .empty-state .material-symbols-rounded { font-size: 48px; opacity: 0.5; }
+
+        /* Loading */
+        #loading-overlay {
+            position: fixed; inset: 0;
+            background: rgba(17, 20, 24, 0.9);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: none;
+            justify-content: center; align-items: center;
+            flex-direction: column; gap: 24px;
+        }
+        
+        .progress-indicator {
+            width: 48px; height: 48px;
+            border: 4px solid var(--md-sys-color-surface-container-highest);
+            border-top-color: var(--md-sys-color-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--md-sys-color-outline-variant); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--md-sys-color-outline); }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .controls-area { grid-template-columns: 1fr; }
+            .actions-col { flex-direction: row; }
+            .btn { flex: 1; }
+            .results-area { grid-template-columns: 1fr; }
+            .result-panel { max-height: 500px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Initial Font Loader -->
+<div id="startup-loader">
+    <div class="progress-indicator"></div>
+</div>
+
+<!-- Loading Overlay (Processing) -->
+<div id="loading-overlay">
+    <div class="progress-indicator"></div>
+    <div style="font-weight: 500; letter-spacing: 0.5px;" data-i18n="loading">PROCESSING...</div>
+</div>
+
+<header>
+    <h1>
+        <span class="material-symbols-rounded brand-icon icon-filled">difference</span>
+        JS String Diff
+    </h1>
+    <div class="subtitle" data-i18n="subtitle">Deep String Comparison Tool</div>
+</header>
+
+<main>
+    <!-- Controls Section -->
+    <section class="controls-area">
+        <!-- Old File Input -->
+        <div class="card file-card" id="card-old">
+            <input type="file" id="file-old" accept=".js,.txt,.json">
+            <div class="file-meta">
+                <div class="file-icon-box">
+                    <span class="material-symbols-rounded">description</span>
+                </div>
+                <div class="file-info">
+                    <span class="file-label" data-i18n="label_old">Old File</span>
+                    <span class="file-name" id="name-old" data-i18n="select_file">Select File...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- New File Input -->
+        <div class="card file-card" id="card-new">
+            <input type="file" id="file-new" accept=".js,.txt,.json">
+            <div class="file-meta">
+                <div class="file-icon-box">
+                    <span class="material-symbols-rounded">description</span>
+                </div>
+                <div class="file-info">
+                    <span class="file-label" data-i18n="label_new">New File</span>
+                    <span class="file-name" id="name-new" data-i18n="select_file">Select File...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="actions-col">
+            <button id="compare-btn" class="btn btn-filled">
+                <span class="material-symbols-rounded">play_arrow</span>
+                <span data-i18n="btn_compare">Compare</span>
+            </button>
+            <button id="download-btn" class="btn btn-tonal hidden">
+                <span class="material-symbols-rounded">download</span>
+                <span data-i18n="btn_download">Download TXT</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="results-area">
+        <!-- Added Column -->
+        <div class="result-panel col-added">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="material-symbols-rounded icon-filled">add_circle</span>
+                    <span data-i18n="col_added">Added</span>
+                </div>
+                <div id="count-added" class="badge-count">0</div>
+            </div>
+            <div id="list-added" class="list-viewport">
+                <div class="empty-state">
+                    <span class="material-symbols-rounded">pending</span>
+                    <span data-i18n="waiting">Ready to start</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Removed Column -->
+        <div class="result-panel col-removed">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="material-symbols-rounded icon-filled">remove_circle</span>
+                    <span data-i18n="col_removed">Removed</span>
+                </div>
+                <div id="count-removed" class="badge-count">0</div>
+            </div>
+            <div id="list-removed" class="list-viewport">
+                <div class="empty-state">
+                    <span class="material-symbols-rounded">pending</span>
+                    <span data-i18n="waiting">Ready to start</span>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+    // --- Font Loading Logic ---
+    document.fonts.ready.then(() => {
+        // Slight delay to ensure smooth transition
+        setTimeout(() => {
+            document.body.classList.add('fonts-loaded');
+        }, 100);
+    });
+
+    // --- I18n & Language Detection ---
+    const translations = {
+        zh: {
+            page_title: "JS 字符串比对工具",
+            subtitle: "深度字符串差异分析工具",
+            label_old: "旧文件 (Old)",
+            label_new: "新文件 (New)",
+            select_file: "点击选择文件...",
+            btn_compare: "开始比对",
+            btn_download: "下载报告 (.txt)",
+            col_added: "新增内容",
+            col_removed: "移除内容",
+            waiting: "等待操作...",
+            empty: "无相关内容",
+            loading: "正在深度解析...",
+            alert_files: "请先选择两个文件！",
+            alert_error: "发生错误: ",
+            hidden_more: "... 还有 {n} 条数据已隐藏",
+            base64_mark: "[Base64 Decoded]"
+        },
+        en: {
+            page_title: "JS String Diff Tool",
+            subtitle: "Deep String Comparison Tool",
+            label_old: "Old File",
+            label_new: "New File",
+            select_file: "Select File...",
+            btn_compare: "Compare",
+            btn_download: "Download TXT",
+            col_added: "Added Content",
+            col_removed: "Removed Content",
+            waiting: "Ready to start",
+            empty: "No content",
+            loading: "Deep Parsing...",
+            alert_files: "Please select two files first!",
+            alert_error: "Error occurred: ",
+            hidden_more: "... {n} more items hidden",
+            base64_mark: "[Base64 Decoded]"
+        }
+    };
+
+    // Language Setup
+    const userLang = navigator.language || navigator.userLanguage;
+    const currentLang = userLang.startsWith('zh') ? 'zh' : 'en';
+    const t = (key) => translations[currentLang][key] || key;
+
+    function applyTranslations() {
+        document.title = t('page_title');
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            el.textContent = t(key);
+        });
+    }
+    applyTranslations();
+
+    // --- Helpers ---
+    const nextTick = () => new Promise(r => setTimeout(r, 0));
+
+    // --- UI Binding ---
+    const bindInput = (inputId, nameId, cardId) => {
+        const input = document.getElementById(inputId);
+        const nameEl = document.getElementById(nameId);
+        const cardEl = document.getElementById(cardId);
+
+        input.addEventListener('change', () => {
+            if (input.files[0]) {
+                nameEl.textContent = input.files[0].name;
+                cardEl.classList.add('has-file');
+                
+                // If replacing a file after comparison, hide download until re-compared
+                document.getElementById('download-btn').classList.add('hidden');
+            } else {
+                nameEl.textContent = t('select_file');
+                cardEl.classList.remove('has-file');
+            }
+        });
+    };
+    bindInput('file-old', 'name-old', 'card-old');
+    bindInput('file-new', 'name-new', 'card-new');
+
+    const readFile = (file) => new Promise((resolve) => {
+        if (!file) return resolve('');
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.readAsText(file);
+    });
+
+    // --- Core Logic ---
+    let diffResults = {
+        added:[],
+        removed:[],
+        oldFileName: '',
+        newFileName: '',
+        timestamp: ''
+    };
+
+    async function extractStrings(content) {
+        if (!content) return new Set();
+
+        const strings = new Set();
+        const len = content.length;
+        const CHUNK = 50000;
+
+        const S_CODE = 0;
+        const S_STR_DOUBLE = 1;
+        const S_STR_SINGLE = 2;
+        const S_STR_BACK = 3;
+        const S_REGEX = 4;
+        const S_COMMENT_LINE = 5;
+        const S_COMMENT_BLOCK = 6;
+
+        let mode = S_CODE;
+        let buffer = '';
+        let isEscaped = false;
+        let lastSignificantChar = ';'; 
+        let lastWord = '';
+
+        for (let i = 0; i < len; i++) {
+            if (i % CHUNK === 0) await nextTick();
+
+            const char = content[i];
+            const next = content[i+1] || '';
+
+            if (mode === S_CODE) {
+                if (char === '"') { mode = S_STR_DOUBLE; buffer = ''; isEscaped = false; }
+                else if (char === "'") { mode = S_STR_SINGLE; buffer = ''; isEscaped = false; }
+                else if (char === '`') { mode = S_STR_BACK;   buffer = ''; isEscaped = false; }
+                else if (char === '/' && next === '/') { mode = S_COMMENT_LINE; i++; }
+                else if (char === '/' && next === '*') { mode = S_COMMENT_BLOCK; i++; }
+                else if (char === '/') {
+                    if (isRegexStart(lastSignificantChar, lastWord)) {
+                        mode = S_REGEX;
+                        isEscaped = false;
+                    } else {
+                        lastSignificantChar = '/';
+                        lastWord = '';
+                    }
+                }
+                else {
+                    if (char > ' ') { 
+                        lastSignificantChar = char;
+                        if (isAlpha(char)) lastWord += char;
+                        else lastWord = '';
+                    }
+                }
+            }
+            else if (mode === S_STR_DOUBLE || mode === S_STR_SINGLE || mode === S_STR_BACK) {
+                let endChar = '"';
+                if (mode === S_STR_SINGLE) endChar = "'";
+                if (mode === S_STR_BACK) endChar = '`';
+
+                if (isEscaped) {
+                    buffer += '\\' + char;
+                    isEscaped = false;
+                } else if (char === '\\') {
+                    isEscaped = true;
+                } else if (char === endChar) {
+                    addString(strings, buffer);
+                    mode = S_CODE;
+                    lastSignificantChar = 's';
+                    lastWord = '';
+                } else {
+                    buffer += char;
+                }
+            }
+            else if (mode === S_REGEX) {
+                if (isEscaped) isEscaped = false;
+                else if (char === '\\') isEscaped = true;
+                else if (char === '/') {
+                    mode = S_CODE;
+                    lastSignificantChar = 'r';
+                    lastWord = '';
+                }
+            }
+            else if (mode === S_COMMENT_LINE) {
+                if (char === '\n' || char === '\r') mode = S_CODE;
+            }
+            else if (mode === S_COMMENT_BLOCK) {
+                if (char === '*' && next === '/') { mode = S_CODE; i++; }
+            }
+        }
+        return strings;
+    }
+
+    function isRegexStart(prevChar, prevWord) {
+        const regexStarters = new Set([
+            '(', ',', '=', ':', '[', '!', '&', '|', '?', '{', '}', ';',
+            '+', '-', '*', '%', '^', '~', '<', '>'
+        ]);
+        if (regexStarters.has(prevChar)) return true;
+        if (prevWord) {
+            const keywords = new Set(['return', 'throw', 'case', 'delete', 'typeof', 'void', 'await', 'yield', 'else']);
+            if (keywords.has(prevWord)) return true;
+        }
+        return false;
+    }
+
+    function isAlpha(char) {
+        return (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z');
+    }
+
+    // Attempt to decode valid Base64 strings safely
+    function decodeBase64IfValid(str) {
+        // Prevent trivial false positives (e.g. short variable names like "VQ==")
+        if (str.length < 16) return str;
+        
+        // Base64 valid length check
+        if (str.length % 4 !== 0) return str;
+        
+        // Regex for Base64 characters (including URL safe characters)
+        if (!/^[A-Za-z0-9+/_-]+={0,2}$/.test(str)) return str;
+
+        try {
+            // Transform URL-safe Base64 to standard Base64
+            const b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+            const decodedBytes = atob(b64);
+            
+            // Validate and convert to UTF-8
+            // If the base64 does not decode to a valid UTF-8 text string, this will throw an error and be caught
+            const decodedText = decodeURIComponent(escape(decodedBytes));
+            
+            // Screen out strings that contain unprintable control characters (Allow \t, \n, \r)
+            if (/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/.test(decodedText)) {
+                return str;
+            }
+
+            // Exclude if it's purely empty or space
+            if (!decodedText.trim()) return str;
+            
+            return decodedText + ' ' + t('base64_mark');
+        } catch (e) {
+            // Not a valid base64 encoded text (either binary data or not UTF-8)
+            return str;
+        }
+    }
+
+    function addString(set, raw) {
+        try {
+            let clean = raw
+                .replace(/\\\\/g, '\\')
+                .replace(/\\"/g, '"')
+                .replace(/\\'/g, "'")
+                .replace(/\\`/g, '`')
+                .replace(/\\n/g, '\n')
+                .replace(/\\t/g, '\t')
+                .replace(/\\\//g, '/');
+
+            clean = clean.trim();
+            
+            // Base64 Detection & Decoding
+            let isBase64 = false;
+            let decoded = decodeBase64IfValid(clean);
+            if (decoded !== clean) {
+                clean = decoded;
+                isBase64 = true; // If correctly decoded from Base64, definitively flag for inclusion
+            }
+
+            // If it was Base64 encoded payload, always consider it useful. 
+            // Otherwise, apply general validation
+            if (isBase64 || isUseful(clean)) {
+                set.add(clean);
+            }
+        } catch (e) {}
+    }
+
+    function isUseful(str) {
+        if (str.length < 2) return false;
+        if (str.includes('/') && str.includes('.')) return str.length < 300;
+        if (!/[a-zA-Z0-9\u4e00-\u9fa5]/.test(str)) return false;
+        
+        const keywords = /^(var|const|let|function|return|import|export|from|true|false|null|undefined|if|else|switch|case|break|try|catch|class|typeof|void|delete|new|this|window|document|Math|Object|Array|String|Date|Error|Promise|JSON|console|=>|===|!==|==|!=|\+=|\-=|\+\+|\-\-)$/;
+        if (keywords.test(str)) return false;
+
+        const open = (str.match(/\(/g)||[]).length;
+        const close = (str.match(/\)/g)||[]).length;
+        if (open !== close) return false;
+
+        return true;
+    }
+
+    // --- Main Logic ---
+    document.getElementById('compare-btn').addEventListener('click', async () => {
+        const btn = document.getElementById('compare-btn');
+        const downloadBtn = document.getElementById('download-btn');
+        const loading = document.getElementById('loading-overlay');
+        
+        const fileOldInput = document.getElementById('file-old');
+        const fileNewInput = document.getElementById('file-new');
+        
+        if (!fileOldInput.files[0] || !fileNewInput.files[0]) {
+            alert(t('alert_files'));
+            return;
+        }
+
+        const fileOld = fileOldInput.files[0];
+        const fileNew = fileNewInput.files[0];
+
+        // UI Reset
+        btn.disabled = true;
+        downloadBtn.classList.add('hidden');
+        loading.style.display = 'flex';
+        
+        renderList('list-added', [], 'count-added');
+        renderList('list-removed',[], 'count-removed');
+
+        try {
+            await nextTick();
+
+            const [txtOld, txtNew] = await Promise.all([readFile(fileOld), readFile(fileNew)]);
+            const [setOld, setNew] = await Promise.all([
+                extractStrings(txtOld), 
+                extractStrings(txtNew)
+            ]);
+
+            const added = [];
+            const removed =[];
+
+            let i = 0;
+            for (const s of setNew) {
+                if (!setOld.has(s)) added.push(s);
+                if (++i % 5000 === 0) await nextTick();
+            }
+
+            i = 0;
+            for (const s of setOld) {
+                if (!setNew.has(s)) removed.push(s);
+                if (++i % 5000 === 0) await nextTick();
+            }
+
+            added.sort();
+            removed.sort();
+
+            diffResults = {
+                added: added,
+                removed: removed,
+                oldFileName: fileOld.name,
+                newFileName: fileNew.name,
+                timestamp: new Date().toISOString()
+            };
+
+            renderList('list-added', added, 'count-added');
+            renderList('list-removed', removed, 'count-removed');
+
+            downloadBtn.classList.remove('hidden');
+
+        } catch (err) {
+            console.error(err);
+            alert(t('alert_error') + err.message);
+        } finally {
+            loading.style.display = 'none';
+            btn.disabled = false;
+        }
+    });
+
+    document.getElementById('download-btn').addEventListener('click', () => {
+        if (!diffResults.added.length && !diffResults.removed.length && !diffResults.oldFileName) return;
+
+        const dateStr = new Date().toUTCString();
+        const content = `JS String Diff Report
+Generated: ${dateStr}
+Old File: ${diffResults.oldFileName}
+New File: ${diffResults.newFileName}
+--------------------------------------------------
+
+=== ADDED STRINGS (${diffResults.added.length}) ===
+${diffResults.added.join('\n')}
+
+\n
+=== REMOVED STRINGS (${diffResults.removed.length}) ===
+${diffResults.removed.join('\n')}
+`;
+        
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        
+        // Naming Convention: old_to_new.txt (Using _to_ as safe separator)
+        a.download = `${diffResults.oldFileName}_to_${diffResults.newFileName}.txt`;
+        
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+
+    function renderList(containerId, list, countId) {
+        const container = document.getElementById(containerId);
+        document.getElementById(countId).textContent = list.length;
+        container.innerHTML = '';
+
+        if (list.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <span class="material-symbols-rounded">check_circle</span>
+                    <span>${t('empty')}</span>
+                </div>`;
+            return;
+        }
+
+        const LIMIT = 2000;
+        const frag = document.createDocumentFragment();
+        
+        for (let i = 0; i < Math.min(list.length, LIMIT); i++) {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.textContent = list[i];
+            frag.appendChild(div);
+        }
+        
+        if (list.length > LIMIT) {
+            const more = document.createElement('div');
+            more.className = 'empty-state';
+            more.style.padding = '12px';
+            more.textContent = t('hidden_more').replace('{n}', list.length - LIMIT);
+            frag.appendChild(more);
+        }
+        
+        container.appendChild(frag);
+    }
+</script>
+</body>
+</html>
