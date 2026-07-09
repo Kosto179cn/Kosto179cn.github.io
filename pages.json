@@ -8,6 +8,14 @@
     "theme": "theme-tool"
   },
   {
+    "filename": "js-string-compare.html",
+    "title": "JS String Diff Tool",
+    "desc": "自动发现的新页面",
+    "icon": "fa-file",
+    "category": "other",
+    "theme": "theme-other"
+  },
+  {
     "filename": "Servers.html",
     "title": "3D坦克-服务器六合一",
     "desc": "3D坦克各服快速入口整合。",
