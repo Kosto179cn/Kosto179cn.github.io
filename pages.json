@@ -1,5 +1,29 @@
 [
   {
+    "filename": "ratings.html",
+    "title": "Kosto 战绩查询 | 3D坦克",
+    "desc": "查询国服/外服的玩家账号数据",
+    "icon": "fa-tools",
+    "category": "tool",
+    "theme": "theme-tool"
+  },
+  {
+    "filename": "js-string-compare.html",
+    "title": "JS String Diff Tool",
+    "desc": "自动发现的新页面",
+    "icon": "fa-file",
+    "category": "other",
+    "theme": "theme-other"
+  },
+  {
+    "filename": "Servers.html",
+    "title": "3D坦克-服务器六合一",
+    "desc": "3D坦克各服快速入口整合。",
+    "icon": "fa-server",
+    "category": "game",
+    "theme": "theme-game"
+  },
+  {
     "filename": "replacement.html",
     "title": "屏蔽词测试工具",
     "desc": "屏蔽词替换 网页版",
@@ -8,8 +32,8 @@
     "theme": "theme-admin"
   },
   {
-    "filename": "js-string-compare.html",
-    "title": "JS String Diff Tool",
+    "filename": "black.html",
+    "title": "Kosto 黑名单云管理后台",
     "desc": "自动发现的新页面",
     "icon": "fa-file",
     "category": "other",
@@ -22,30 +46,6 @@
     "icon": "fa-file",
     "category": "other",
     "theme": "theme-other"
-  },
-  {
-    "filename": "black.html",
-    "title": "Kosto 黑名单云管理后台",
-    "desc": "自动发现的新页面",
-    "icon": "fa-file",
-    "category": "other",
-    "theme": "theme-other"
-  },
-  {
-    "filename": "ratings.html",
-    "title": "Kosto 战绩查询 | 3D坦克",
-    "desc": "查询国服/外服的玩家账号数据",
-    "icon": "fa-tools",
-    "category": "tool",
-    "theme": "theme-tool"
-  },
-  {
-    "filename": "Servers.html",
-    "title": "3D坦克-服务器六合一",
-    "desc": "3D坦克各服快速入口整合。",
-    "icon": "fa-server",
-    "category": "game",
-    "theme": "theme-game"
   },
   {
     "filename": "fire.html",
