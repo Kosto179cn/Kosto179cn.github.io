@@ -25,7 +25,7 @@ export default {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{
-            parts: [{ text: `你是一个游戏翻译助手。请将以下tankionline游戏对话翻译成中文，保持口语化，如果有多条消息请严格对应格式。待翻译内容：\n${text}` }]
+            parts: [{ text: `你是一个游戏翻译助手。请将以下tankionline游戏对话翻译成中文，使用TankiOnline的专有名词进行翻译，保持日常的口语化，如果有多条消息请严格对应格式。待翻译内容：\n${text}` }]
           }]
         })
       });
