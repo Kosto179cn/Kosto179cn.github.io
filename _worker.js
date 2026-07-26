@@ -1,6 +1,5 @@
 export default {
   async fetch(request, env) {
-    // 1. 处理 CORS 跨域问题（非常重要，否则脚本无法访问）
     if (request.method === "OPTIONS") {
       return new Response(null, {
         headers: {
@@ -26,7 +25,7 @@ export default {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{
-            parts: [{ text: `你是一个游戏翻译助手。请将以下坦克世界游戏对话翻译成中文，保持口语化，如果有多条消息请严格对应格式。待翻译内容：\n${text}` }]
+            parts: [{ text: `你是一个游戏翻译助手。请将以下tankionline游戏对话翻译成中文，保持口语化，如果有多条消息请严格对应格式。待翻译内容：\n${text}` }]
           }]
         })
       });
