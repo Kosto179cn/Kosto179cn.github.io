@@ -1,101 +1,39 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KOSTO 翻译 API 测试工具</title>
-    <style>
-        body { font-family: sans-serif; max-width: 800px; margin: 20px auto; padding: 0 20px; background: #f4f4f9; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h2 { color: #333; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, textarea { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: monospace; }
-        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        button:hover { background: #0056b3; }
-        #output { background: #222; color: #0f0; padding: 15px; border-radius: 4px; white-space: pre-wrap; word-break: break-all; min-height: 100px; margin-top: 20px; }
-        .status { margin-top: 10px; font-weight: bold; }
-        .error { color: red; }
-        .success { color: green; }
-    </style>
+    <title>KOSTO 适配版测试</title>
 </head>
 <body>
+    <h2>KOSTO 专用 API 测试 (SSE 格式)</h2>
+    <input type="text" id="url" style="width:400px" value="https://kostotranslate.kosto.workers.dev/">
+    <button onclick="test()">点击测试</button>
+    <pre id="out" style="background:#000; color:#0f0; padding:10px; margin-top:10px"></pre>
 
-<div class="card">
-    <h2>KOSTO API 兼容性测试</h2>
-    
-    <label>API 接口地址:</label>
-    <input type="text" id="apiUrl" placeholder="https://your-worker.names.workers.dev" value="">
+    <script>
+        async function test() {
+            const out = document.getElementById('out');
+            out.textContent = "请求中...";
+            try {
+                const res = await fetch(document.getElementById('url').value, {
+                    method: 'POST',
+                    body: JSON.stringify({text: "1|||Hello\n2|||Welcome"})
+                });
+                const text = await res.text();
+                out.textContent = "原始响应内容：\n" + text;
 
-    <label>模拟聊天内容 (格式: ID|||文本):</label>
-    <textarea id="testText" rows="5">1|||Hello everyone!
-2|||I love this game.
-3|||Where is the gold box?</textarea>
-
-    <button onclick="testTranslation()">发送请求测试</button>
-
-    <div id="status" class="status"></div>
-    <label>API 原始响应内容:</label>
-    <div id="output">等待测试...</div>
-</div>
-
-<script>
-    async function testTranslation() {
-        const apiUrl = document.getElementById('apiUrl').value.trim();
-        const testText = document.getElementById('testText').value.trim();
-        const output = document.getElementById('output');
-        const status = document.getElementById('status');
-
-        if (!apiUrl) {
-            alert("请输入 API 地址！");
-            return;
-        }
-
-        output.textContent = "正在请求中...";
-        status.textContent = "⏳ 正在连接服务器...";
-        status.className = "status";
-
-        try {
-            const startTime = Date.now();
-            const response = await fetch(apiUrl, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    model: "gemini-flash-lite-latest",
-                    text: testText
-                })
-            });
-
-            const duration = Date.now() - startTime;
-
-            if (response.ok) {
-                const data = await response.json();
-                status.textContent = `✅ 请求成功 (耗时: ${duration}ms)`;
-                status.className = "status success";
-                
-                // 模拟原脚本解析逻辑
-                output.textContent = JSON.stringify(data, null, 2);
-                
-                // 尝试提取翻译内容
-                try {
-                    const aiResult = data.candidates[0].content.parts[0].text;
-                    console.log("解析到的翻译内容:\n", aiResult);
-                } catch (e) {
-                    output.textContent += "\n\n⚠️ 注意: 响应结构与原脚本期望的不完全匹配！请检查 JSON 路径。";
+                // 模拟油猴脚本的解析逻辑
+                if (text.startsWith("data: ")) {
+                    const jsonStr = text.replace("data: ", "").trim();
+                    const parsed = JSON.parse(jsonStr);
+                    const result = parsed.candidates[0].content.parts[0].text;
+                    out.textContent += "\n\n解析成功！翻译结果：\n" + result;
+                } else {
+                    out.textContent += "\n\n❌ 格式错误：没有以 'data: ' 开头";
                 }
-            } else {
-                status.textContent = `❌ 请求失败 (状态码: ${response.status})`;
-                status.className = "status error";
-                output.textContent = await response.text();
+            } catch (e) {
+                out.textContent = "错误：" + e.message;
             }
-        } catch (error) {
-            status.textContent = "❌ 网络错误 (请检查跨域 CORS 设置)";
-            status.className = "status error";
-            output.textContent = error.message + "\n\n提示: 如果你是本地打开 HTML，某些 API 会拦截跨域请求。上传到 github.io 后再试，或者确保你的 Worker 开启了 CORS。";
         }
-    }
-</script>
-
+    </script>
 </body>
 </html>
