@@ -32,6 +32,14 @@
     "theme": "theme-admin"
   },
   {
+    "filename": "kostotranslateapitest.html",
+    "title": "KOSTO 翻译 API 测试工具",
+    "desc": "自动发现的新页面",
+    "icon": "fa-file",
+    "category": "other",
+    "theme": "theme-other"
+  },
+  {
     "filename": "js-string-compare.html",
     "title": "JS String Diff Tool",
     "desc": "自动发现的新页面",
