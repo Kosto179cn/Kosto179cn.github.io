@@ -72,100 +72,97 @@ async function handleTranslate(request, env) {
 // ==================== 上传处理（Gitee） ====================
 async function handleUpload(request, env) {
   const { file, record } = await request.json();
-
   if (!file || !record) {
-    return new Response(JSON.stringify({ error: "Missing 'file' or 'record' in request body" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-    });
+    return new Response(JSON.stringify({ error: "Missing data" }), { status: 400 });
   }
 
   const token = env.GITEE_TOKEN;
   const repo = env.GITEE_REPO;
-  if (!token || !repo) {
-    return new Response(JSON.stringify({ error: "GITEE_TOKEN or GITEE_REPO not set in environment" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-    });
-  }
+  
+  let maxRetries = 3; // 最大重试次数
+  let attempt = 0;
 
-  // 1. 读取 Gitee 文件
-  let dataArray = [];
-  let sha = null;
-  try {
-    const readResult = await readGiteeFile(repo, file, token);
-    dataArray = readResult.data;
-    sha = readResult.sha;
-  } catch (e) {
-    // 文件不存在时，视为空数组
-    if (e.status !== 404) {
-      throw e;
-    }
-    dataArray = [];
-    sha = undefined;
-  }
-
-  // 2. 合并记录（逻辑参照原脚本的 handleFinalizeUpload 和 retryableUpdate）
-  const now = getNow();
-  const newRecord = { ...record };
-
-  // 查找现有记录（优先 InternalID，其次 TankiName）
-  let existing = null;
-  let existingIndex = -1;
-  if (newRecord.InternalID) {
-    existingIndex = dataArray.findIndex(item => item.InternalID === newRecord.InternalID);
-    if (existingIndex !== -1) existing = dataArray[existingIndex];
-  }
-  if (!existing && newRecord.TankiName) {
-    existingIndex = dataArray.findIndex(item => item.TankiName === newRecord.TankiName);
-    if (existingIndex !== -1) existing = dataArray[existingIndex];
-  }
-
-  if (existing) {
-    // ---------- 更新已有记录 ----------
-    // 记录改名历史
-    if (newRecord.TankiName && existing.TankiName !== newRecord.TankiName) {
-      if (!existing.NicknameHistory) existing.NicknameHistory = [];
-      // 如果旧名字不是 WAITING_ 开头，且未在历史中记录过
-      if (!existing.TankiName.startsWith("WAITING_")) {
-        const already = existing.NicknameHistory.some(h => h.name === existing.TankiName);
-        if (!already) {
-          existing.NicknameHistory.push({
-            name: existing.TankiName,
-            replacedAt: now
-          });
-        }
+  while (attempt < maxRetries) {
+    try {
+      // 1. 读取最新数据
+      let dataArray = [];
+      let sha = null;
+      try {
+        const readResult = await readGiteeFile(repo, file, token);
+        dataArray = readResult.data;
+        sha = readResult.sha;
+      } catch (e) {
+        if (e.status !== 404) throw e;
+        sha = undefined; // 文件不存在
       }
-    }
 
-    // 更新所有提供的字段（但不要覆盖 NicknameHistory 除非明确传入）
-    for (const key in newRecord) {
-      if (key === "NicknameHistory") {
-        // 如果请求中明确提供了新的历史数组，则替换（通常不这么做，但支持）
-        if (newRecord.NicknameHistory) {
-          existing.NicknameHistory = newRecord.NicknameHistory;
+      // 2. 执行智能合并
+      const now = getNow();
+      let existingIndex = -1;
+
+      // 查找逻辑
+      if (record.InternalID) {
+        existingIndex = dataArray.findIndex(item => item.InternalID === record.InternalID);
+      }
+      if (existingIndex === -1 && record.TankiName) {
+        existingIndex = dataArray.findIndex(item => item.TankiName === record.TankiName);
+      }
+
+      if (existingIndex !== -1) {
+        // --- 更新逻辑 ---
+        let existing = dataArray[existingIndex];
+
+        // 处理改名记录
+        if (record.TankiName && existing.TankiName !== record.TankiName) {
+          if (!existing.NicknameHistory) existing.NicknameHistory = [];
+          if (!existing.TankiName.startsWith("WAITING_")) {
+            const already = existing.NicknameHistory.some(h => h.name === existing.TankiName);
+            if (!already) existing.NicknameHistory.push({ name: existing.TankiName, replacedAt: now });
+          }
         }
+
+        // 【关键修复】: 智能字段合并
+        for (const key in record) {
+          if (key === "NicknameHistory") continue; 
+          
+          const newVal = record[key];
+          // 只有当新值不是 undefined, null, 或空字符串时才更新
+          // 这样如果你只传了 Key，没有传 Password，Password 字段就不会被覆盖
+          if (newVal !== undefined && newVal !== null && newVal !== "") {
+            existing[key] = newVal;
+          }
+        }
+        existing.LastUpdate = now;
+        dataArray[existingIndex] = existing;
       } else {
-        existing[key] = newRecord[key];
+        // --- 新建逻辑 ---
+        const newEntry = { ...record };
+        if (!newEntry.NicknameHistory) newEntry.NicknameHistory = [];
+        newEntry.LastUpdate = now;
+        dataArray.push(newEntry);
       }
+
+      // 3. 写回 Gitee
+      await writeGiteeFile(repo, file, token, dataArray, sha, `Update via Worker (${now})`);
+      
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      });
+
+    } catch (err) {
+      // 如果报错是 409 (Conflict) 或 400 (通常是 sha 错误)，则重试
+      if (err.status === 409 || err.message.includes("sha")) {
+        attempt++;
+        // 等待随机时间后重试，避免死锁
+        await new Promise(resolve => setTimeout(resolve, 100 * attempt));
+        continue;
+      }
+      // 其他错误直接抛出
+      throw err;
     }
-    existing.LastUpdate = now;
-  } else {
-    // ---------- 新建记录 ----------
-    if (!newRecord.NicknameHistory) newRecord.NicknameHistory = [];
-    newRecord.LastUpdate = now;
-    dataArray.push(newRecord);
   }
 
-  // 3. 写回 Gitee
-  await writeGiteeFile(repo, file, token, dataArray, sha, `Update via Worker (${now})`);
-
-  return new Response(JSON.stringify({ success: true, message: "Record merged successfully" }), {
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-    },
-  });
+  throw new Error("Maximum retries reached. Parallel update conflict.");
 }
 
 // ==================== Gitee API 工具函数 ====================
