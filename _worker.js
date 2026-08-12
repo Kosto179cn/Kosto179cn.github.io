@@ -41,6 +41,9 @@ export default {
       } else if (model === "3") {
         // ---------- 下载配置 ----------
         return await handleDownload(request, env);
+      } else if (model === "4") {
+        // ---------- 获取云端配置列表 ----------
+        return await handleListConfigs(request, env);
       } else {
         return new Response("Invalid model parameter", { status: 400 });
       }
@@ -245,6 +248,47 @@ const Base64 = {
 // ==================== 辅助函数 ====================
 function getNow() {
   return new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+}
+
+// ==================== 获取云端配置列表 ====================
+async function handleListConfigs(request, env) {
+  const token = env.GITEE_TOKEN;
+  const repo = env.GITEE_REPO;
+  const dir = "kosto-config";
+  
+  try {
+    const url = `https://gitee.com/api/v5/repos/${repo}/contents/${dir}?access_token=${token}`;
+    const res = await fetch(url);
+    
+    if (res.status === 404) {
+      return new Response(JSON.stringify({ success: true, list: [] }), {
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    }
+    
+    if (!res.ok) {
+      throw new Error(`Gitee list failed: ${res.status}`);
+    }
+    
+    const files = await res.json();
+    const list = files
+      .filter(f => f.name.endsWith('.json'))
+      .map(f => ({
+        fingerprint: f.name.replace('.json', ''),
+        path: f.path,
+        sha: f.sha,
+        lastModified: f.last_commit_sha || null
+      }));
+    
+    return new Response(JSON.stringify({ success: true, list: list }), {
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message, list: [] }), { 
+      status: 500, 
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } 
+    });
+  }
 }
 
 // ==================== 下载处理（Gitee） ====================
