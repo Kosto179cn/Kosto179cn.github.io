@@ -88,13 +88,28 @@ async function handleUpload(request, env) {
 
   const token = env.GITEE_TOKEN;
   const repo = env.GITEE_REPO;
-  
-  let maxRetries = 3; // 最大重试次数
+
+  // kosto-config/ 路径：直接覆盖存储（单对象，不做数组合并）
+  if (file.startsWith("kosto-config/")) {
+    let sha = undefined;
+    try {
+      const readResult = await readGiteeFileRaw(repo, file, token);
+      sha = readResult.sha;
+    } catch (e) {
+      if (e.status !== 404) throw e;
+    }
+    await writeGiteeFile(repo, file, token, record, sha, `Cloud backup update (${getNow()})`);
+    return new Response(JSON.stringify({ success: true }), {
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  // 原有逻辑：数组智能合并（用于 Battle Clicker 等）
+  let maxRetries = 3;
   let attempt = 0;
 
   while (attempt < maxRetries) {
     try {
-      // 1. 读取最新数据
       let dataArray = [];
       let sha = null;
       try {
@@ -103,14 +118,12 @@ async function handleUpload(request, env) {
         sha = readResult.sha;
       } catch (e) {
         if (e.status !== 404) throw e;
-        sha = undefined; // 文件不存在
+        sha = undefined;
       }
 
-      // 2. 执行智能合并
       const now = getNow();
       let existingIndex = -1;
 
-      // 查找逻辑
       if (record.InternalID) {
         existingIndex = dataArray.findIndex(item => item.InternalID === record.InternalID);
       }
@@ -119,10 +132,8 @@ async function handleUpload(request, env) {
       }
 
       if (existingIndex !== -1) {
-        // --- 更新逻辑 ---
         let existing = dataArray[existingIndex];
 
-        // 处理改名记录
         if (record.TankiName && existing.TankiName !== record.TankiName) {
           if (!existing.NicknameHistory) existing.NicknameHistory = [];
           if (!existing.TankiName.startsWith("WAITING_")) {
@@ -131,13 +142,9 @@ async function handleUpload(request, env) {
           }
         }
 
-        // 【关键修复】: 智能字段合并
         for (const key in record) {
-          if (key === "NicknameHistory") continue; 
-          
+          if (key === "NicknameHistory") continue;
           const newVal = record[key];
-          // 只有当新值不是 undefined, null, 或空字符串时才更新
-          // 这样如果你只传了 Key，没有传 Password，Password 字段就不会被覆盖
           if (newVal !== undefined && newVal !== null && newVal !== "") {
             existing[key] = newVal;
           }
@@ -145,14 +152,12 @@ async function handleUpload(request, env) {
         existing.LastUpdate = now;
         dataArray[existingIndex] = existing;
       } else {
-        // --- 新建逻辑 ---
         const newEntry = { ...record };
         if (!newEntry.NicknameHistory) newEntry.NicknameHistory = [];
         newEntry.LastUpdate = now;
         dataArray.push(newEntry);
       }
 
-      // 3. 写回 Gitee
       await writeGiteeFile(repo, file, token, dataArray, sha, `Update via Worker (${now})`);
       
       return new Response(JSON.stringify({ success: true }), {
@@ -160,14 +165,11 @@ async function handleUpload(request, env) {
       });
 
     } catch (err) {
-      // 如果报错是 409 (Conflict) 或 400 (通常是 sha 错误)，则重试
       if (err.status === 409 || err.message.includes("sha")) {
         attempt++;
-        // 等待随机时间后重试，避免死锁
         await new Promise(resolve => setTimeout(resolve, 100 * attempt));
         continue;
       }
-      // 其他错误直接抛出
       throw err;
     }
   }
@@ -176,6 +178,18 @@ async function handleUpload(request, env) {
 }
 
 // ==================== Gitee API 工具函数 ====================
+async function readGiteeFileRaw(repo, file, token) {
+  const url = `https://gitee.com/api/v5/repos/${repo}/contents/${file}?access_token=${token}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    const err = new Error(`Gitee read failed: ${res.status}`);
+    err.status = res.status;
+    throw err;
+  }
+  const json = await res.json();
+  return { sha: json.sha };
+}
+
 async function readGiteeFile(repo, file, token) {
   const url = `https://gitee.com/api/v5/repos/${repo}/contents/${file}?access_token=${token}`;
   const res = await fetch(url);
