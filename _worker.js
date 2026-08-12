@@ -340,9 +340,10 @@ async function handleDownload(request, env) {
   }
   const token = env.GITEE_TOKEN;
   const repo = env.GITEE_REPO;
-  // 只允许按指纹（16 位十六进制，即 zw() 生成的 64bit 指纹）下载，禁止任意文件名
-  if (!/^[0-9a-f]{16}$/i.test(fingerprint)) {
-    return new Response(JSON.stringify({ error: "Invalid fingerprint format" }), {
+  // 下载定位依据为列表中的配置名（含历史非指纹命名的旧配置），
+  // 仅拦截路径穿越/分隔符，防止越权访问其他路径文件
+  if (!fingerprint || /[/\\]|\.\./.test(fingerprint)) {
+    return new Response(JSON.stringify({ error: "Invalid config name" }), {
       status: 400,
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
     });
