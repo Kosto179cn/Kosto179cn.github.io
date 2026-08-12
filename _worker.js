@@ -94,50 +94,35 @@ async function handleUpload(request, env) {
 
   // kosto-config/ 路径：直接覆盖存储（单对象，不做数组合并）
   if (file.startsWith("kosto-config/")) {
-    let sha = undefined;
-    let fileExists = false;
-    
-    try {
-      const readResult = await readGiteeFileRaw(repo, file, token);
-      sha = readResult.sha;
-      fileExists = true;
-    } catch (e) {
-      if (e.status !== 404) throw e;
-      // 文件不存在，fileExists 保持 false
-    }
-    
-    const url = `https://gitee.com/api/v5/repos/${repo}/contents/${file}?access_token=${token}`;
-    const contentStr = Base64.encode(JSON.stringify(record, null, 2));
-    
-    if (fileExists) {
-      // 文件存在，用 PUT 更新（需要 sha）
-      const body = { content: contentStr, sha: sha, message: `Cloud backup update (${getNow()})` };
-      const res = await fetch(url, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-        body: JSON.stringify(body)
-      });
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Gitee update failed: ${res.status} - ${errorText}`);
-      }
-    } else {
-      // 文件不存在，用 PUT 创建（不需要 sha）
-      const body = { content: contentStr, message: `Create config file (${getNow()})` };
-      const res = await fetch(url, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-        body: JSON.stringify(body)
-      });
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Gitee create failed: ${res.status} - ${errorText}`);
+    let maxRetries = 3;
+    let attempt = 0;
+
+    while (attempt < maxRetries) {
+      try {
+        let sha = undefined;
+        try {
+          const readResult = await readGiteeFileRaw(repo, file, token);
+          sha = readResult.sha;
+        } catch (e) {
+          if (e.status !== 404) throw e;
+          // 文件不存在，sha 保持 undefined，创建新文件
+        }
+        await writeGiteeFile(repo, file, token, record, sha, `Cloud backup update (${getNow()})`);
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        });
+      } catch (err) {
+        // SHA 冲突或 sha 相关错误时重试（重新读取最新 sha）
+        if (err.status === 409 || err.message.includes("sha")) {
+          attempt++;
+          await new Promise(resolve => setTimeout(resolve, 200 * attempt));
+          continue;
+        }
+        throw err;
       }
     }
-    
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-    });
+
+    throw new Error("Maximum retries reached. Parallel update conflict.");
   }
 
   // 原有逻辑：数组智能合并（用于 Battle Clicker 等）
@@ -203,7 +188,7 @@ async function handleUpload(request, env) {
     } catch (err) {
       if (err.status === 409 || err.message.includes("sha")) {
         attempt++;
-        await new Promise(resolve => setTimeout(resolve, 100 * attempt));
+        await new Promise(resolve => setTimeout(resolve, 200 * attempt));
         continue;
       }
       throw err;
@@ -249,12 +234,16 @@ async function readGiteeFile(repo, file, token) {
 }
 
 async function writeGiteeFile(repo, file, token, data, sha, message) {
-  const url = `https://gitee.com/api/v5/repos/${repo}/contents/${file}?access_token=${token}`;
+  const url = `https://gitee.com/api/v5/repos/${repo}/contents/${file}`;
   const contentStr = Base64.encode(JSON.stringify(data, null, 2));
-  const body = { content: contentStr, message: message };
   
-  // 只有当 sha 有效时才添加
-  if (sha !== undefined && sha !== null && sha !== "") {
+  const body = {
+    access_token: token,
+    content: contentStr,
+    message: message
+  };
+  
+  if (sha) {
     body.sha = sha;
   }
   
@@ -266,7 +255,9 @@ async function writeGiteeFile(repo, file, token, data, sha, message) {
   
   if (!res.ok) {
     const errorText = await res.text();
-    throw new Error(`Gitee write failed: ${res.status} - ${errorText}`);
+    const err = new Error(`Gitee write failed: ${res.status} - ${errorText}`);
+    err.status = res.status;
+    throw err;
   }
   
   return res.json();
