@@ -3,7 +3,6 @@
 // - GITEE_REPO   : 仓库路径，例如 "Kosto179/kosto-battle-clicker-new"（必须）
 // - GEMINI_KEY   : Google Gemini API 密钥（仅 model=1 时需要）
 
-
 export default {
   async fetch(request, env) {
     // 处理 CORS 预检
@@ -16,12 +15,15 @@ export default {
         },
       });
     }
+
     // 仅允许 POST 请求
     if (request.method !== "POST") {
       return new Response("Please use POST", { status: 405 });
     }
+
     const url = new URL(request.url);
     const model = url.searchParams.get("model") || "1";
+
     try {
       if (model === "1") {
         // ---------- 翻译功能（需要验证协议头）----------
@@ -36,6 +38,9 @@ export default {
       } else if (model === "2") {
         // ---------- 上传数据到 Gitee ----------
         return await handleUpload(request, env);
+      } else if (model === "3") {
+        // ---------- 下载配置 ----------
+        return await handleDownload(request, env);
       } else {
         return new Response("Invalid model parameter", { status: 400 });
       }
@@ -44,7 +49,6 @@ export default {
     }
   },
 };
-// ... 其余代码保持不变 ...
 
 // ==================== 翻译处理 ====================
 async function handleTranslate(request, env) {
@@ -227,4 +231,51 @@ const Base64 = {
 // ==================== 辅助函数 ====================
 function getNow() {
   return new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+}
+
+// ==================== 下载处理（Gitee） ====================
+async function handleDownload(request, env) {
+  const { fingerprint } = await request.json();
+  if (!fingerprint) {
+    return new Response(JSON.stringify({ error: "Missing fingerprint" }), { status: 400 });
+  }
+  const token = env.GITEE_TOKEN;
+  const repo = env.GITEE_REPO;
+  const file = `kosto-config/${fingerprint}.json`;
+  
+  try {
+    const url = `https://gitee.com/api/v5/repos/${repo}/contents/${file}?access_token=${token}`;
+    const res = await fetch(url);
+    
+    if (res.status === 404) {
+      return new Response(JSON.stringify({ error: "Config not found", found: false }), { 
+        status: 404, 
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } 
+      });
+    }
+    
+    if (!res.ok) {
+      throw new Error(`Gitee read failed: ${res.status}`);
+    }
+    
+    const json = await res.json();
+    let content = null;
+    if (json.content) {
+      const decoded = Base64.decode(json.content);
+      try {
+        content = JSON.parse(decoded);
+      } catch (_) {
+        content = null;
+      }
+    }
+    
+    return new Response(JSON.stringify({ success: true, data: content, found: true }), {
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message, found: false }), { 
+      status: 500, 
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } 
+    });
+  }
 }
