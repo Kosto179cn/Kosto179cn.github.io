@@ -95,30 +95,46 @@ async function handleUpload(request, env) {
   // kosto-config/ 路径：直接覆盖存储（单对象，不做数组合并）
   if (file.startsWith("kosto-config/")) {
     let sha = undefined;
+    let fileExists = false;
+    
     try {
       const readResult = await readGiteeFileRaw(repo, file, token);
       sha = readResult.sha;
+      fileExists = true;
     } catch (e) {
       if (e.status !== 404) throw e;
-      // 文件不存在，先创建空文件获取 sha
-      const emptyContent = Base64.encode("{}");
-      const createUrl = `https://gitee.com/api/v5/repos/${repo}/contents/${file}?access_token=${token}`;
-      const createRes = await fetch(createUrl, {
+      // 文件不存在，fileExists 保持 false
+    }
+    
+    const url = `https://gitee.com/api/v5/repos/${repo}/contents/${file}?access_token=${token}`;
+    const contentStr = Base64.encode(JSON.stringify(record, null, 2));
+    
+    if (fileExists) {
+      // 文件存在，用 PUT 更新（需要 sha）
+      const body = { content: contentStr, sha: sha, message: `Cloud backup update (${getNow()})` };
+      const res = await fetch(url, {
         method: "PUT",
         headers: { "Content-Type": "application/json; charset=utf-8" },
-        body: JSON.stringify({
-          content: emptyContent,
-          message: `Create config file (${getNow()})`
-        })
+        body: JSON.stringify(body)
       });
-      if (createRes.ok) {
-        const createResult = await createRes.json();
-        sha = createResult.content.sha;
-      } else {
-        throw new Error(`Failed to create file: ${createRes.status}`);
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Gitee update failed: ${res.status} - ${errorText}`);
+      }
+    } else {
+      // 文件不存在，用 PUT 创建（不需要 sha）
+      const body = { content: contentStr, message: `Create config file (${getNow()})` };
+      const res = await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Gitee create failed: ${res.status} - ${errorText}`);
       }
     }
-    await writeGiteeFile(repo, file, token, record, sha, `Cloud backup update (${getNow()})`);
+    
     return new Response(JSON.stringify({ success: true }), {
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
     });
@@ -236,18 +252,23 @@ async function writeGiteeFile(repo, file, token, data, sha, message) {
   const url = `https://gitee.com/api/v5/repos/${repo}/contents/${file}?access_token=${token}`;
   const contentStr = Base64.encode(JSON.stringify(data, null, 2));
   const body = { content: contentStr, message: message };
-  if (sha) {
+  
+  // 只有当 sha 有效时才添加
+  if (sha !== undefined && sha !== null && sha !== "") {
     body.sha = sha;
   }
+  
   const res = await fetch(url, {
     method: "PUT",
     headers: { "Content-Type": "application/json; charset=utf-8" },
     body: JSON.stringify(body)
   });
+  
   if (!res.ok) {
     const errorText = await res.text();
     throw new Error(`Gitee write failed: ${res.status} - ${errorText}`);
   }
+  
   return res.json();
 }
 
