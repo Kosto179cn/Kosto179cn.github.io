@@ -3,6 +3,7 @@
 // - GITEE_REPO   : 仓库路径，例如 "Kosto179/kosto-battle-clicker-new"（必须）
 // - GEMINI_KEY   : Google Gemini API 密钥（仅 model=1 时需要）
 
+
 export default {
   async fetch(request, env) {
     // 处理 CORS 预检
@@ -11,22 +12,26 @@ export default {
         headers: {
           "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
+          "Access-Control-Allow-Headers": "Content-Type, X-Kosto-Auth",
         },
       });
     }
-
     // 仅允许 POST 请求
     if (request.method !== "POST") {
       return new Response("Please use POST", { status: 405 });
     }
-
     const url = new URL(request.url);
     const model = url.searchParams.get("model") || "1";
-
     try {
       if (model === "1") {
-        // ---------- 翻译功能 ----------
+        // ---------- 翻译功能（需要验证协议头）----------
+        const authHeader = request.headers.get("X-Kosto-Auth");
+        if (authHeader !== "kosto-translate-2026") {
+          return new Response(JSON.stringify({ error: "Unauthorized: Invalid auth header" }), { 
+            status: 403, 
+            headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } 
+          });
+        }
         return await handleTranslate(request, env);
       } else if (model === "2") {
         // ---------- 上传数据到 Gitee ----------
@@ -39,6 +44,7 @@ export default {
     }
   },
 };
+// ... 其余代码保持不变 ...
 
 // ==================== 翻译处理 ====================
 async function handleTranslate(request, env) {
