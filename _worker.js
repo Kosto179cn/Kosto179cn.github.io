@@ -100,6 +100,23 @@ async function handleUpload(request, env) {
       sha = readResult.sha;
     } catch (e) {
       if (e.status !== 404) throw e;
+      // 文件不存在，先创建空文件获取 sha
+      const emptyContent = Base64.encode("{}");
+      const createUrl = `https://gitee.com/api/v5/repos/${repo}/contents/${file}?access_token=${token}`;
+      const createRes = await fetch(createUrl, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+        body: JSON.stringify({
+          content: emptyContent,
+          message: `Create config file (${getNow()})`
+        })
+      });
+      if (createRes.ok) {
+        const createResult = await createRes.json();
+        sha = createResult.content.sha;
+      } else {
+        throw new Error(`Failed to create file: ${createRes.status}`);
+      }
     }
     await writeGiteeFile(repo, file, token, record, sha, `Cloud backup update (${getNow()})`);
     return new Response(JSON.stringify({ success: true }), {
