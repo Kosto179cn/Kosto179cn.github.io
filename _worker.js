@@ -94,6 +94,13 @@ async function handleUpload(request, env) {
 
   // kosto-config/ 路径：直接覆盖存储（单对象，不做数组合并）
   if (file.startsWith("kosto-config/")) {
+    // 只允许按指纹命名的文件（16 位十六进制，即 zw() 生成的 64bit 指纹），禁止随意指定文件名
+    if (!/^kosto-config\/[0-9a-f]{16}\.json$/i.test(file)) {
+      return new Response(JSON.stringify({ error: "Invalid config filename. Must be kosto-config/{16-hex-fingerprint}.json" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+      });
+    }
     let maxRetries = 3;
     let attempt = 0;
 
@@ -333,6 +340,13 @@ async function handleDownload(request, env) {
   }
   const token = env.GITEE_TOKEN;
   const repo = env.GITEE_REPO;
+  // 只允许按指纹（16 位十六进制，即 zw() 生成的 64bit 指纹）下载，禁止任意文件名
+  if (!/^[0-9a-f]{16}$/i.test(fingerprint)) {
+    return new Response(JSON.stringify({ error: "Invalid fingerprint format" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+    });
+  }
   const file = `kosto-config/${fingerprint}.json`;
   
   try {
