@@ -218,14 +218,18 @@ async function readGiteeFile(repo, file, token) {
 async function writeGiteeFile(repo, file, token, data, sha, message) {
   const url = `https://gitee.com/api/v5/repos/${repo}/contents/${file}?access_token=${token}`;
   const contentStr = Base64.encode(JSON.stringify(data, null, 2));
-  const body = { content: contentStr, sha: sha, message: message };
+  const body = { content: contentStr, message: message };
+  if (sha) {
+    body.sha = sha;
+  }
   const res = await fetch(url, {
     method: "PUT",
     headers: { "Content-Type": "application/json; charset=utf-8" },
     body: JSON.stringify(body)
   });
   if (!res.ok) {
-    throw new Error(`Gitee write failed: ${res.status}`);
+    const errorText = await res.text();
+    throw new Error(`Gitee write failed: ${res.status} - ${errorText}`);
   }
   return res.json();
 }
