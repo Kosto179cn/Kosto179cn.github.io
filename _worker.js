@@ -112,8 +112,8 @@ async function handleUpload(request, env) {
           headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
         });
       } catch (err) {
-        // SHA 冲突或 sha 相关错误时重试（重新读取最新 sha）
-        if (err.status === 409 || err.message.includes("sha")) {
+        // SHA 冲突、文件已存在等错误时重试（重新读取最新 sha 后更新）
+        if (err.status === 409 || err.message.includes("sha") || err.message.includes("already exists")) {
           attempt++;
           await new Promise(resolve => setTimeout(resolve, 200 * attempt));
           continue;
@@ -186,7 +186,7 @@ async function handleUpload(request, env) {
       });
 
     } catch (err) {
-      if (err.status === 409 || err.message.includes("sha")) {
+      if (err.status === 409 || err.message.includes("sha") || err.message.includes("already exists")) {
         attempt++;
         await new Promise(resolve => setTimeout(resolve, 200 * attempt));
         continue;
@@ -247,8 +247,9 @@ async function writeGiteeFile(repo, file, token, data, sha, message) {
     body.sha = sha;
   }
   
+  // Gitee 规则：创建新文件用 POST（不能带 sha），更新已有文件用 PUT（必须带 sha）
   const res = await fetch(url, {
-    method: "PUT",
+    method: sha ? "PUT" : "POST",
     headers: { "Content-Type": "application/json; charset=utf-8" },
     body: JSON.stringify(body)
   });
