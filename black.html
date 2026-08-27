@@ -129,7 +129,7 @@
 
 <!-- Modal -->
 <div id="editModal" class="fixed inset-0 bg-slate-950/90 hidden items-center justify-center z-50 p-4">
-    <div class="glass-card w-full max-w-lg rounded-3xl shadow-2xl p-8 border border-white/10">
+    <div class="glass-card w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl p-8 border border-white/10">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-black text-white flex items-center">
                 <i class="fas fa-user-edit mr-3 text-blue-400"></i>编辑档案
@@ -162,7 +162,37 @@
                 </div>
             </div>
 
-            <div class="pt-6 flex gap-3">
+            <!-- 历史记录管理（曾用名） -->
+            <div class="glass-card rounded-xl p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="text-[10px] uppercase font-black text-slate-500 tracking-widest"><i class="fas fa-id-card mr-1 text-slate-600"></i>历史昵称（曾用名）</label>
+                    <span class="text-[10px] text-slate-600">点击标签可改名 · × 可删除</span>
+                </div>
+                <div class="flex flex-wrap gap-1 mb-3 min-h-[26px]" id="historyTags">
+                    <!-- JS 渲染 -->
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="historyInput" placeholder="输入曾用名后添加..." class="flex-1 px-3 py-2 rounded-lg text-sm" onkeydown="if(event.key==='Enter')addHistoryItem('history')">
+                    <button onclick="addHistoryItem('history')" class="bg-slate-700 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
+
+            <!-- 历史记录管理（曾属军团） -->
+            <div class="glass-card rounded-xl p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="text-[10px] uppercase font-black text-slate-500 tracking-widest"><i class="fas fa-shield-halved mr-1 text-slate-600"></i>历史军团（曾属军团）</label>
+                    <span class="text-[10px] text-slate-600">点击标签可改名 · × 可删除</span>
+                </div>
+                <div class="flex flex-wrap gap-1 mb-3 min-h-[26px]" id="clanHistoryTags">
+                    <!-- JS 渲染 -->
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="clanHistoryInput" placeholder="输入曾属军团 TAG 后添加..." class="flex-1 px-3 py-2 rounded-lg text-sm" onkeydown="if(event.key==='Enter')addHistoryItem('clanHistory')">
+                    <button onclick="addHistoryItem('clanHistory')" class="bg-slate-700 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
+
+            <div class="pt-2 flex gap-3">
                 <button onclick="closeModal()" class="flex-1 bg-slate-800 text-slate-400 py-3 rounded-xl font-bold hover:bg-slate-700 transition">取消返回</button>
                 <button onclick="applyChanges()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-black hover:bg-blue-500 transition shadow-lg shadow-blue-900/30">确认应用修改</button>
             </div>
@@ -535,6 +565,68 @@
         }
     }
 
+    // ---------- 弹窗内历史记录编辑 ----------
+
+    // 弹窗打开期间的历史记录临时副本，确认时写回
+    let editHistory = [];
+    let editClanHistory = [];
+
+    function renderHistoryTags() {
+        const render = (containerId, list, kind) => {
+            const box = document.getElementById(containerId);
+            if (!list.length) {
+                box.innerHTML = '<span class="text-slate-600 text-xs italic py-1">暂无记录</span>';
+                return;
+            }
+            box.innerHTML = list.map((h, i) => `
+                <span class="history-tag group flex items-center gap-1">
+                    <button type="button" data-hist-kind="${kind}" data-hist-index="${i}" data-hist-op="edit"
+                        class="hover:text-blue-400 transition" title="点击修改">${escapeHtml(h)}</button>
+                    <button type="button" data-hist-kind="${kind}" data-hist-index="${i}" data-hist-op="remove"
+                        class="text-slate-500 hover:text-red-400 font-bold" title="删除"><i class="fas fa-times text-[9px]"></i></button>
+                </span>`).join('');
+        };
+        render('historyTags', editHistory, 'history');
+        render('clanHistoryTags', editClanHistory, 'clanHistory');
+    }
+
+    // 事件委托：标签的点击改名 / 删除
+    document.getElementById('editModal').addEventListener('click', e => {
+        const btn = e.target.closest('button[data-hist-op]');
+        if (!btn) return;
+        const kind = btn.dataset.histKind;
+        const index = parseInt(btn.dataset.histIndex);
+        const list = kind === 'history' ? editHistory : editClanHistory;
+        if (btn.dataset.histOp === 'remove') {
+            const item = list[index];
+            if (confirm(`确定删除历史记录「${item}」吗？`)) {
+                list.splice(index, 1);
+                renderHistoryTags();
+            }
+        } else {
+            const oldVal = list[index];
+            const newVal = (prompt('请输入新的内容:', oldVal) || '').trim();
+            if (!newVal) return toast('内容不能为空！', 'error');
+            if (newVal !== oldVal) {
+                if (list.includes(newVal)) return toast('该记录已存在，请勿重复！', 'warn');
+                list[index] = newVal;
+                renderHistoryTags();
+            }
+        }
+    });
+
+    // 添加一条历史记录（输入框 + 按钮 / 回车）
+    function addHistoryItem(kind) {
+        const input = document.getElementById(kind === 'history' ? 'historyInput' : 'clanHistoryInput');
+        const val = input.value.trim();
+        if (!val) return toast('请先输入内容！', 'warn');
+        const list = kind === 'history' ? editHistory : editClanHistory;
+        if (list.includes(val)) return toast('该记录已存在！', 'warn');
+        list.push(val);
+        input.value = '';
+        renderHistoryTags();
+    }
+
     function openEditModal(id) {
         const user = blacklistData[id];
         if (!user) return;
@@ -542,6 +634,10 @@
         document.getElementById('editNickname').value = user.nickname || '';
         document.getElementById('editClan').value = user.clan || '';
         document.getElementById('editRank').value = clampRank(user.rank);
+        // 载入历史记录副本供弹窗编辑
+        editHistory = [...(user.history || [])];
+        editClanHistory = [...(user.clanHistory || [])];
+        renderHistoryTags();
         document.getElementById('editModal').style.display = 'flex';
     }
 
@@ -572,20 +668,22 @@
         // 输入校验：昵称必填
         if (!newNick) return toast('昵称不能为空！', 'error');
 
-        // 自动历史记录逻辑
-        if (user.nickname && user.nickname !== newNick) {
-            if (!user.history) user.history = [];
-            if (!user.history.includes(user.nickname)) user.history.push(user.nickname);
+        // 历史记录：以弹窗中编辑后的副本为基础，再叠加自动记录逻辑（去重）
+        const newHistory = [...editHistory];
+        if (user.nickname && user.nickname !== newNick && !newHistory.includes(user.nickname)) {
+            newHistory.push(user.nickname);
         }
 
-        if (user.clan && user.clan !== newClan) {
-            if (!user.clanHistory) user.clanHistory = [];
-            if (!user.clanHistory.includes(user.clan)) user.clanHistory.push(user.clan);
+        const newClanHistory = [...editClanHistory];
+        if (user.clan && user.clan !== newClan && !newClanHistory.includes(user.clan)) {
+            newClanHistory.push(user.clan);
         }
 
         user.nickname = newNick;
         user.clan = newClan;
         user.rank = clampRank(document.getElementById('editRank').value);
+        user.history = newHistory;
+        user.clanHistory = newClanHistory;
 
         closeModal();
         markDirty();
