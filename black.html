@@ -15,9 +15,20 @@
         .history-tag { background: rgba(51, 65, 85, 0.5); padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-right: 4px; display: inline-block; margin-bottom: 2px; }
         .btn-action { transition: all 0.2s; }
         .btn-action:hover { transform: translateY(-1px); }
+        /* Toast 通知 */
+        #toastBox { position: fixed; top: 16px; right: 16px; z-index: 100; display: flex; flex-direction: column; gap: 8px; }
+        .toast-item { padding: 12px 18px; border-radius: 10px; font-size: 13px; font-weight: bold; color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.4); animation: toastIn .25s ease; max-width: 320px; }
+        .toast-info { background: #1d4ed8; }
+        .toast-success { background: #047857; }
+        .toast-error { background: #b91c1c; }
+        .toast-warn { background: #b45309; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
 <body class="p-4 md:p-8">
+
+<!-- Toast 容器 -->
+<div id="toastBox"></div>
 
 <div class="max-w-7xl mx-auto">
     <!-- Header -->
@@ -48,17 +59,28 @@
             <div>
                 <p class="text-slate-500 text-[10px] uppercase font-bold">已封锁总人数</p>
                 <p class="text-2xl font-black text-white" id="statCount">0</p>
+                <p class="text-[10px] text-slate-500 hidden" id="statFiltered"></p>
             </div>
             <i class="fas fa-user-shield text-blue-500/30 text-3xl"></i>
         </div>
         <div class="lg:col-span-2 glass-card p-2 rounded-xl flex items-center">
             <i class="fas fa-search ml-3 text-slate-500"></i>
-            <input type="text" id="searchInput" oninput="renderTable()" placeholder="搜索 ID、昵称、曾用名、军团..." class="w-full bg-transparent border-none focus:ring-0 p-2 text-md">
+            <input type="text" id="searchInput" placeholder="搜索 ID、昵称、曾用名、军团..." class="w-full bg-transparent border-none focus:ring-0 p-2 text-md">
         </div>
-        <div class="flex gap-2">
-            <button onclick="batchClearByClan()" class="flex-1 bg-rose-900/30 hover:bg-rose-900/50 text-rose-400 border border-rose-500/30 rounded-xl font-bold text-sm btn-action">
+        <div class="grid grid-cols-2 gap-2">
+            <button onclick="batchClearByClan()" class="bg-rose-900/30 hover:bg-rose-900/50 text-rose-400 border border-rose-500/30 rounded-xl font-bold text-sm btn-action">
                 <i class="fas fa-users-slash mr-2"></i>按军团清理
             </button>
+            <button onclick="copyToOtherServer()" class="bg-emerald-900/30 hover:bg-emerald-900/50 text-emerald-400 border border-emerald-500/30 rounded-xl font-bold text-sm btn-action">
+                <i class="fas fa-exchange-alt mr-2"></i><span id="copyBtnLabel">复制到外服</span>
+            </button>
+            <button onclick="exportJson()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/10 rounded-xl font-bold text-sm btn-action">
+                <i class="fas fa-download mr-2"></i>导出 JSON
+            </button>
+            <button onclick="document.getElementById('importFile').click()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/10 rounded-xl font-bold text-sm btn-action">
+                <i class="fas fa-upload mr-2"></i>导入 JSON
+            </button>
+            <input type="file" id="importFile" accept=".json" class="hidden">
         </div>
     </div>
 
@@ -80,6 +102,8 @@
                 </tbody>
             </table>
         </div>
+        <!-- 分页控件 -->
+        <div id="pagination" class="flex items-center justify-center gap-4 py-3 border-t border-slate-800 text-sm text-slate-400"></div>
         <div id="loadingState" class="p-24 text-center hidden">
             <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-4"></div>
             <p class="text-slate-500 text-sm animate-pulse">正在安全连接至 Gitee 节点...</p>
@@ -90,6 +114,7 @@
     <div class="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div class="text-slate-500 text-xs">
             <i class="fas fa-info-circle mr-1"></i> 修改后请务必点击“推送至云端”按钮，否则更改不会生效。
+            <span id="dirtyHint" class="text-amber-500 font-bold hidden ml-2"><i class="fas fa-circle-exclamation mr-1"></i>有未保存的修改</span>
         </div>
         <div class="flex gap-3">
             <button onclick="openAddModal()" class="bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-xl font-bold transition btn-action">
@@ -119,7 +144,7 @@
                     <input type="text" id="editId" disabled class="w-full px-4 py-3 rounded-xl opacity-40 cursor-not-allowed font-mono text-sm">
                 </div>
                 <div>
-                    <label class="block text-[10px] uppercase font-black text-slate-500 mb-2 tracking-widest">当前游戏昵称</label>
+                    <label class="block text-[10px] uppercase font-black text-slate-500 mb-2 tracking-widest">当前游戏昵称（必填）</label>
                     <input type="text" id="editNickname" class="w-full px-4 py-3 rounded-xl font-bold">
                 </div>
             </div>
@@ -151,7 +176,8 @@
     const CONFIG = {
         repo: "Kosto179/kosto-battle-clicker-new",
         // 动态返回路径
-        getPath: () => currentServer === 'cn' ? "player_blacklist_cn.json" : "player_blacklist_en.json"
+        getPath: () => currentServer === 'cn' ? "player_blacklist_cn.json" : "player_blacklist_en.json",
+        getOtherPath: () => currentServer === 'cn' ? "player_blacklist_en.json" : "player_blacklist_cn.json"
     };
 
     const RANK_DATA = [
@@ -166,208 +192,368 @@
         "67355bb5", "02ac56c6", "99d83bfa", "3244a43f", "717ff925", "1b80d1fb", "72e4bb3d", "6ee30e89", "cc76cbcc", "acaaced1", "06d52fbe"
     ];
 
+    const FETCH_TIMEOUT = 10000; // 请求超时时间
+    const PAGE_SIZE = 50;        // 分页大小
+
     let blacklistData = {};
-    let clanBlacklistData = []; // 军团黑名单数据
+    let clanBlacklistData = [];  // 军团黑名单数据
+    let baseData = null;         // 拉取时的数据快照，用于 SHA 冲突时三方合并
     let currentSha = "";
+    let currentPage = 1;
+    let dirty = false;           // 是否存在未推送的本地修改
 
-    // 切换服务器函数
-    function switchServer(srv) {
-        currentServer = srv;
-        // 样式切换
-        document.getElementById('tabCN').className = srv === 'cn' ? 'px-6 py-2 rounded-lg font-bold text-sm transition bg-blue-600 text-white shadow-lg' : 'px-6 py-2 rounded-lg font-bold text-sm transition text-slate-400 hover:text-white';
-        document.getElementById('tabEN').className = srv === 'en' ? 'px-6 py-2 rounded-lg font-bold text-sm transition bg-blue-600 text-white shadow-lg' : 'px-6 py-2 rounded-lg font-bold text-sm transition text-slate-400 hover:text-white';
-        
-        // 重新拉取数据
-        fetchData();
+    // ---------- 通用工具 ----------
+
+    // HTML 转义，防止昵称/军团/历史等字段注入
+    function escapeHtml(str) {
+        return String(str ?? '').replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[c]);
     }
 
-    window.onload = () => {
-        const savedToken = localStorage.getItem("gitee_token");
-        if(savedToken) document.getElementById("giteeToken").value = savedToken;
-        
-        // 填充等级下拉菜单
-        const select = document.getElementById("editRank");
-        RANK_DATA.forEach((name, index) => {
-            const opt = document.createElement("option");
-            opt.value = index + 1;
-            opt.textContent = name;
-            select.appendChild(opt);
-        });
-    };
-
-    function getRankIconUrl(rank) {
+    // 军衔值钳制到 1~31，防御脏数据
+    function clampRank(rank) {
         let r = parseInt(rank) || 1;
-        r = Math.max(1, Math.min(31, r));
-        const prefix = r < 10 ? "0" + r : r;
-        return `https://s.eu.tankionline.com/static/images/${prefix}.${RANK_HASHES[r-1]}.webp`;
+        return Math.max(1, Math.min(31, r));
     }
 
-    async function fetchData() {
-        const token = document.getElementById("giteeToken").value;
-        if(!token) return alert("请输入 Gitee Token！");
-        localStorage.setItem("gitee_token", token);
+    // 防抖：搜索输入避免每次按键都全量重渲染
+    function debounce(fn, ms) {
+        let t;
+        return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+    }
 
-        document.getElementById("loadingState").classList.remove("hidden");
-        document.getElementById("blacklistBody").innerHTML = "";
+    // Toast 通知（替代 alert 打断式弹窗）
+    function toast(msg, type = 'info') {
+        const box = document.getElementById('toastBox');
+        const el = document.createElement('div');
+        el.className = `toast-item toast-${type}`;
+        el.textContent = msg;
+        box.appendChild(el);
+        setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; }, 2800);
+        setTimeout(() => el.remove(), 3200);
+    }
 
+    // Base64 <-> UTF-8（使用 TextDecoder/TextEncoder，兼容中文）
+    function b64ToUtf8(b64) {
+        const bin = atob(b64);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        return new TextDecoder('utf-8').decode(bytes);
+    }
+    function utf8ToB64(str) {
+        const bytes = new TextEncoder().encode(str);
+        let bin = '';
+        bytes.forEach(b => bin += String.fromCharCode(b));
+        return btoa(bin);
+    }
+
+    // 深拷贝快照
+    function snapshot(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+    // 脏状态标记
+    function markDirty() {
+        dirty = true;
+        document.getElementById('dirtyHint').classList.remove('hidden');
+    }
+    function clearDirty() {
+        dirty = false;
+        document.getElementById('dirtyHint').classList.add('hidden');
+    }
+
+    // 带超时的 fetch
+    async function fetchWithTimeout(url, options = {}) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
         try {
-            const fileName = CONFIG.getPath();
-            const url = `https://gitee.com/api/v5/repos/${CONFIG.repo}/contents/${fileName}?access_token=${token}&t=${Date.now()}`;
-            const res = await fetch(url);
-            
-            if(res.status === 404) {
-                // 如果文件不存在，初始化空数据
-                blacklistData = {};
-                clanBlacklistData = [];
-                currentSha = "";
-                renderTable();
-                document.getElementById("saveBtn").classList.remove("hidden");
-                return;
-            }
-            
-            if(!res.ok) throw new Error("连接失败: 请检查 Token 权限或仓库地址是否正确");
-            
-            const json = await res.json();
-            currentSha = json.sha;
-            const contentText = decodeURIComponent(atob(json.content).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
-            const rawData = JSON.parse(contentText);
-
-            // 关键兼容逻辑：支持新格式 {"players":..., "clans":...} 和老格式直接映射
-            if (rawData.players) {
-                blacklistData = rawData.players;
-                clanBlacklistData = rawData.clans || [];
-            } else {
-                blacklistData = rawData; // 兼容老格式
-                clanBlacklistData = [];
-            }
-            
-            renderTable();
-            document.getElementById("saveBtn").classList.remove("hidden");
+            return await fetch(url, { ...options, signal: controller.signal });
         } catch (e) {
-            console.error(e);
-            alert("加载失败: " + e.message);
+            if (e.name === 'AbortError') throw new Error('请求超时，请检查网络后重试');
+            throw new Error('网络连接失败，请检查网络后重试');
         } finally {
-            document.getElementById("loadingState").classList.add("hidden");
+            clearTimeout(timer);
         }
     }
 
-    function renderTable() {
-        const searchTerm = document.getElementById("searchInput").value.toLowerCase();
-        const tbody = document.getElementById("blacklistBody");
-        tbody.innerHTML = "";
-        
-        let count = 0;
-        Object.keys(blacklistData).forEach(id => {
-            const user = blacklistData[id];
-            const nickname = user.nickname || "";
-            const clan = user.clan || "";
-            const history = (user.history || []).join(" ");
-            const clanHistory = (user.clanHistory || []).join(" ");
-            
-            // 搜索过滤
-            const match = id.includes(searchTerm) || 
-                          nickname.toLowerCase().includes(searchTerm) || 
-                          clan.toLowerCase().includes(searchTerm) ||
-                          history.toLowerCase().includes(searchTerm) ||
-                          clanHistory.toLowerCase().includes(searchTerm);
-            
-            if(!match) return;
-            
-            count++;
-            const tr = document.createElement("tr");
-            tr.className = "hover:bg-slate-800/30 transition transition-colors group";
-            
-            // 渲染历史标签
-            const renderHistory = (list, icon, title) => {
-                if(!list || list.length === 0) return '';
-                return `<div class="flex flex-wrap items-center mt-1">
-                            <span class="text-[9px] text-slate-600 mr-2 uppercase font-bold">${title}:</span>
-                            ${list.map(h => `<span class="history-tag">${h}</span>`).join('')}
-                        </div>`;
-            };
+    // ---------- 数据读取 ----------
 
+    // 解析云端文件内容，兼容新旧格式，返回 {players, clans}
+    function parseFileContent(b64) {
+        let rawData;
+        try {
+            rawData = JSON.parse(b64ToUtf8(b64));
+        } catch (e) {
+            throw new Error('云端数据格式损坏（JSON 解析失败），请手动检查仓库文件');
+        }
+        if (rawData && rawData.players) {
+            return { players: rawData.players, clans: rawData.clans || [] };
+        }
+        return { players: rawData, clans: [] }; // 兼容老格式
+    }
+
+    // 拉取指定服务器文件；404 时返回空数据
+    async function fetchRemoteFile(fileName, token) {
+        const url = `https://gitee.com/api/v5/repos/${CONFIG.repo}/contents/${fileName}?access_token=${token}&t=${Date.now()}`;
+        const res = await fetchWithTimeout(url);
+        if (res.status === 404) return { sha: "", players: {}, clans: [] };
+        if (!res.ok) throw new Error('连接失败: 请检查 Token 权限或仓库地址是否正确');
+        const json = await res.json();
+        const parsed = parseFileContent(json.content);
+        return { sha: json.sha, players: parsed.players, clans: parsed.clans };
+    }
+
+    async function fetchData() {
+        const token = document.getElementById('giteeToken').value;
+        if (!token) return toast('请输入 Gitee Token！', 'warn');
+        localStorage.setItem('gitee_token', token);
+
+        document.getElementById('loadingState').classList.remove('hidden');
+        document.getElementById('blacklistBody').innerHTML = '';
+
+        try {
+            const remote = await fetchRemoteFile(CONFIG.getPath(), token);
+            blacklistData = remote.players;
+            clanBlacklistData = remote.clans;
+            baseData = snapshot(blacklistData);
+            currentSha = remote.sha;
+            currentPage = 1;
+            clearDirty();
+            renderTable();
+            document.getElementById('saveBtn').classList.remove('hidden');
+            toast(`拉取成功，共 ${Object.keys(blacklistData).length} 条记录`, 'success');
+        } catch (e) {
+            console.error(e);
+            toast('加载失败: ' + e.message, 'error');
+        } finally {
+            document.getElementById('loadingState').classList.add('hidden');
+        }
+    }
+
+    // ---------- 渲染 ----------
+
+    function renderTable() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+        const tbody = document.getElementById('blacklistBody');
+        const allIds = Object.keys(blacklistData);
+
+        // 搜索过滤
+        const filtered = allIds.filter(id => {
+            if (!searchTerm) return true;
+            const user = blacklistData[id] || {};
+            const nickname = user.nickname || '';
+            const clan = user.clan || '';
+            const history = (user.history || []).join(' ');
+            const clanHistory = (user.clanHistory || []).join(' ');
+            return id.includes(searchTerm) ||
+                   nickname.toLowerCase().includes(searchTerm) ||
+                   clan.toLowerCase().includes(searchTerm) ||
+                   history.toLowerCase().includes(searchTerm) ||
+                   clanHistory.toLowerCase().includes(searchTerm);
+        });
+
+        // 统计：总数恒定显示，筛选时展示 "筛选数 / 总数"
+        document.getElementById('statCount').textContent = allIds.length;
+        const statFiltered = document.getElementById('statFiltered');
+        if (searchTerm && filtered.length !== allIds.length) {
+            statFiltered.textContent = `筛选命中 ${filtered.length} 人`;
+            statFiltered.classList.remove('hidden');
+        } else {
+            statFiltered.classList.add('hidden');
+        }
+
+        // 分页计算
+        const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+        if (currentPage > totalPages) currentPage = totalPages;
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const pageIds = filtered.slice(start, start + PAGE_SIZE);
+
+        // 空状态提示
+        if (pageIds.length === 0) {
+            tbody.innerHTML = `
+                <tr><td colspan="5" class="p-16 text-center text-slate-500">
+                    <i class="fas ${allIds.length === 0 ? 'fa-cloud-arrow-down' : 'fa-magnifying-glass'} text-4xl mb-4 block text-slate-700"></i>
+                    ${allIds.length === 0
+                        ? '云端暂无数据，点击右下角“手动添加”开始构建名单'
+                        : '未找到匹配的记录，试试更换搜索关键词'}
+                </td></tr>`;
+            renderPagination(filtered.length, totalPages);
+            return;
+        }
+
+        // 渲染历史标签（内容全部转义）
+        const renderHistory = (list, title) => {
+            if (!list || list.length === 0) return '';
+            return `<div class="flex flex-wrap items-center mt-1">
+                        <span class="text-[9px] text-slate-600 mr-2 uppercase font-bold">${title}:</span>
+                        ${list.map(h => `<span class="history-tag">${escapeHtml(h)}</span>`).join('')}
+                    </div>`;
+        };
+
+        // DocumentFragment 一次性插入，避免逐行 append 触发多次重排
+        const frag = document.createDocumentFragment();
+        pageIds.forEach(id => {
+            const user = blacklistData[id] || {};
+            const nickname = user.nickname || '';
+            const clan = user.clan || '';
+            const rank = clampRank(user.rank);
+
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-slate-800/30 transition-colors group';
             tr.innerHTML = `
                 <td class="p-4">
                     <div class="flex flex-col items-start gap-1">
-                        <img src="${getRankIconUrl(user.rank)}" class="rank-img">
-                        <span class="text-[10px] font-bold text-slate-500 uppercase">${RANK_DATA[user.rank-1]}</span>
+                        <img src="${getRankIconUrl(rank)}" loading="lazy" class="rank-img" alt="${escapeHtml(RANK_DATA[rank - 1])}">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase">${escapeHtml(RANK_DATA[rank - 1])}</span>
                     </div>
                 </td>
                 <td class="p-4">
-                    <div class="font-mono text-[10px] text-blue-500/80 mb-1"># ${id}</div>
-                    <div class="text-white font-black text-lg">${nickname}</div>
+                    <div class="font-mono text-[10px] text-blue-500/80 mb-1"># ${escapeHtml(id)}</div>
+                    <div class="text-white font-black text-lg">${escapeHtml(nickname)}</div>
                 </td>
                 <td class="p-4 text-sm">
-                    ${clan ? `<span class="bg-indigo-900/30 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/20 font-bold">${clan}</span>` : '<span class="text-slate-700 italic">散人</span>'}
+                    ${clan ? `<span class="bg-indigo-900/30 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/20 font-bold">${escapeHtml(clan)}</span>` : '<span class="text-slate-700 italic">散人</span>'}
                 </td>
                 <td class="p-4">
                     <div class="max-w-xs">
-                        ${renderHistory(user.history, 'user', '更名')}
-                        ${renderHistory(user.clanHistory, 'shield', '军团')}
-                        <div class="text-[9px] text-slate-600 mt-2 italic"><i class="far fa-clock mr-1"></i>封锁于: ${user.addedAt || '未知'}</div>
+                        ${renderHistory(user.history, '更名')}
+                        ${renderHistory(user.clanHistory, '军团')}
+                        <div class="text-[9px] text-slate-600 mt-2 italic"><i class="far fa-clock mr-1"></i>封锁于: ${escapeHtml(user.addedAt || '未知')}</div>
                     </div>
                 </td>
                 <td class="p-4 text-right">
                     <div class="flex justify-end gap-2">
-                        <button onclick="openEditModal('${id}')" class="w-9 h-9 flex items-center justify-center bg-slate-800 hover:bg-amber-600 text-slate-400 hover:text-white rounded-lg transition"><i class="fas fa-edit"></i></button>
-                        <button onclick="deleteUser('${id}')" class="w-9 h-9 flex items-center justify-center bg-slate-800 hover:bg-red-600 text-slate-400 hover:text-white rounded-lg transition"><i class="fas fa-trash"></i></button>
+                        <button data-action="edit" data-id="${escapeHtml(id)}" title="编辑" class="w-9 h-9 flex items-center justify-center bg-slate-800 hover:bg-amber-600 text-slate-400 hover:text-white rounded-lg transition"><i class="fas fa-edit"></i></button>
+                        <button data-action="delete" data-id="${escapeHtml(id)}" title="移除" class="w-9 h-9 flex items-center justify-center bg-slate-800 hover:bg-red-600 text-slate-400 hover:text-white rounded-lg transition"><i class="fas fa-trash"></i></button>
                     </div>
                 </td>
             `;
-            tbody.appendChild(tr);
+            frag.appendChild(tr);
         });
-        document.getElementById("statCount").textContent = count;
+        tbody.innerHTML = '';
+        tbody.appendChild(frag);
+        renderPagination(filtered.length, totalPages);
     }
+
+    function renderPagination(filteredCount, totalPages) {
+        const el = document.getElementById('pagination');
+        if (filteredCount === 0) { el.innerHTML = ''; return; }
+        const btnBase = 'px-4 py-1.5 rounded-lg font-bold text-xs transition';
+        el.innerHTML = `
+            <button ${currentPage <= 1 ? 'disabled' : ''} onclick="gotoPage(${currentPage - 1})"
+                class="${btnBase} ${currentPage <= 1 ? 'text-slate-700 cursor-not-allowed' : 'bg-slate-800 hover:bg-slate-700 text-white'}">
+                <i class="fas fa-chevron-left mr-1"></i>上一页
+            </button>
+            <span class="text-xs">第 <b class="text-white">${currentPage}</b> / ${totalPages} 页 · 共 ${filteredCount} 条</span>
+            <button ${currentPage >= totalPages ? 'disabled' : ''} onclick="gotoPage(${currentPage + 1})"
+                class="${btnBase} ${currentPage >= totalPages ? 'text-slate-700 cursor-not-allowed' : 'bg-slate-800 hover:bg-slate-700 text-white'}">
+                下一页<i class="fas fa-chevron-right ml-1"></i>
+            </button>
+        `;
+    }
+
+    function gotoPage(p) {
+        currentPage = p;
+        renderTable();
+    }
+
+    function getRankIconUrl(rank) {
+        const r = clampRank(rank);
+        const prefix = r < 10 ? '0' + r : r;
+        return `https://s.eu.tankionline.com/static/images/${prefix}.${RANK_HASHES[r - 1]}.webp`;
+    }
+
+    // ---------- 服务器切换 ----------
+
+    function switchServer(srv) {
+        if (srv === currentServer) return;
+        if (dirty && !confirm('当前服务器有未推送的修改，切换后将丢失，确定继续吗？')) return;
+        currentServer = srv;
+        // 样式切换
+        const activeCls = 'px-6 py-2 rounded-lg font-bold text-sm transition bg-blue-600 text-white shadow-lg';
+        const idleCls = 'px-6 py-2 rounded-lg font-bold text-sm transition text-slate-400 hover:text-white';
+        document.getElementById('tabCN').className = srv === 'cn' ? activeCls : idleCls;
+        document.getElementById('tabEN').className = srv === 'en' ? activeCls : idleCls;
+        document.getElementById('copyBtnLabel').textContent = srv === 'cn' ? '复制到外服' : '复制到国服';
+
+        // 重置本地状态并重新拉取
+        blacklistData = {};
+        clanBlacklistData = [];
+        baseData = null;
+        currentSha = "";
+        clearDirty();
+        renderTable();
+        const token = document.getElementById('giteeToken').value;
+        if (token) fetchData();
+        else toast('已切换服务器，请输入 Token 后拉取名单', 'info');
+    }
+
+    // ---------- 增删改 ----------
+
+    // 事件委托：表格内按钮统一处理，避免行内 onclick 拼接注入
+    document.getElementById('blacklistBody').addEventListener('click', e => {
+        const btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        const id = btn.dataset.id;
+        if (btn.dataset.action === 'edit') openEditModal(id);
+        else if (btn.dataset.action === 'delete') deleteUser(id);
+    });
+
+    // 搜索防抖
+    document.getElementById('searchInput').addEventListener('input', debounce(() => {
+        currentPage = 1;
+        renderTable();
+    }, 150));
 
     // 批量按军团删除
     function batchClearByClan() {
-        const clanName = prompt("请输入要清理的军团名 (完全匹配):");
-        if(!clanName) return;
-        
-        let toDelete = [];
-        Object.keys(blacklistData).forEach(id => {
-            if(blacklistData[id].clan === clanName) {
-                toDelete.push(id);
-            }
-        });
+        const clanName = prompt('请输入要清理的军团名 (完全匹配):');
+        if (!clanName) return;
 
-        if(toDelete.length === 0) {
-            alert(`未找到军团为 [${clanName}] 的用户。`);
+        const toDelete = Object.keys(blacklistData).filter(id => (blacklistData[id] || {}).clan === clanName);
+
+        if (toDelete.length === 0) {
+            toast(`未找到军团为 [${clanName}] 的用户。`, 'warn');
             return;
         }
 
-        if(confirm(`检测到该军团共有 ${toDelete.length} 名成员，确定全部移除吗？`)) {
+        if (confirm(`检测到该军团共有 ${toDelete.length} 名成员，确定全部移除吗？`)) {
             toDelete.forEach(id => delete blacklistData[id]);
+            markDirty();
             renderTable();
-            alert("已从本地列表移除，请记得同步到云端！");
+            toast(`已从本地列表移除 ${toDelete.length} 人，请记得同步到云端！`, 'success');
         }
     }
 
     function deleteUser(id) {
-        if(confirm(`确定要解除对 ${blacklistData[id].nickname} 的封锁吗？`)) {
+        const user = blacklistData[id];
+        if (!user) return;
+        if (confirm(`确定要解除对 ${user.nickname || id} 的封锁吗？`)) {
             delete blacklistData[id];
+            markDirty();
             renderTable();
+            toast('已从本地列表移除，请记得同步到云端', 'success');
         }
     }
 
     function openEditModal(id) {
         const user = blacklistData[id];
-        document.getElementById("editId").value = id;
-        document.getElementById("editNickname").value = user.nickname;
-        document.getElementById("editClan").value = user.clan || "";
-        document.getElementById("editRank").value = user.rank;
-        document.getElementById("editModal").style.display = "flex";
+        if (!user) return;
+        document.getElementById('editId').value = id;
+        document.getElementById('editNickname').value = user.nickname || '';
+        document.getElementById('editClan').value = user.clan || '';
+        document.getElementById('editRank').value = clampRank(user.rank);
+        document.getElementById('editModal').style.display = 'flex';
     }
 
     function openAddModal() {
-        const id = prompt("请输入新用户的 Internal ID:");
-        if(!id) return;
-        if(blacklistData[id]) return alert("此 ID 已存在于名单中！");
-        
+        const id = (prompt('请输入新用户的 Internal ID:') || '').trim();
+        if (!id) return;
+        if (blacklistData[id]) return toast('此 ID 已存在于名单中！', 'warn');
+
         blacklistData[id] = {
-            nickname: "新封锁用户",
-            rank: 31,
-            clan: "",
+            nickname: '',
+            rank: 1,
+            clan: '',
             history: [],
             clanHistory: [],
             addedAt: new Date().toLocaleString('zh-CN')
@@ -376,76 +562,236 @@
     }
 
     function applyChanges() {
-        const id = document.getElementById("editId").value;
+        const id = document.getElementById('editId').value;
         const user = blacklistData[id];
-        const newNick = document.getElementById("editNickname").value.trim();
-        const newClan = document.getElementById("editClan").value.trim();
-        
+        if (!user) return closeModal();
+
+        const newNick = document.getElementById('editNickname').value.trim();
+        const newClan = document.getElementById('editClan').value.trim();
+
+        // 输入校验：昵称必填
+        if (!newNick) return toast('昵称不能为空！', 'error');
+
         // 自动历史记录逻辑
-        if(user.nickname !== newNick) {
-            if(!user.history) user.history = [];
-            if(!user.history.includes(user.nickname)) user.history.push(user.nickname);
+        if (user.nickname && user.nickname !== newNick) {
+            if (!user.history) user.history = [];
+            if (!user.history.includes(user.nickname)) user.history.push(user.nickname);
         }
 
-        if(user.clan !== newClan) {
-            if(!user.clanHistory) user.clanHistory = [];
-            if(user.clan && !user.clanHistory.includes(user.clan)) user.clanHistory.push(user.clan);
+        if (user.clan && user.clan !== newClan) {
+            if (!user.clanHistory) user.clanHistory = [];
+            if (!user.clanHistory.includes(user.clan)) user.clanHistory.push(user.clan);
         }
 
         user.nickname = newNick;
         user.clan = newClan;
-        user.rank = parseInt(document.getElementById("editRank").value);
+        user.rank = clampRank(document.getElementById('editRank').value);
 
         closeModal();
+        markDirty();
         renderTable();
+        toast('修改已应用到本地列表', 'success');
     }
 
     function closeModal() {
-        document.getElementById("editModal").style.display = "none";
+        // 取消时清理未填写完整的新增条目，避免空昵称脏数据入库
+        const id = document.getElementById('editId').value;
+        if (id && blacklistData[id] && !blacklistData[id].nickname && !(baseData || {})[id]) {
+            delete blacklistData[id];
+        }
+        document.getElementById('editModal').style.display = 'none';
+    }
+
+    // ---------- 导入 / 导出 / 双服复制 ----------
+
+    function exportJson() {
+        if (Object.keys(blacklistData).length === 0) return toast('当前没有可导出的数据', 'warn');
+        const saveData = { players: blacklistData, clans: clanBlacklistData };
+        const blob = new Blob([JSON.stringify(saveData, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `blacklist_${currentServer}_${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        toast('已导出 JSON 文件', 'success');
+    }
+
+    function importJson(file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+            try {
+                const raw = JSON.parse(reader.result);
+                const players = raw.players || raw; // 兼容导出格式与纯 players 格式
+                if (typeof players !== 'object' || Array.isArray(players)) throw new Error('格式不符');
+                const mode = confirm(`共解析到 ${Object.keys(players).length} 条记录。\n\n确定导入吗？\n【确定】合并（保留现有+新增/覆盖同名ID）\n【取消】放弃导入`) ? 'merge' : null;
+                if (!mode) return;
+                Object.keys(players).forEach(id => { blacklistData[id] = players[id]; });
+                markDirty();
+                renderTable();
+                toast('导入成功（合并模式），请记得推送云端', 'success');
+            } catch (e) {
+                toast('导入失败：文件不是有效的黑名单 JSON', 'error');
+            }
+        };
+        reader.readAsText(file, 'utf-8');
+    }
+    document.getElementById('importFile').addEventListener('change', e => {
+        if (e.target.files[0]) importJson(e.target.files[0]);
+        e.target.value = ''; // 允许重复导入同一文件
+    });
+
+    // 将当前服名单复制到另一服（直接写云端目标文件）
+    async function copyToOtherServer() {
+        const token = document.getElementById('giteeToken').value;
+        if (!token) return toast('请先输入 Gitee Token！', 'warn');
+        if (Object.keys(blacklistData).length === 0) return toast('当前名单为空，无可复制数据', 'warn');
+
+        const targetName = currentServer === 'cn' ? '外服' : '国服';
+        if (!confirm(`确定将当前 ${Object.keys(blacklistData).length} 条记录覆盖复制到【${targetName}】名单吗？\n（目标文件现有数据将被完全替换）`)) return;
+
+        toast(`正在读取${targetName}云端文件...`, 'info');
+        try {
+            const target = await fetchRemoteFile(CONFIG.getOtherPath(), token);
+            const saveData = { players: blacklistData, clans: clanBlacklistData };
+            const content = utf8ToB64(JSON.stringify(saveData, null, 2));
+            const url = `https://gitee.com/api/v5/repos/${CONFIG.repo}/contents/${CONFIG.getOtherPath()}`;
+            const res = await fetchWithTimeout(url, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    access_token: token,
+                    content: content,
+                    sha: target.sha,
+                    message: `Blacklist copied from ${currentServer} via Kosto Web UI: ` + new Date().toLocaleString()
+                })
+            });
+            if (!res.ok) throw new Error('写入失败，请重试或检查 Token 权限');
+            toast(`已成功复制 ${Object.keys(blacklistData).length} 条记录到${targetName}！`, 'success');
+        } catch (e) {
+            toast('复制失败: ' + e.message, 'error');
+        }
+    }
+
+    // ---------- 云端同步 ----------
+
+    // 构建推送载荷
+    function buildSaveContent() {
+        const saveData = { players: blacklistData, clans: clanBlacklistData };
+        return utf8ToB64(JSON.stringify(saveData, null, 2));
+    }
+
+    // 发起 PUT 推送
+    async function pushToGitee(token, sha, content, message) {
+        const url = `https://gitee.com/api/v5/repos/${CONFIG.repo}/contents/${CONFIG.getPath()}`;
+        return fetchWithTimeout(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ access_token: token, content: content, sha: sha, message: message })
+        });
+    }
+
+    // SHA 冲突时执行三方合并：本地改动优先，云端他人的新增/修改保留
+    async function mergeAndRetry() {
+        const token = document.getElementById('giteeToken').value;
+        toast('检测到云端更新，正在合并...', 'info');
+        const remote = await fetchRemoteFile(CONFIG.getPath(), token);
+
+        const merged = {};
+        const allIds = new Set([...Object.keys(baseData || {}), ...Object.keys(remote.players), ...Object.keys(blacklistData)]);
+        let localChanged = 0, remoteKept = 0;
+        allIds.forEach(id => {
+            const base = (baseData || {})[id];
+            const local = blacklistData[id];
+            const rem = remote.players[id];
+            const localModified = local && JSON.stringify(local) !== JSON.stringify(base);
+            if (localModified) {
+                merged[id] = local;           // 本地有改动 → 本地优先
+                localChanged++;
+            } else if (rem) {
+                merged[id] = rem;             // 本地未动 → 保留云端（含他人新增）
+                remoteKept++;
+            }
+            // 本地删除且本地未再改动 → 维持删除
+        });
+
+        blacklistData = merged;
+        baseData = snapshot(merged);
+        currentSha = remote.sha;
+        renderTable();
+
+        const res = await pushToGitee(token, currentSha, buildSaveContent(),
+            'Blacklist merged & updated via Kosto Web UI: ' + new Date().toLocaleString());
+        if (!res.ok) throw new Error('合并后重试推送仍失败，请刷新页面重试');
+        const resJson = await res.json();
+        currentSha = resJson.content.sha;
+        clearDirty();
+        toast(`冲突已自动合并（本地改动 ${localChanged} 条，保留云端 ${remoteKept} 条）并推送成功！`, 'success');
     }
 
     async function saveToCloud() {
-        const token = document.getElementById("giteeToken").value;
-        if(!confirm("警告：此操作将永久修改云端黑名单数据，确定继续吗？")) return;
+        const token = document.getElementById('giteeToken').value;
+        if (!confirm('警告：此操作将永久修改云端黑名单数据，确定继续吗？')) return;
 
-        const btn = document.getElementById("saveBtn");
+        const btn = document.getElementById('saveBtn');
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>正在同步数据流...';
 
         try {
-            // 使用新格式保存：{"players":..., "clans":...}
-            const saveData = {
-                players: blacklistData,
-                clans: clanBlacklistData
-            };
-            const jsonStr = JSON.stringify(saveData, null, 2);
-            // 兼容中文的 Base64 编码
-            const content = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)));
+            const res = await pushToGitee(token, currentSha, buildSaveContent(),
+                'Blacklist updated via Kosto Web UI: ' + new Date().toLocaleString());
 
-            const url = `https://gitee.com/api/v5/repos/${CONFIG.repo}/contents/${CONFIG.getPath()}`;
-            const res = await fetch(url, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    access_token: token,
-                    content: content,
-                    sha: currentSha,
-                    message: "Blacklist updated via Kosto Web UI: " + new Date().toLocaleString()
-                })
-            });
+            if (res.status === 409) {
+                // SHA 冲突：云端已被其他会话修改，尝试自动合并
+                if (confirm('云端数据已被其他修改（SHA 冲突）。\n是否自动合并本地修改并重试？\n（规则：你的改动优先，云端他人的新增/修改也会保留）')) {
+                    await mergeAndRetry();
+                } else {
+                    toast('已取消同步：云端数据已变化，请重新拉取', 'warn');
+                }
+                return;
+            }
 
-            if(!res.ok) throw new Error("同步失败：SHA 令牌过期或网络中断，请刷新页面重新加载");
-            
+            if (!res.ok) throw new Error('同步失败：网络中断或 Token 权限不足，请重试');
+
             const resJson = await res.json();
             currentSha = resJson.content.sha;
-            alert("🚀 云端数据已同步成功！");
+            baseData = snapshot(blacklistData);
+            clearDirty();
+            toast('云端数据已同步成功！', 'success');
         } catch (e) {
-            alert(e.message);
+            toast(e.message, 'error');
         } finally {
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-cloud-upload-alt mr-2"></i>推送至云端同步';
         }
     }
+
+    // ---------- 初始化 ----------
+
+    window.onload = () => {
+        const savedToken = localStorage.getItem('gitee_token');
+        if (savedToken) document.getElementById('giteeToken').value = savedToken;
+
+        // 填充等级下拉菜单
+        const select = document.getElementById('editRank');
+        RANK_DATA.forEach((name, index) => {
+            const opt = document.createElement('option');
+            opt.value = index + 1;
+            opt.textContent = name;
+            select.appendChild(opt);
+        });
+
+        // 未保存修改时离开页面提醒
+        window.addEventListener('beforeunload', e => {
+            if (dirty) { e.preventDefault(); e.returnValue = ''; }
+        });
+
+        renderTable();
+    };
+
+    // 点击遮罩关闭弹窗
+    document.getElementById('editModal').addEventListener('click', e => {
+        if (e.target.id === 'editModal') closeModal();
+    });
 </script>
 </body>
 </html>
