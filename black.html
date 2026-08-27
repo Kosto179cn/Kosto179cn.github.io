@@ -788,47 +788,23 @@
         });
     }
 
-    // SHA 冲突时执行三方合并：本地改动优先，云端他人的新增/修改保留
-    async function mergeAndRetry() {
-        const token = document.getElementById('giteeToken').value;
-        toast('检测到云端更新，正在合并...', 'info');
+    // SHA 冲突时重新获取最新 sha 后全量覆盖推送（不做合并，本地数据完全覆盖云端）
+    async function forceFullPush(token) {
+        toast('检测到云端已更新，正在获取最新版本号以完全覆盖...', 'info');
         const remote = await fetchRemoteFile(CONFIG.getPath(), token);
-
-        const merged = {};
-        const allIds = new Set([...Object.keys(baseData || {}), ...Object.keys(remote.players), ...Object.keys(blacklistData)]);
-        let localChanged = 0, remoteKept = 0;
-        allIds.forEach(id => {
-            const base = (baseData || {})[id];
-            const local = blacklistData[id];
-            const rem = remote.players[id];
-            const localModified = local && JSON.stringify(local) !== JSON.stringify(base);
-            if (localModified) {
-                merged[id] = local;           // 本地有改动 → 本地优先
-                localChanged++;
-            } else if (rem) {
-                merged[id] = rem;             // 本地未动 → 保留云端（含他人新增）
-                remoteKept++;
-            }
-            // 本地删除且本地未再改动 → 维持删除
-        });
-
-        blacklistData = merged;
-        baseData = snapshot(merged);
-        currentSha = remote.sha;
-        renderTable();
-
+        currentSha = remote.sha; // 仅更新版本号，云端内容将被本地数据完全覆盖
         const res = await pushToGitee(token, currentSha, buildSaveContent(),
-            'Blacklist merged & updated via Kosto Web UI: ' + new Date().toLocaleString());
-        if (!res.ok) throw new Error('合并后重试推送仍失败，请刷新页面重试');
+            'Blacklist force-updated via Kosto Web UI: ' + new Date().toLocaleString());
+        if (!res.ok) throw new Error('覆盖推送仍失败，请刷新页面重试');
         const resJson = await res.json();
         currentSha = resJson.content.sha;
         clearDirty();
-        toast(`冲突已自动合并（本地改动 ${localChanged} 条，保留云端 ${remoteKept} 条）并推送成功！`, 'success');
+        toast('已用本地数据完全覆盖云端并同步成功！', 'success');
     }
 
     async function saveToCloud() {
         const token = document.getElementById('giteeToken').value;
-        if (!confirm('警告：此操作将永久修改云端黑名单数据，确定继续吗？')) return;
+        if (!confirm('警告：此操作将用当前列表【完全覆盖】云端黑名单数据，确定继续吗？')) return;
 
         const btn = document.getElementById('saveBtn');
         btn.disabled = true;
@@ -839,11 +815,11 @@
                 'Blacklist updated via Kosto Web UI: ' + new Date().toLocaleString());
 
             if (res.status === 409) {
-                // SHA 冲突：云端已被其他会话修改，尝试自动合并
-                if (confirm('云端数据已被其他修改（SHA 冲突）。\n是否自动合并本地修改并重试？\n（规则：你的改动优先，云端他人的新增/修改也会保留）')) {
-                    await mergeAndRetry();
+                // SHA 冲突：云端已被其他会话修改。本系统语义为全量推送，不做合并
+                if (confirm('云端数据已被修改（SHA 冲突）。\n\n是否仍以本地数据完全覆盖云端？\n（选择“取消”则保留云端现状，请重新拉取后再编辑）')) {
+                    await forceFullPush(token);
                 } else {
-                    toast('已取消同步：云端数据已变化，请重新拉取', 'warn');
+                    toast('已取消推送：云端数据已变化，请先重新拉取', 'warn');
                 }
                 return;
             }
