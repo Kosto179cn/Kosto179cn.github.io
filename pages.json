@@ -1,7 +1,15 @@
 [
   {
-    "filename": "js-string-compare.html",
-    "title": "JS String Diff Tool",
+    "filename": "Servers.html",
+    "title": "3D坦克-服务器六合一",
+    "desc": "3D坦克各服快速入口整合。",
+    "icon": "fa-server",
+    "category": "game",
+    "theme": "theme-game"
+  },
+  {
+    "filename": "kostotranslateapitest.html",
+    "title": "KOSTO 适配版测试",
     "desc": "自动发现的新页面",
     "icon": "fa-file",
     "category": "other",
@@ -10,14 +18,6 @@
   {
     "filename": "upgrades.html",
     "title": "3D坦克装备升级计算器",
-    "desc": "自动发现的新页面",
-    "icon": "fa-file",
-    "category": "other",
-    "theme": "theme-other"
-  },
-  {
-    "filename": "kostotranslateapitest.html",
-    "title": "KOSTO 适配版测试",
     "desc": "自动发现的新页面",
     "icon": "fa-file",
     "category": "other",
@@ -40,27 +40,27 @@
     "theme": "theme-admin"
   },
   {
-    "filename": "black.html",
-    "title": "Kosto 黑名单云管理后台",
-    "desc": "自动发现的新页面",
-    "icon": "fa-file",
-    "category": "other",
-    "theme": "theme-other"
-  },
-  {
-    "filename": "Servers.html",
-    "title": "3D坦克-服务器六合一",
-    "desc": "3D坦克各服快速入口整合。",
-    "icon": "fa-server",
-    "category": "game",
-    "theme": "theme-game"
-  },
-  {
     "filename": "replacement.html",
     "title": "屏蔽词测试工具",
     "desc": "屏蔽词替换 网页版",
     "icon": "fa-search",
     "category": "admin",
     "theme": "theme-admin"
+  },
+  {
+    "filename": "js-string-compare.html",
+    "title": "JS String Diff Tool",
+    "desc": "自动发现的新页面",
+    "icon": "fa-file",
+    "category": "other",
+    "theme": "theme-other"
+  },
+  {
+    "filename": "black.html",
+    "title": "Kosto 黑名单云管理后台",
+    "desc": "自动发现的新页面",
+    "icon": "fa-file",
+    "category": "other",
+    "theme": "theme-other"
   }
 ]
