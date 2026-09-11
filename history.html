@@ -184,18 +184,15 @@
         .player-rank {
             display: flex;
             align-items: center;
-            gap: 6px;
-            color: #ffd700;
-            font-size: 11px;
-            font-weight: bold;
-            margin-top: 2px;
+            gap: 8px;
+            margin-top: 4px;
         }
         
-        .rank-icon {
-            width: 24px;
-            height: 12px;
+        .rank-img {
+            width: 32px;
+            height: 16px;
             object-fit: contain;
-            filter: drop-shadow(0 0 2px rgba(255,255,255,0.3));
+            filter: drop-shadow(0 0 3px rgba(255,255,255,0.2));
         }
         
         .player-meta {
@@ -313,6 +310,35 @@
             margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .modal-title-text {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .modal-title-rank {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(0,255,136,0.06);
+            border: 1px solid rgba(0,255,136,0.15);
+        }
+        
+        .modal-title-rank img {
+            width: 24px;
+            height: 12px;
+            object-fit: contain;
+            opacity: 0.9;
         }
         
         .modal-close {
@@ -668,6 +694,186 @@
         @keyframes blink {
             50% { opacity: 0.3; }
         }
+        
+        .loading-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 40px 20px;
+            color: #888;
+            font-size: 13px;
+        }
+        
+        /* ==================== 响应式布局 ==================== */
+        /* 平板及以下 */
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            
+            .header h1 { font-size: 20px; }
+            .header p { font-size: 12px; margin-top: 4px; }
+            .logout-btn { padding: 6px 10px; font-size: 11px; top: 8px; right: 8px; }
+            
+            .status-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                padding: 10px 12px;
+            }
+            .status-left {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .status-item { font-size: 11px; }
+            .server-selector { gap: 6px; }
+            .server-btn { padding: 8px 6px; font-size: 11px; }
+            
+            .stats {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                margin-bottom: 12px;
+            }
+            .stat-item { padding: 10px 8px; }
+            .stat-number { font-size: 18px; }
+            .stat-label { font-size: 11px; margin-top: 3px; }
+            
+            .card { padding: 14px; margin-bottom: 12px; }
+            .card-title { font-size: 14px; margin-bottom: 12px; padding-bottom: 8px; }
+            
+            .filter-tabs {
+                gap: 6px;
+                margin-bottom: 10px;
+                overflow-x: auto;
+                padding-bottom: 4px;
+                -webkit-overflow-scrolling: touch;
+            }
+            .filter-tab {
+                flex: 0 0 auto;
+                padding: 7px 12px;
+                font-size: 12px;
+            }
+            
+            .search-box { margin-bottom: 10px; }
+            .search-box input { padding: 10px 12px; font-size: 14px; }
+            
+            .player-list { max-height: none; }
+            .player-item {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                padding: 12px;
+                margin-bottom: 8px;
+            }
+            .player-info {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                column-gap: 8px;
+                row-gap: 4px;
+            }
+            .player-rank {
+                flex: 0 0 100%;
+                margin-top: 0;
+            }
+            .player-nickname {
+                flex: 1;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .player-uid {
+                flex-shrink: 0;
+            }
+            .player-meta {
+                flex-wrap: wrap;
+                gap: 8px;
+                padding-top: 8px;
+                border-top: 1px dashed rgba(255,255,255,0.08);
+            }
+            .player-meta .permission-badge { order: -1; }
+            .player-meta .btn,
+            .player-meta .btn-warning {
+                flex: 1;
+                min-width: 80px;
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+            
+            .toast {
+                left: 12px;
+                right: 12px;
+                top: auto;
+                bottom: 16px;
+                font-size: 12px;
+                padding: 10px 14px;
+            }
+            
+            .modal-content {
+                max-width: 94%;
+                padding: 16px;
+                max-height: 92vh;
+                border-radius: 10px;
+            }
+            .modal-title { font-size: 16px; margin-bottom: 12px; padding-bottom: 8px; }
+            .modal-close { font-size: 22px; padding: 0 4px; }
+            
+            .permission-btn { padding: 10px 8px; font-size: 12px; }
+            
+            .login-box { padding: 24px 20px; }
+            .login-title { font-size: 18px; }
+            .login-icon { font-size: 36px; }
+            .server-selector { gap: 6px; }
+            .token-input-group { flex-direction: column; gap: 8px; }
+            .token-input-group .btn { padding: 10px; }
+            .token-help { flex-direction: column; gap: 8px; align-items: flex-start; }
+        }
+        
+        /* 手机 (≤480px) */
+        @media (max-width: 480px) {
+            body { padding: 10px; font-size: 13px; }
+            .container { max-width: 100%; }
+            
+            .header h1 { font-size: 18px; }
+            .header p { font-size: 11px; }
+            .logout-btn { padding: 5px 8px; font-size: 10px; }
+            
+            .status-bar { padding: 8px 10px; gap: 8px; }
+            .status-item { font-size: 10px; }
+            .server-selector { width: 100%; }
+            .server-btn { padding: 7px 4px; font-size: 10px; }
+            
+            .stats { gap: 6px; }
+            .stat-item { padding: 8px 4px; border-radius: 6px; }
+            .stat-number { font-size: 16px; }
+            .stat-label { font-size: 10px; }
+            
+            .card { padding: 12px; border-radius: 10px; }
+            .card-title { font-size: 13px; }
+            
+            .filter-tab { padding: 6px 10px; font-size: 11px; }
+            .search-box input { font-size: 13px; padding: 9px 11px; }
+            
+            .player-nickname { font-size: 13px; }
+            .player-uid { font-size: 10px; }
+            .rank-img { width: 26px; height: 13px; }
+            .player-rank span { font-size: 10px !important; }
+            .history-count, .clan-info { font-size: 11px; }
+            .permission-badge { font-size: 10px; padding: 2px 6px; }
+            .player-meta .btn,
+            .player-meta .btn-warning { min-width: 70px; padding: 6px 8px; font-size: 11px; }
+            
+            .toast { font-size: 11px; }
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -779,706 +985,11 @@
             
             <!-- 玩家列表 -->
             <div class="player-list" id="playerList">
-                    <div class="player-item" onclick="showPlayerDetail('91577421')" style="position: relative;">
-                        <div class="player-info">
-                            <div class="player-nickname">3dtank</div>
-                            <div class="player-uid">UID: 91577421</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">无军团</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('91577421')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('91577421')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('91717095')">
-                        <div class="player-info">
-                            <div class="player-nickname">Past</div>
-                            <div class="player-uid">UID: 91717095</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">AG</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('91717095')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('91717095')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('91767518')">
-                        <div class="player-info">
-                            <div class="player-nickname">CChina</div>
-                            <div class="player-uid">UID: 91767518</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">90</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('91767518')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('91767518')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('91885148')">
-                        <div class="player-info">
-                            <div class="player-nickname">Star.Search</div>
-                            <div class="player-uid">UID: 91885148</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 5</span>
-                            <span class="clan-info">Stars</span>
-                            <span class="permission-badge permission-deny">禁止</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('91885148')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('91885148')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('92277067')">
-                        <div class="player-info">
-                            <div class="player-nickname">Seralune</div>
-                            <div class="player-uid">UID: 92277067</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">AG</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('92277067')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('92277067')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('92374539')">
-                        <div class="player-info">
-                            <div class="player-nickname">BBA</div>
-                            <div class="player-uid">UID: 92374539</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">SR</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('92374539')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('92374539')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('92400059')">
-                        <div class="player-info">
-                            <div class="player-nickname">Save-MuMing</div>
-                            <div class="player-uid">UID: 92400059</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">GOOSE</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('92400059')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('92400059')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('92479777')">
-                        <div class="player-info">
-                            <div class="player-nickname">LingLing</div>
-                            <div class="player-uid">UID: 92479777</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">无军团</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('92479777')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('92479777')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('92493405')">
-                        <div class="player-info">
-                            <div class="player-nickname">DGBM</div>
-                            <div class="player-uid">UID: 92493405</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">无军团</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('92493405')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('92493405')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('92694536')">
-                        <div class="player-info">
-                            <div class="player-nickname">Candidate</div>
-                            <div class="player-uid">UID: 92694536</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">FPS</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('92694536')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('92694536')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('92846041')">
-                        <div class="player-info">
-                            <div class="player-nickname">YMZ-LYD</div>
-                            <div class="player-uid">UID: 92846041</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">无军团</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('92846041')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('92846041')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('92933688')">
-                        <div class="player-info">
-                            <div class="player-nickname">llI</div>
-                            <div class="player-uid">UID: 92933688</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">无军团</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('92933688')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('92933688')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('92935305')">
-                        <div class="player-info">
-                            <div class="player-nickname">Hyacinth</div>
-                            <div class="player-uid">UID: 92935305</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">12</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('92935305')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('92935305')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('93146119')">
-                        <div class="player-info">
-                            <div class="player-nickname">z74826</div>
-                            <div class="player-uid">UID: 93146119</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">无军团</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('93146119')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('93146119')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('93164668')">
-                        <div class="player-info">
-                            <div class="player-nickname">Legend_Star</div>
-                            <div class="player-uid">UID: 93164668</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 2</span>
-                            <span class="clan-info">Bei_T</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('93164668')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('93164668')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('93208363')">
-                        <div class="player-info">
-                            <div class="player-nickname">Severus.Snape</div>
-                            <div class="player-uid">UID: 93208363</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">LING</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('93208363')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('93208363')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('93546136')">
-                        <div class="player-info">
-                            <div class="player-nickname">997318517</div>
-                            <div class="player-uid">UID: 93546136</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">L-D</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('93546136')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('93546136')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('93611837')">
-                        <div class="player-info">
-                            <div class="player-nickname">LYJ2010</div>
-                            <div class="player-uid">UID: 93611837</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">无军团</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('93611837')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('93611837')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('93688113')">
-                        <div class="player-info">
-                            <div class="player-nickname">1625446845</div>
-                            <div class="player-uid">UID: 93688113</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">LRF</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('93688113')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('93688113')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('94377107')">
-                        <div class="player-info">
-                            <div class="player-nickname">Grim.Jasper</div>
-                            <div class="player-uid">UID: 94377107</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">LWF</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('94377107')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('94377107')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('94519345')">
-                        <div class="player-info">
-                            <div class="player-nickname">Ice_Wolf</div>
-                            <div class="player-uid">UID: 94519345</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">无军团</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('94519345')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('94519345')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('94861588')">
-                        <div class="player-info">
-                            <div class="player-nickname">Scar</div>
-                            <div class="player-uid">UID: 94861588</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">Birk</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('94861588')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('94861588')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('95054510')">
-                        <div class="player-info">
-                            <div class="player-nickname">140199224</div>
-                            <div class="player-uid">UID: 95054510</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">无军团</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('95054510')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('95054510')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('95447861')">
-                        <div class="player-info">
-                            <div class="player-nickname">805193831</div>
-                            <div class="player-uid">UID: 95447861</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">Q-H</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('95447861')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('95447861')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('95461559')">
-                        <div class="player-info">
-                            <div class="player-nickname">1197156725</div>
-                            <div class="player-uid">UID: 95461559</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">无军团</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('95461559')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('95461559')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('95656331')">
-                        <div class="player-info">
-                            <div class="player-nickname">DNF954248041</div>
-                            <div class="player-uid">UID: 95656331</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">无军团</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('95656331')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('95656331')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('95823081')">
-                        <div class="player-info">
-                            <div class="player-nickname">Lua</div>
-                            <div class="player-uid">UID: 95823081</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">无军团</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('95823081')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('95823081')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('96778365')">
-                        <div class="player-info">
-                            <div class="player-nickname">user_MeiNa</div>
-                            <div class="player-uid">UID: 96778365</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">88</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('96778365')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('96778365')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('97190678')">
-                        <div class="player-info">
-                            <div class="player-nickname">xubin</div>
-                            <div class="player-uid">UID: 97190678</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">xu</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('97190678')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('97190678')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('97247154')">
-                        <div class="player-info">
-                            <div class="player-nickname">One</div>
-                            <div class="player-uid">UID: 97247154</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">无军团</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('97247154')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('97247154')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('97473143')">
-                        <div class="player-info">
-                            <div class="player-nickname">fjh64</div>
-                            <div class="player-uid">UID: 97473143</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">无军团</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('97473143')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('97473143')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('97862359')">
-                        <div class="player-info">
-                            <div class="player-nickname">390K</div>
-                            <div class="player-uid">UID: 97862359</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">user</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('97862359')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('97862359')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('98174477')">
-                        <div class="player-info">
-                            <div class="player-nickname">Lotus</div>
-                            <div class="player-uid">UID: 98174477</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">Iron</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('98174477')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('98174477')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('98175632')">
-                        <div class="player-info">
-                            <div class="player-nickname">HU125</div>
-                            <div class="player-uid">UID: 98175632</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">无军团</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('98175632')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('98175632')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('98282706')">
-                        <div class="player-info">
-                            <div class="player-nickname">zxc4828138</div>
-                            <div class="player-uid">UID: 98282706</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">GOOSE</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('98282706')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('98282706')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('98401316')">
-                        <div class="player-info">
-                            <div class="player-nickname">Pagani.Zonda.Galaxy</div>
-                            <div class="player-uid">UID: 98401316</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">Zonda</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('98401316')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('98401316')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('98703566')">
-                        <div class="player-info">
-                            <div class="player-nickname">275568547</div>
-                            <div class="player-uid">UID: 98703566</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">2755</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('98703566')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('98703566')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('98869783')">
-                        <div class="player-info">
-                            <div class="player-nickname">11111111111111112</div>
-                            <div class="player-uid">UID: 98869783</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">Peace</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('98869783')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('98869783')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('99056529')">
-                        <div class="player-info">
-                            <div class="player-nickname">Flechazo.to.Echo</div>
-                            <div class="player-uid">UID: 99056529</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">Koi</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('99056529')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('99056529')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('99373134')">
-                        <div class="player-info">
-                            <div class="player-nickname">T01</div>
-                            <div class="player-uid">UID: 99373134</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">LRF</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('99373134')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('99373134')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('99713365')">
-                        <div class="player-info">
-                            <div class="player-nickname">Powerrrrr</div>
-                            <div class="player-uid">UID: 99713365</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">无军团</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('99713365')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('99713365')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('100260697')">
-                        <div class="player-info">
-                            <div class="player-nickname">Rix</div>
-                            <div class="player-uid">UID: 100260697</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">Bei_T</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('100260697')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('100260697')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('100419545')">
-                        <div class="player-info">
-                            <div class="player-nickname">Ba.Ba</div>
-                            <div class="player-uid">UID: 100419545</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 3</span>
-                            <span class="clan-info">Club</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('100419545')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('100419545')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('100576916')">
-                        <div class="player-info">
-                            <div class="player-nickname">TPS-Eternal</div>
-                            <div class="player-uid">UID: 100576916</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">LRF</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('100576916')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('100576916')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('100858068')">
-                        <div class="player-info">
-                            <div class="player-nickname">TPS-Tom</div>
-                            <div class="player-uid">UID: 100858068</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">LRF</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('100858068')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('100858068')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('101616218')">
-                        <div class="player-info">
-                            <div class="player-nickname">asilan</div>
-                            <div class="player-uid">UID: 101616218</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">ssss</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('101616218')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('101616218')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('101723413')">
-                        <div class="player-info">
-                            <div class="player-nickname">Ya.Dian.Na</div>
-                            <div class="player-uid">UID: 101723413</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">ALFA</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('101723413')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('101723413')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('101797908')">
-                        <div class="player-info">
-                            <div class="player-nickname">393424201</div>
-                            <div class="player-uid">UID: 101797908</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">Birk</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('101797908')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('101797908')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('101951619')">
-                        <div class="player-info">
-                            <div class="player-nickname">1379080815</div>
-                            <div class="player-uid">UID: 101951619</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">LRF</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('101951619')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('101951619')">设置</button>
-                        </div>
-                    </div>
-                
-                    <div class="player-item" onclick="showPlayerDetail('102003353')">
-                        <div class="player-info">
-                            <div class="player-nickname">KSLT</div>
-                            <div class="player-uid">UID: 102003353</div>
-                        </div>
-                        <div class="player-meta">
-                            <span class="history-count">历史: 0</span>
-                            <span class="clan-info">Saber</span>
-                            <span class="permission-badge permission-default">默认</span>
-                            <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('102003353')">编辑</button>
-                            <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('102003353')">设置</button>
-                        </div>
-                    </div>
-                <div style="display:flex;justify-content:center;align-items:center;gap:10px;padding:15px;border-top:1px solid rgba(255,255,255,0.06);"><button class="btn btn-primary" style="padding:5px 12px;font-size:12px;" onclick="goPage(0)" disabled="">← 上一页</button><span style="color:#00ff88;font-size:13px;">第 1 / 48 页</span><button class="btn btn-primary" style="padding:5px 12px;font-size:12px;" onclick="goPage(2)">下一页 →</button></div></div>
+                <div class="loading-placeholder">
+                    <div class="spinner"></div>
+                    <span>正在加载玩家数据...</span>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -1486,7 +997,10 @@
     <div class="modal" id="playerModal">
         <div class="modal-content">
             <span class="modal-close" onclick="closeModal()">×</span>
-            <div class="modal-title" id="modalTitle">玩家详情</div>
+            <div class="modal-title" id="modalTitle">
+                <span class="modal-title-text" id="modalTitleText">玩家详情</span>
+                <span class="modal-title-rank" id="modalRankIcon" style="display:none;"></span>
+            </div>
             <div id="modalContent"></div>
         </div>
     </div>
@@ -1582,17 +1096,9 @@
             "中校", "上校", "准将", "少将", "中将", "上将", "元帅", "陆军元帅", "统帅", "大元帅", "传奇"
         ];
         const RANK_HASHES = [
-            "6f22f44c089d1e11b73b1c8a2b492070", "e7424e56f3b01e17f00b1c8a2b492070", "b778ed2623b01e11f00b1c8a2b492070",
-            "712a76e403b01e17f00b1c8a2b492070", "3b36c4e403b01e11b73b1c8a2b492070", "c8b11ae403b01e17f00b1c8a2b492070",
-            "dc192ee403b01e11f00b1c8a2b492070", "2a1f3ce403b01e17b73b1c8a2b492070", "56b79be403b01e11f00b1c8a2b492070",
-            "d5c48ee403b01e17b73b1c8a2b492070", "3a5f9ee403b01e11f00b1c8a2b492070", "a26e0ee403b01e17f00b1c8a2b492070",
-            "7e4d8ee403b01e11b73b1c8a2b492070", "9c2b4ee403b01e17f00b1c8a2b492070", "5a1e4ee403b01e11f00b1c8a2b492070",
-            "95a84ee403b01e17b73b1c8a2b492070", "d3d64ee403b01e11f00b1c8a2b492070", "3a654ee403b01e17f00b1c8a2b492070",
-            "31a94ee403b01e11b73b1c8a2b492070", "5e337ee403b01e17f00b1c8a2b492070", "5f333ee403b01e11f00b1c8a2b492070",
-            "39069ee403b01e17b73b1c8a2b492070", "47f65ee403b01e11f00b1c8a2b492070", "3d1c4ee403b01e17f00b1c8a2b492070",
-            "6f29bee403b01e11b73b1c8a2b492070", "76ba1ee403b01e17f00b1c8a2b492070", "4f261ee403b01e11f00b1c8a2b492070",
-            "cc5d1ee403b01e17b73b1c8a2b492070", "5a41dee403b01e11f00b1c8a2b492070", "31e11ee403b01e17f00b1c8a2b492070",
-            "b05c1ee403b01e11b73b1c8a2b492070", "927e5ee403b01e17f00b1c8a2b492070"
+            "0171bce6", "14eac60d", "4d22497b", "7c510976", "c136316c", "59fac2c8", "2d5dc20c", "b563130a", "2e8435ba", "4aa99791",
+            "747eb099", "12e6efa4", "b14aa84c", "499e0cc4", "70cf8f5b", "dfdc6796", "7c89e529", "1e5f0eb2", "dca802d5", "4d07ac16",
+            "67355bb5", "02ac56c6", "99d83bfa", "3244a43f", "717ff925", "1b80d1fb", "72e4bb3d", "6ee30e89", "cc76cbcc", "acaaced1", "06d52fbe"
         ];
         function clampRank(rank) {
             const r = parseInt(rank) || 1;
@@ -2046,12 +1552,16 @@
                 html += `
                     <div class="player-item" onclick="showPlayerDetail('${uid}')">
                         <div class="player-info">
+                            <div class="player-rank">
+                                <img src="${getRankIconUrl(data.rank)}" loading="lazy" class="rank-img" alt="${getRankName(data.rank)}">
+                                <span style="font-size:11px;color:#94a3b8;font-weight:bold;text-transform:uppercase;">${getRankName(data.rank)}</span>
+                            </div>
                             <div class="player-nickname">${data.nickname || '未知'}</div>
                             <div class="player-uid">UID: ${uid}</div>
                         </div>
                         <div class="player-meta">
-                            <span class="history-count">历史: ${history.length}</span>
-                            <span class="clan-info">${data.clan || '无军团'}</span>
+                            <span class="history-count">历史ID: ${history.length}</span>
+                            <span class="clan-info">${"军团:" + (data.clan || '无军团')}</span>
                             <span class="permission-badge ${badgeClass}">${badgeText}</span>
                             <button class="btn" style="background:#334155;color:#94a3b8;padding:4px 10px;font-size:11px;" onclick="event.stopPropagation(); showEditModal('${uid}')">编辑</button>
                             <button class="btn btn-warning" onclick="event.stopPropagation(); showPermissionModal('${uid}')">设置</button>
@@ -2070,16 +1580,21 @@
         function renderPagination(current, total) {
             if (total <= 1) return '<div style="text-align:center;padding:15px;color:#888;font-size:12px;">共 ' + total + ' 页</div>';
             
+            const baseStyle = 'padding:5px 12px;font-size:12px;';
+            const disabledExtra = 'opacity:0.35;cursor:not-allowed;pointer-events:none;';
+            
             let html = '<div style="display:flex;justify-content:center;align-items:center;gap:10px;padding:15px;border-top:1px solid rgba(255,255,255,0.06);">';
             
             // 上一页
-            html += `<button class="btn btn-primary" style="padding:5px 12px;font-size:12px;" onclick="goPage(${current - 1})" ${current === 1 ? 'disabled style="opacity:0.3;cursor:not-allowed;padding:5px 12px;font-size:12px;"' : ''}>← 上一页</button>`;
+            const prevDisabled = current === 1;
+            html += `<button class="btn btn-primary" style="${baseStyle}${prevDisabled ? disabledExtra : ''}" onclick="goPage(${current - 1})" ${prevDisabled ? 'disabled' : ''}>← 上一页</button>`;
             
             // 页码信息
             html += `<span style="color:#00ff88;font-size:13px;">第 ${current} / ${total} 页</span>`;
             
             // 下一页
-            html += `<button class="btn btn-primary" style="padding:5px 12px;font-size:12px;" onclick="goPage(${current + 1})" ${current === total ? 'disabled style="opacity:0.3;cursor:not-allowed;padding:5px 12px;font-size:12px;"' : ''}>下一页 →</button>`;
+            const nextDisabled = current === total;
+            html += `<button class="btn btn-primary" style="${baseStyle}${nextDisabled ? disabledExtra : ''}" onclick="goPage(${current + 1})" ${nextDisabled ? 'disabled' : ''}>下一页 →</button>`;
             
             html += '</div>';
             return html;
@@ -2129,9 +1644,18 @@
             
             const modal = document.getElementById('playerModal');
             const content = document.getElementById('modalContent');
-            const title = document.getElementById('modalTitle');
+            const titleText = document.getElementById('modalTitleText');
+            const rankIconWrap = document.getElementById('modalRankIcon');
             
-            title.textContent = data.nickname || '未知';
+            const nickname = data.nickname || '未知';
+            titleText.textContent = nickname;
+            titleText.title = nickname;
+            
+            const rank = clampRank(data.rank);
+            const rankName = getRankName(rank);
+            rankIconWrap.title = '军衔: ' + rankName + ' (' + rank + ')';
+            rankIconWrap.innerHTML = `<img src="${getRankIconUrl(rank)}" alt="${escapeHtml(rankName)}" loading="lazy">`;
+            rankIconWrap.style.display = '';
             
             const permission = getPermission(uid);
             let badgeClass = 'permission-default';
@@ -2263,8 +1787,13 @@
                 
                 <div style="margin-bottom: 12px;">
                     <label style="display:block;color:#888;font-size:12px;margin-bottom:5px;">军衔等级 (1-31)</label>
-                    <input type="number" id="editRank" value="${data.rank || 1}" min="1" max="31"
-                           style="width:100%;padding:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#fff;font-size:14px;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <input type="number" id="editRank" value="${data.rank || 1}" min="1" max="31"
+                               oninput="updateRankPreview(this.value)"
+                               style="width:110px;padding:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#fff;font-size:14px;">
+                        <img id="rankIconPreview" src="${getRankIconUrl(data.rank)}" alt="${getRankName(data.rank)}" class="rank-img" style="height:20px;width:40px;">
+                        <span id="rankNamePreview" style="font-size:12px;color:#94a3b8;font-weight:bold;text-transform:uppercase;">${getRankName(data.rank)}</span>
+                    </div>
                 </div>
                 
                 <div style="margin-bottom: 12px;">
@@ -2299,6 +1828,16 @@
         
         function closeEditModal() {
             document.getElementById('editModal').classList.remove('show');
+        }
+        
+        function updateRankPreview(value) {
+            const icon = document.getElementById('rankIconPreview');
+            const name = document.getElementById('rankNamePreview');
+            if (!icon || !name) return;
+            const rank = clampRank(value);
+            icon.src = getRankIconUrl(rank);
+            icon.alt = getRankName(rank);
+            name.textContent = getRankName(rank);
         }
         
         function renderEditTags() {
