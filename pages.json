@@ -8,6 +8,14 @@
     "theme": "theme-other"
   },
   {
+    "filename": "white.html",
+    "title": "历史记录权限管理 - 3D 坦克",
+    "desc": "自动发现的新页面",
+    "icon": "fa-file",
+    "category": "other",
+    "theme": "theme-other"
+  },
+  {
     "filename": "upgrades.html",
     "title": "3D坦克装备升级计算器",
     "desc": "自动发现的新页面",
