@@ -74,13 +74,6 @@
             <button onclick="copyToOtherServer()" class="bg-emerald-900/30 hover:bg-emerald-900/50 text-emerald-400 border border-emerald-500/30 rounded-xl font-bold text-sm btn-action">
                 <i class="fas fa-exchange-alt mr-2"></i><span id="copyBtnLabel">复制到外服</span>
             </button>
-            <button onclick="exportJson()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/10 rounded-xl font-bold text-sm btn-action">
-                <i class="fas fa-download mr-2"></i>导出 JSON
-            </button>
-            <button onclick="document.getElementById('importFile').click()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/10 rounded-xl font-bold text-sm btn-action">
-                <i class="fas fa-upload mr-2"></i>导入 JSON
-            </button>
-            <input type="file" id="importFile" accept=".json" class="hidden">
         </div>
     </div>
 
@@ -94,7 +87,6 @@
                         <th class="p-4 font-bold">基本信息 (ID/昵称)</th>
                         <th class="p-4 font-bold">所属军团</th>
                         <th class="p-4 font-bold">数据演变历史</th>
-                        <th class="p-4 font-bold text-right">管理</th>
                     </tr>
                 </thead>
                 <tbody id="blacklistBody" class="divide-y divide-slate-800">
@@ -117,85 +109,9 @@
             <span id="dirtyHint" class="text-amber-500 font-bold hidden ml-2"><i class="fas fa-circle-exclamation mr-1"></i>有未保存的修改</span>
         </div>
         <div class="flex gap-3">
-            <button onclick="openAddModal()" class="bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-xl font-bold transition btn-action">
-                <i class="fas fa-user-plus mr-2"></i>手动添加
-            </button>
             <button onclick="saveToCloud()" id="saveBtn" class="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white px-10 py-3 rounded-xl font-black transition hidden shadow-xl shadow-blue-900/40 btn-action">
                 <i class="fas fa-cloud-upload-alt mr-2"></i>推送至云端同步
             </button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal -->
-<div id="editModal" class="fixed inset-0 bg-slate-950/90 hidden items-center justify-center z-50 p-4">
-    <div class="glass-card w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl p-8 border border-white/10">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-black text-white flex items-center">
-                <i class="fas fa-user-edit mr-3 text-blue-400"></i>编辑档案
-            </h2>
-            <button onclick="closeModal()" class="text-slate-500 hover:text-white"><i class="fas fa-times text-xl"></i></button>
-        </div>
-        
-        <div class="space-y-5">
-            <div class="grid grid-cols-1 gap-5">
-                <div>
-                    <label class="block text-[10px] uppercase font-black text-slate-500 mb-2 tracking-widest">唯一数字标识 (ID)</label>
-                    <input type="text" id="editId" disabled class="w-full px-4 py-3 rounded-xl opacity-40 cursor-not-allowed font-mono text-sm">
-                </div>
-                <div>
-                    <label class="block text-[10px] uppercase font-black text-slate-500 mb-2 tracking-widest">当前游戏昵称（必填）</label>
-                    <input type="text" id="editNickname" class="w-full px-4 py-3 rounded-xl font-bold">
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-5">
-                <div>
-                    <label class="block text-[10px] uppercase font-black text-slate-500 mb-2 tracking-widest">军团 TAG</label>
-                    <input type="text" id="editClan" placeholder="例如: M.W" class="w-full px-4 py-3 rounded-xl font-bold">
-                </div>
-                <div>
-                    <label class="block text-[10px] uppercase font-black text-slate-500 mb-2 tracking-widest">军衔等级</label>
-                    <select id="editRank" class="w-full px-4 py-3 rounded-xl font-bold appearance-none">
-                        <!-- Options will be added by JS -->
-                    </select>
-                </div>
-            </div>
-
-            <!-- 历史记录管理（曾用名） -->
-            <div class="glass-card rounded-xl p-4">
-                <div class="flex items-center justify-between mb-2">
-                    <label class="text-[10px] uppercase font-black text-slate-500 tracking-widest"><i class="fas fa-id-card mr-1 text-slate-600"></i>历史昵称（曾用名）</label>
-                    <span class="text-[10px] text-slate-600">点击标签可改名 · × 可删除</span>
-                </div>
-                <div class="flex flex-wrap gap-1 mb-3 min-h-[26px]" id="historyTags">
-                    <!-- JS 渲染 -->
-                </div>
-                <div class="flex gap-2">
-                    <input type="text" id="historyInput" placeholder="输入曾用名后添加..." class="flex-1 px-3 py-2 rounded-lg text-sm" onkeydown="if(event.key==='Enter')addHistoryItem('history')">
-                    <button onclick="addHistoryItem('history')" class="bg-slate-700 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition"><i class="fas fa-plus"></i></button>
-                </div>
-            </div>
-
-            <!-- 历史记录管理（曾属军团） -->
-            <div class="glass-card rounded-xl p-4">
-                <div class="flex items-center justify-between mb-2">
-                    <label class="text-[10px] uppercase font-black text-slate-500 tracking-widest"><i class="fas fa-shield-halved mr-1 text-slate-600"></i>历史军团（曾属军团）</label>
-                    <span class="text-[10px] text-slate-600">点击标签可改名 · × 可删除</span>
-                </div>
-                <div class="flex flex-wrap gap-1 mb-3 min-h-[26px]" id="clanHistoryTags">
-                    <!-- JS 渲染 -->
-                </div>
-                <div class="flex gap-2">
-                    <input type="text" id="clanHistoryInput" placeholder="输入曾属军团 TAG 后添加..." class="flex-1 px-3 py-2 rounded-lg text-sm" onkeydown="if(event.key==='Enter')addHistoryItem('clanHistory')">
-                    <button onclick="addHistoryItem('clanHistory')" class="bg-slate-700 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition"><i class="fas fa-plus"></i></button>
-                </div>
-            </div>
-
-            <div class="pt-2 flex gap-3">
-                <button onclick="closeModal()" class="flex-1 bg-slate-800 text-slate-400 py-3 rounded-xl font-bold hover:bg-slate-700 transition">取消返回</button>
-                <button onclick="applyChanges()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-black hover:bg-blue-500 transition shadow-lg shadow-blue-900/30">确认应用修改</button>
-            </div>
         </div>
     </div>
 </div>
@@ -209,6 +125,27 @@
         getPath: () => currentServer === 'cn' ? "player_blacklist_cn.json" : "player_blacklist_en.json",
         getOtherPath: () => currentServer === 'cn' ? "player_blacklist_en.json" : "player_blacklist_cn.json"
     };
+
+    // 验证权限配置是否存在
+    async function checkPermissionSync(token) {
+        try {
+            const url = `https://gitee.com/api/v5/repos/${CONFIG.repo}/contents/history_permissions.json?access_token=${token}&t=${Date.now()}`;
+            const res = await fetchWithTimeout(url);
+            if (res.status === 404) {
+                toast('权限配置文件 history_permissions.json 尚未创建', 'error');
+                return false;
+            }
+            if (!res.ok) {
+                toast('权限配置同步失败', 'error');
+                return false;
+            }
+            toast('权限配置已同步', 'success');
+            return true;
+        } catch (e) {
+            toast('检查权限配置失败: ' + e.message, 'error');
+            return false;
+        }
+    }
 
     const RANK_DATA = [
         "新兵", "二等兵", "一等兵", "下士", "中士", "上士", "三级军士长", "二级军士长", "一级军士长", "军士长", 
@@ -231,6 +168,7 @@
     let currentSha = "";
     let currentPage = 1;
     let dirty = false;           // 是否存在未推送的本地修改
+    let historyPermissions = {}; // 历史记录查看权限 {uid: 'allow'/'deny'}，根据权限决定是否隐藏历史信息
 
     // ---------- 通用工具 ----------
 
@@ -332,6 +270,31 @@
         return { sha: json.sha, players: parsed.players, clans: parsed.clans };
     }
 
+    // 拉取历史记录查看权限配置
+    async function fetchHistoryPermissions() {
+        const token = document.getElementById('giteeToken').value;
+        if (!token) return;
+        try {
+            const url = `https://gitee.com/api/v5/repos/${CONFIG.repo}/contents/history_permissions.json?access_token=${token}&t=${Date.now()}`;
+            const res = await fetchWithTimeout(url);
+            if (res.status === 404) { historyPermissions = {}; return; }
+            if (!res.ok) { historyPermissions = {}; return; }
+            const json = await res.json();
+            const data = JSON.parse(b64ToUtf8(json.content));
+            historyPermissions = data.permissions || {};
+            console.log('历史查看权限已加载:', Object.keys(historyPermissions).length, '条');
+        } catch (e) {
+            console.error('加载历史查看权限失败:', e);
+            historyPermissions = {};
+        }
+    }
+
+    // 检查某 UID 是否允许查看历史
+    function canViewHistory(uid) {
+        const perm = historyPermissions[uid];
+        return perm !== 'deny'; // 默认允许，只有明确标记'deny'才禁止
+    }
+
     async function fetchData() {
         const token = document.getElementById('giteeToken').value;
         if (!token) return toast('请输入 Gitee Token！', 'warn');
@@ -348,6 +311,7 @@
             currentSha = remote.sha;
             currentPage = 1;
             clearDirty();
+            await fetchHistoryPermissions();
             renderTable();
             document.getElementById('saveBtn').classList.remove('hidden');
             toast(`拉取成功，共 ${Object.keys(blacklistData).length} 条记录`, 'success');
@@ -400,10 +364,10 @@
         // 空状态提示
         if (pageIds.length === 0) {
             tbody.innerHTML = `
-                <tr><td colspan="5" class="p-16 text-center text-slate-500">
+                <tr><td colspan="4" class="p-16 text-center text-slate-500">
                     <i class="fas ${allIds.length === 0 ? 'fa-cloud-arrow-down' : 'fa-magnifying-glass'} text-4xl mb-4 block text-slate-700"></i>
                     ${allIds.length === 0
-                        ? '云端暂无数据，点击右下角“手动添加”开始构建名单'
+                        ? '云端暂无数据'
                         : '未找到匹配的记录，试试更换搜索关键词'}
                 </td></tr>`;
             renderPagination(filtered.length, totalPages);
@@ -426,6 +390,7 @@
             const nickname = user.nickname || '';
             const clan = user.clan || '';
             const rank = clampRank(user.rank);
+            const allowed = canViewHistory(id);
 
             const tr = document.createElement('tr');
             tr.className = 'hover:bg-slate-800/30 transition-colors group';
@@ -445,15 +410,9 @@
                 </td>
                 <td class="p-4">
                     <div class="max-w-xs">
-                        ${renderHistory(user.history, '更名')}
+                        ${allowed ? renderHistory(user.history, '更名') : '<span style="color:#64748b">🚫 已隐藏</span>'}
                         ${renderHistory(user.clanHistory, '军团')}
                         <div class="text-[9px] text-slate-600 mt-2 italic"><i class="far fa-clock mr-1"></i>封锁于: ${escapeHtml(user.addedAt || '未知')}</div>
-                    </div>
-                </td>
-                <td class="p-4 text-right">
-                    <div class="flex justify-end gap-2">
-                        <button data-action="edit" data-id="${escapeHtml(id)}" title="编辑" class="w-9 h-9 flex items-center justify-center bg-slate-800 hover:bg-amber-600 text-slate-400 hover:text-white rounded-lg transition"><i class="fas fa-edit"></i></button>
-                        <button data-action="delete" data-id="${escapeHtml(id)}" title="移除" class="w-9 h-9 flex items-center justify-center bg-slate-800 hover:bg-red-600 text-slate-400 hover:text-white rounded-lg transition"><i class="fas fa-trash"></i></button>
                     </div>
                 </td>
             `;
@@ -519,15 +478,6 @@
 
     // ---------- 增删改 ----------
 
-    // 事件委托：表格内按钮统一处理，避免行内 onclick 拼接注入
-    document.getElementById('blacklistBody').addEventListener('click', e => {
-        const btn = e.target.closest('button[data-action]');
-        if (!btn) return;
-        const id = btn.dataset.id;
-        if (btn.dataset.action === 'edit') openEditModal(id);
-        else if (btn.dataset.action === 'delete') deleteUser(id);
-    });
-
     // 搜索防抖
     document.getElementById('searchInput').addEventListener('input', debounce(() => {
         currentPage = 1;
@@ -554,189 +504,7 @@
         }
     }
 
-    function deleteUser(id) {
-        const user = blacklistData[id];
-        if (!user) return;
-        if (confirm(`确定要解除对 ${user.nickname || id} 的封锁吗？`)) {
-            delete blacklistData[id];
-            markDirty();
-            renderTable();
-            toast('已从本地列表移除，请记得同步到云端', 'success');
-        }
-    }
-
-    // ---------- 弹窗内历史记录编辑 ----------
-
-    // 弹窗打开期间的历史记录临时副本，确认时写回
-    let editHistory = [];
-    let editClanHistory = [];
-
-    function renderHistoryTags() {
-        const render = (containerId, list, kind) => {
-            const box = document.getElementById(containerId);
-            if (!list.length) {
-                box.innerHTML = '<span class="text-slate-600 text-xs italic py-1">暂无记录</span>';
-                return;
-            }
-            box.innerHTML = list.map((h, i) => `
-                <span class="history-tag group flex items-center gap-1">
-                    <button type="button" data-hist-kind="${kind}" data-hist-index="${i}" data-hist-op="edit"
-                        class="hover:text-blue-400 transition" title="点击修改">${escapeHtml(h)}</button>
-                    <button type="button" data-hist-kind="${kind}" data-hist-index="${i}" data-hist-op="remove"
-                        class="text-slate-500 hover:text-red-400 font-bold" title="删除"><i class="fas fa-times text-[9px]"></i></button>
-                </span>`).join('');
-        };
-        render('historyTags', editHistory, 'history');
-        render('clanHistoryTags', editClanHistory, 'clanHistory');
-    }
-
-    // 事件委托：标签的点击改名 / 删除
-    document.getElementById('editModal').addEventListener('click', e => {
-        const btn = e.target.closest('button[data-hist-op]');
-        if (!btn) return;
-        const kind = btn.dataset.histKind;
-        const index = parseInt(btn.dataset.histIndex);
-        const list = kind === 'history' ? editHistory : editClanHistory;
-        if (btn.dataset.histOp === 'remove') {
-            const item = list[index];
-            if (confirm(`确定删除历史记录「${item}」吗？`)) {
-                list.splice(index, 1);
-                renderHistoryTags();
-            }
-        } else {
-            const oldVal = list[index];
-            const newVal = (prompt('请输入新的内容:', oldVal) || '').trim();
-            if (!newVal) return toast('内容不能为空！', 'error');
-            if (newVal !== oldVal) {
-                if (list.includes(newVal)) return toast('该记录已存在，请勿重复！', 'warn');
-                list[index] = newVal;
-                renderHistoryTags();
-            }
-        }
-    });
-
-    // 添加一条历史记录（输入框 + 按钮 / 回车）
-    function addHistoryItem(kind) {
-        const input = document.getElementById(kind === 'history' ? 'historyInput' : 'clanHistoryInput');
-        const val = input.value.trim();
-        if (!val) return toast('请先输入内容！', 'warn');
-        const list = kind === 'history' ? editHistory : editClanHistory;
-        if (list.includes(val)) return toast('该记录已存在！', 'warn');
-        list.push(val);
-        input.value = '';
-        renderHistoryTags();
-    }
-
-    function openEditModal(id) {
-        const user = blacklistData[id];
-        if (!user) return;
-        document.getElementById('editId').value = id;
-        document.getElementById('editNickname').value = user.nickname || '';
-        document.getElementById('editClan').value = user.clan || '';
-        document.getElementById('editRank').value = clampRank(user.rank);
-        // 载入历史记录副本供弹窗编辑
-        editHistory = [...(user.history || [])];
-        editClanHistory = [...(user.clanHistory || [])];
-        renderHistoryTags();
-        document.getElementById('editModal').style.display = 'flex';
-    }
-
-    function openAddModal() {
-        const id = (prompt('请输入新用户的 Internal ID:') || '').trim();
-        if (!id) return;
-        if (blacklistData[id]) return toast('此 ID 已存在于名单中！', 'warn');
-
-        blacklistData[id] = {
-            nickname: '',
-            rank: 1,
-            clan: '',
-            history: [],
-            clanHistory: [],
-            addedAt: new Date().toLocaleString('zh-CN')
-        };
-        openEditModal(id);
-    }
-
-    function applyChanges() {
-        const id = document.getElementById('editId').value;
-        const user = blacklistData[id];
-        if (!user) return closeModal();
-
-        const newNick = document.getElementById('editNickname').value.trim();
-        const newClan = document.getElementById('editClan').value.trim();
-
-        // 输入校验：昵称必填
-        if (!newNick) return toast('昵称不能为空！', 'error');
-
-        // 历史记录：以弹窗中编辑后的副本为基础，再叠加自动记录逻辑（去重）
-        const newHistory = [...editHistory];
-        if (user.nickname && user.nickname !== newNick && !newHistory.includes(user.nickname)) {
-            newHistory.push(user.nickname);
-        }
-
-        const newClanHistory = [...editClanHistory];
-        if (user.clan && user.clan !== newClan && !newClanHistory.includes(user.clan)) {
-            newClanHistory.push(user.clan);
-        }
-
-        user.nickname = newNick;
-        user.clan = newClan;
-        user.rank = clampRank(document.getElementById('editRank').value);
-        user.history = newHistory;
-        user.clanHistory = newClanHistory;
-
-        closeModal();
-        markDirty();
-        renderTable();
-        toast('修改已应用到本地列表', 'success');
-    }
-
-    function closeModal() {
-        // 取消时清理未填写完整的新增条目，避免空昵称脏数据入库
-        const id = document.getElementById('editId').value;
-        if (id && blacklistData[id] && !blacklistData[id].nickname && !(baseData || {})[id]) {
-            delete blacklistData[id];
-        }
-        document.getElementById('editModal').style.display = 'none';
-    }
-
-    // ---------- 导入 / 导出 / 双服复制 ----------
-
-    function exportJson() {
-        if (Object.keys(blacklistData).length === 0) return toast('当前没有可导出的数据', 'warn');
-        const saveData = { players: blacklistData, clans: clanBlacklistData };
-        const blob = new Blob([JSON.stringify(saveData, null, 2)], { type: 'application/json' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `blacklist_${currentServer}_${new Date().toISOString().slice(0, 10)}.json`;
-        a.click();
-        URL.revokeObjectURL(a.href);
-        toast('已导出 JSON 文件', 'success');
-    }
-
-    function importJson(file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-            try {
-                const raw = JSON.parse(reader.result);
-                const players = raw.players || raw; // 兼容导出格式与纯 players 格式
-                if (typeof players !== 'object' || Array.isArray(players)) throw new Error('格式不符');
-                const mode = confirm(`共解析到 ${Object.keys(players).length} 条记录。\n\n确定导入吗？\n【确定】合并（保留现有+新增/覆盖同名ID）\n【取消】放弃导入`) ? 'merge' : null;
-                if (!mode) return;
-                Object.keys(players).forEach(id => { blacklistData[id] = players[id]; });
-                markDirty();
-                renderTable();
-                toast('导入成功（合并模式），请记得推送云端', 'success');
-            } catch (e) {
-                toast('导入失败：文件不是有效的黑名单 JSON', 'error');
-            }
-        };
-        reader.readAsText(file, 'utf-8');
-    }
-    document.getElementById('importFile').addEventListener('change', e => {
-        if (e.target.files[0]) importJson(e.target.files[0]);
-        e.target.value = ''; // 允许重复导入同一文件
-    });
+    // ---------- 双服复制 ----------
 
     // 将当前服名单复制到另一服（直接写云端目标文件）
     async function copyToOtherServer() {
@@ -843,16 +611,11 @@
 
     window.onload = () => {
         const savedToken = localStorage.getItem('gitee_token');
-        if (savedToken) document.getElementById('giteeToken').value = savedToken;
-
-        // 填充等级下拉菜单
-        const select = document.getElementById('editRank');
-        RANK_DATA.forEach((name, index) => {
-            const opt = document.createElement('option');
-            opt.value = index + 1;
-            opt.textContent = name;
-            select.appendChild(opt);
-        });
+        if (savedToken) {
+            document.getElementById('giteeToken').value = savedToken;
+            // 有 token 自动拉取云端名单
+            fetchData();
+        }
 
         // 未保存修改时离开页面提醒
         window.addEventListener('beforeunload', e => {
@@ -861,11 +624,6 @@
 
         renderTable();
     };
-
-    // 点击遮罩关闭弹窗
-    document.getElementById('editModal').addEventListener('click', e => {
-        if (e.target.id === 'editModal') closeModal();
-    });
 </script>
 </body>
 </html>
