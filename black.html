@@ -1,1054 +1,654 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
-    <meta charset="utf-8" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <title>3D坦克-服务器六合一</title>
-    <link rel="shortcut icon" href="https://tankionline.com/favicon.ico" />
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&family=M+PLUS+1p&display=swap" rel="stylesheet" />
-    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kosto 黑名单云管理后台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root {
-            --primary-color: #76ff33;
-            --primary-dim: rgba(118, 255, 51, 0.2);
-            --bg-dark: #001926;
-            --text-light: #BFD5FF;
-            --glass-bg: rgba(255, 255, 255, 0.08);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --card-hover: rgba(118, 255, 51, 0.1);
-            --transition-speed: 0.3s;
-        }
-
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            font-family: 'Rubik', 'M PLUS 1p', sans-serif;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            min-height: 100vh;
-            background: radial-gradient(circle at center, rgb(32, 48, 64) 0%, rgb(3, 8, 13) 100%);
-            color: white;
-            overflow-x: hidden;
-            padding-top: 60px; /* Header space */
-        }
-
-        /* --- Header --- */
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 60px;
-            background: rgba(0, 25, 38, 0.9);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 15px;
-            border-bottom: 1px solid var(--glass-border);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-
-        .header-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--primary-color);
-            letter-spacing: 1px;
-        }
-
-        .header-btn {
-            background: transparent;
-            border: 1px solid var(--glass-border);
-            color: var(--text-light);
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: var(--transition-speed);
-            font-size: 14px;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .header-btn:hover {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-            background: var(--primary-dim);
-        }
-
-        /* --- Layout Containers --- */
-        .view-section {
-            display: none; /* Hidden by default */
-            padding: 20px;
-            max-width: 1000px;
-            margin: 0 auto;
-            animation: fadeIn 0.4s ease-out;
-            padding-bottom: 80px;
-        }
-
-        .view-section.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* --- Grid & Cards --- */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 20px;
-            width: 100%;
-        }
-        
-        /* Compact grid for downloads */
-        .grid-compact {
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
-        }
-
-        .card {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all var(--transition-speed);
-            text-decoration: none;
-            color: var(--text-light);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 140px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            background: var(--card-hover);
-            border-color: var(--primary-color);
-            box-shadow: 0 10px 20px rgba(118, 255, 51, 0.1);
-            color: white;
-        }
-
-        .card-icon {
-            font-size: 32px;
-            margin-bottom: 15px;
-            color: var(--primary-color);
-        }
-        
-        .card-icon img {
-            width: 32px;
-            height: 32px;
-            object-fit: contain;
-        }
-
-        .card-title {
-            font-size: 18px;
-            font-weight: 500;
-            margin: 0;
-            line-height: 1.3;
-        }
-
-        .card-sub {
-            font-size: 12px;
-            opacity: 0.7;
-            margin-top: 5px;
-        }
-
-        /* --- Section Divider --- */
-        .section-header {
-            width: 100%;
-            margin: 25px 0 15px 0;
-            font-size: 14px;
-            color: var(--text-light);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 1px solid var(--glass-border);
-            padding-bottom: 5px;
-        }
-
-        /* --- Status Page Specifics --- */
-        .status-display {
-            text-align: center;
-            background: var(--glass-bg);
-            padding: 40px;
-            border-radius: 16px;
-            margin-bottom: 20px;
-        }
-
-        .stat-row {
-            margin: 20px 0;
-            padding: 15px;
-            border-bottom: 1px solid var(--glass-border);
-        }
-        .stat-row:last-child { border-bottom: none; }
-
-        .stat-val {
-            font-size: 32px;
-            color: var(--primary-color);
-            font-weight: bold;
-            display: block;
-        }
-
-        .stat-label {
-            font-size: 14px;
-            color: var(--text-light);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        /* --- Test Server List --- */
-        .server-item {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 15px;
-            text-align: left;
-            min-height: auto;
-        }
-        
-        .server-item .stats-badges {
-            display: flex;
-            gap: 5px;
-            margin-top: 8px;
-        }
-
-        .badge {
-            font-size: 11px;
-            padding: 3px 8px;
-            border-radius: 4px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--glass-border);
-        }
-
-        /* --- Settings & Options --- */
-        .options-panel {
-            background: rgba(0,0,0,0.3);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 1px solid var(--glass-border);
-        }
-
-        .checkbox-wrapper {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            cursor: pointer;
-        }
-        
-        .checkbox-wrapper input { display: none; }
-        .checkbox-custom {
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--primary-color);
-            border-radius: 4px;
-            margin-right: 10px;
-            position: relative;
-            transition: 0.2s;
-        }
-        .checkbox-wrapper input:checked + .checkbox-custom {
-            background: var(--primary-color);
-        }
-        .checkbox-wrapper input:checked + .checkbox-custom::after {
-            content: '✔';
-            position: absolute;
-            color: #001926;
-            font-size: 14px;
-            left: 3px;
-            top: -1px;
-        }
-
-        /* --- Modals --- */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(5px);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .modal-content {
-            background: #112233;
-            border: 1px solid var(--primary-color);
-            padding: 25px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
-            position: relative;
-            box-shadow: 0 0 20px rgba(118, 255, 51, 0.2);
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-        }
-        .input-group input {
-            width: 100%;
-            padding: 10px;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid var(--glass-border);
-            color: white;
-            border-radius: 6px;
-        }
-        .action-btn {
-            width: 100%;
-            padding: 10px;
-            background: var(--primary-color);
-            color: #001926;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-            display: block;
-        }
-
-        /* --- Loading Spinner --- */
-        .loader-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-        }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(118, 255, 51, 0.3);
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
-        .card.loading {
-            pointer-events: none;
-            opacity: 0.75;
-            background: var(--card-hover);
-            border-color: var(--primary-color);
-            box-shadow: 0 0 18px rgba(118, 255, 51, 0.25);
-        }
-
-        .card.loading .card-title,
-        .card.loading .card-sub,
-        .card.loading .stats-badges {
-            visibility: hidden;
-        }
-
-        .card-spinner {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.15s ease;
-        }
-
-        .card.loading .card-spinner {
-            opacity: 1;
-        }
-
-        .card-spinner-circle {
-            width: 32px;
-            height: 32px;
-            border: 3px solid rgba(118, 255, 51, 0.25);
-            border-top: 3px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 0.9s linear infinite;
-        }
-
-        .card-spinner-text {
-            font-size: 12px;
-            color: var(--primary-color);
-            font-weight: 500;
-        }
-
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* 右下角登录入口 */
-        .login-entry {
-            position: fixed;
-            bottom: 16px;
-            right: 16px;
-            display: flex;
-            gap: 8px;
-            z-index: 1500;
-        }
-        .login-entry a {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 500;
-            text-decoration: none;
-            color: #fff;
-            backdrop-filter: blur(8px);
-            border: 1px solid var(--glass-border);
-            background: rgba(0, 25, 38, 0.8);
-            transition: var(--transition-speed);
-        }
-        .login-entry a:hover {
-            transform: translateY(-2px);
-            border-color: var(--primary-color);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-        .login-entry a svg { width: 16px; height: 16px; }
-
+        body { background-color: #0b0f1a; color: #cbd5e1; font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+        .glass-card { background: rgba(22, 30, 46, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .rank-img { width: 32px; height: 16px; object-fit: contain; filter: drop-shadow(0 0 3px rgba(255,255,255,0.2)); }
+        input, select, textarea { background: #1e293b !important; color: white !important; border: 1px solid #334155 !important; }
+        input:focus { border-color: #3b82f6 !important; outline: none; }
+        .history-tag { background: rgba(51, 65, 85, 0.5); padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-right: 4px; display: inline-block; margin-bottom: 2px; }
+        .btn-action { transition: all 0.2s; }
+        .btn-action:hover { transform: translateY(-1px); }
+        /* Toast 通知 */
+        #toastBox { position: fixed; top: 16px; right: 16px; z-index: 100; display: flex; flex-direction: column; gap: 8px; }
+        .toast-item { padding: 12px 18px; border-radius: 10px; font-size: 13px; font-weight: bold; color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.4); animation: toastIn .25s ease; max-width: 320px; }
+        .toast-info { background: #1d4ed8; }
+        .toast-success { background: #047857; }
+        .toast-error { background: #b91c1c; }
+        .toast-warn { background: #b45309; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
-<body>
+<body class="p-4 md:p-8">
 
+<!-- Toast 容器 -->
+<div id="toastBox"></div>
+
+<div class="max-w-7xl mx-auto">
     <!-- Header -->
-    <div class="header">
-        <button class="header-btn" id="navBackBtn">
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>
-            返回
-        </button>
-        <div class="header-title" id="pageTitle">服务器中心</div>
-        <button class="header-btn" id="openSettingsBtn">
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/><path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zM8 0c1.146 0 2.228.608 2.768 1.557l.11.193C11.378.804 12.804 2.23 11.75 3.12l.193.11C12.948 3.772 13.556 4.854 13.556 6c0 1.146-.608 2.228-1.557 2.768l-.193.11c.947 1.054-.479 2.48-1.369 1.426l-.11.193C9.772 11.392 8.69 12 7.544 12c-1.146 0-2.228-.608-2.768-1.557l-.11-.193c-1.054.947-2.48-.479-1.426-1.369l-.193-.11C2.052 8.228 1.444 7.146 1.444 6c0-1.146.608-2.228 1.557-2.768l.193-.11C2.247 2.068 3.673.642 4.563 1.696l.11-.193C5.228.608 6.31 0 7.456 0z"/></svg>
-            设置
-        </button>
-    </div>
-
-    <!-- 1. HOME VIEW -->
-    <div id="view-home" class="view-section active">
-        <div class="grid-container">
-            <a href="https://3dtank.com/play" class="card" id="linkGuofu">
-                <div class="card-icon">🇨🇳</div>
-                <div class="card-title">国服 (Main)</div>
-                <div class="card-sub">官方服务器</div>
-            </a>
-            
-            <div class="card" onclick="app.navigate('global')">
-                <div class="card-icon">🇪🇺</div>
-                <div class="card-title">外服中心</div>
-                <div class="card-sub">Global / 客户端 / 平台</div>
-            </div>
-
-            <div class="card" onclick="app.navigate('classic')">
-                <div class="card-icon">🎮</div>
-                <div class="card-title">经典版</div>
-                <div class="card-sub">Classic Tanki</div>
-            </div>
-
-            <div class="card" onclick="app.navigate('test')">
-                <div class="card-icon">🧪</div>
-                <div class="card-title">测试服</div>
-                <div class="card-sub">自动扫描可用服务器</div>
-            </div>
-
-            <div class="card" onclick="app.navigate('partners')">
-                <div class="card-icon">🤝</div>
-                <div class="card-title">联运服</div>
-                <div class="card-sub">4399, 7k7k, YY等</div>
-            </div>
-
-            <div class="card" onclick="app.navigate('status')">
-                <div class="card-icon">📊</div>
-                <div class="card-title">国服状态</div>
-                <div class="card-sub">实时在线人数监控</div>
-            </div>
-
-            <a href="index.html" class="card">
-                <div class="card-icon">🏠</div>
-                <div class="card-title">返回主页</div>
-            </a>
+    <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-6">
+        <div>
+            <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 italic">
+                KOSTO CLOUD MANAGER
+            </h1>
+            <p class="text-slate-500 text-xs tracking-widest uppercase mt-1">3D Tank Player Blacklist System</p>
         </div>
-    </div>
-
-    <!-- 2. GLOBAL VIEW (NEW) -->
-    <div id="view-global" class="view-section">
-        <div class="section-header">网页客户端</div>
-        <div class="grid-container">
-            <a href="https://tankionline.com/play/" class="card" id="linkWaifu">
-                <div class="card-icon">🌐</div>
-                <div class="card-title">网页版</div>
-                <div class="card-sub">官方网站</div>
-            </a>
-        </div>
-
-        <div class="section-header">PC 客户端下载</div>
-        <div class="grid-container grid-compact">
-            <a href="https://tankionline.com/desktop/TankiOnlineSetup.exe" class="card">
-                <div class="card-icon">🪟</div>
-                <div class="card-title">Windows</div>
-                <div class="card-sub">Win 10/11</div>
-            </a>
-            <a href="https://tankionline.com/desktop/TankiOnlineSetup-win7-x64.exe" class="card">
-                <div class="card-icon">🏢</div>
-                <div class="card-title">Windows 7/8</div>
-                <div class="card-sub">旧版</div>
-            </a>
-            <a href="https://tankionline.com/desktop/TankiOnlineSetup.dmg" class="card">
-                <div class="card-icon">🍎</div>
-                <div class="card-title">macOS</div>
-            </a>
-            <a href="https://tankionline.com/desktop/TankiOnlineSetup-linux-x86_64.AppImage" class="card">
-                <div class="card-icon">🐧</div>
-                <div class="card-title">Linux</div>
-            </a>
-        </div>
-
-        <div class="section-header">游戏平台</div>
-        <div class="grid-container grid-compact">
-            <a href="https://store.steampowered.com/app/562010/Tanki_Online/" class="card">
-                <div class="card-icon">🚂</div>
-                <div class="card-title">Steam</div>
-            </a>
-            <a href="https://vkplay.ru/app/21879" class="card">
-                <div class="card-icon">🔵</div>
-                <div class="card-title">VK Play</div>
-            </a>
-            <a href="https://ok.ru/game/tankionline_official" class="card">
-                <div class="card-icon">🆗</div>
-                <div class="card-title">OK.ru</div>
-            </a>
-            <a href="https://www.nintendo.com/us/store/products/tanki-online-switch/" class="card">
-                <div class="card-icon">🔴</div>
-                <div class="card-title">Switch</div>
-            </a>
-        </div>
-
-        <div class="section-header">移动端</div>
-        <div class="grid-container grid-compact">
-            <a href="https://play.google.com/store/apps/details?id=com.tankionline.mobile.production" class="card">
-                <div class="card-icon">🤖</div>
-                <div class="card-title">Google Play</div>
-            </a>
-            <a href="https://apps.apple.com/us/app/tanki-online-pvp-tank-battle/id6737538964" class="card">
-                <div class="card-icon">🍏</div>
-                <div class="card-title">App Store</div>
-            </a>
-        </div>
-    </div>
-
-    <!-- 3. CLASSIC VIEW (NEW) -->
-    <div id="view-classic" class="view-section">
-        <div class="grid-container">
-            <a href="https://tankiclassic.com/play/" class="card">
-                <div class="card-icon">🏛️</div>
-                <div class="card-title">网页版</div>
-                <div class="card-sub">Official Website</div>
-            </a>
-            <a href="https://store.steampowered.com/app/3872910/Tanki_Classic/" class="card">
-                <div class="card-icon">🚂</div>
-                <div class="card-title">Steam</div>
-                <div class="card-sub">Classic on Steam</div>
-            </a>
-        </div>
-    </div>
-
-    <!-- 4. PARTNERS VIEW -->
-    <div id="view-partners" class="view-section">
-        <div class="options-panel">
-            <button class="action-btn" style="background: transparent; border: 1px solid var(--primary-color); color: white;" onclick="document.getElementById('mobileModal').style.display='flex'">
-                📱 下载手机端渠道
+        <div class="flex flex-wrap gap-3 justify-center">
+            <input type="password" id="giteeToken" placeholder="Gitee Token" class="px-4 py-2 rounded-lg text-sm w-48 shadow-inner">
+            <button onclick="fetchData()" class="bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-lg font-bold text-white btn-action shadow-lg shadow-blue-900/20">
+                <i class="fas fa-sync-alt mr-2"></i>拉取云端名单
             </button>
         </div>
-        <div class="grid-container">
-            <a href="https://my.4399.com/yxtk/play?sid=1" class="card">
-                <div class="card-title">4399</div>
-                <div class="card-sub">自动登录</div>
-            </a>
-            <a href="http://web.7k7k.com/stat/game.php?target=3dtk" class="card">
-                <div class="card-title">7k7k</div>
-                <div class="card-sub">需Flash/微端</div>
-            </a>
-            <a href="https://udblogin.yy.com/login.do?game=TKRJ&webyygame&hideNav=1&server=s1" class="card">
-                <div class="card-title">YY游戏</div>
-            </a>
-            <a href="http://wan.baidu.com/game?gameId=23699359" class="card">
-                <div class="card-title">百度游戏</div>
-            </a>
-            <a href="http://web.gamersky.com/Games/236.html" class="card">
-                <div class="card-title">游民星空</div>
-            </a>
-            <a href="https://wans.ixinyou.com/games/tank/" class="card">
-                <div class="card-title">心游</div>
-            </a>
-            <a href="https://game.qzone.qq.com/1102530450" class="card">
-                <div class="card-title">QQ空间</div>
-                <div class="card-sub">需桌面版</div>
-            </a>
-            <a href="https://wan.ludashi.com/yeyou/tk3d?s=1" class="card">
-                <div class="card-title">鲁大师</div>
-            </a>
-            <a href="https://appgallery.huawei.com/app/C101972055" class="card">
-                <div class="card-title">华为应用市场</div>
-            </a>
+    </div>
+
+    <!-- Server Tabs -->
+    <div class="flex gap-1 mb-6 bg-slate-900/50 p-1 rounded-xl w-fit border border-white/5">
+        <button id="tabCN" onclick="switchServer('cn')" class="px-6 py-2 rounded-lg font-bold text-sm transition bg-blue-600 text-white shadow-lg">国服 (3DTank)</button>
+        <button id="tabEN" onclick="switchServer('en')" class="px-6 py-2 rounded-lg font-bold text-sm transition text-slate-400 hover:text-white">外服 (TankiOnline)</button>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+        <div class="glass-card p-4 rounded-xl flex items-center justify-between border-l-4 border-blue-500">
+            <div>
+                <p class="text-slate-500 text-[10px] uppercase font-bold">已封锁总人数</p>
+                <p class="text-2xl font-black text-white" id="statCount">0</p>
+                <p class="text-[10px] text-slate-500 hidden" id="statFiltered"></p>
+            </div>
+            <i class="fas fa-user-shield text-blue-500/30 text-3xl"></i>
+        </div>
+        <div class="lg:col-span-2 glass-card p-2 rounded-xl flex items-center">
+            <i class="fas fa-search ml-3 text-slate-500"></i>
+            <input type="text" id="searchInput" placeholder="搜索 ID、昵称、曾用名、军团..." class="w-full bg-transparent border-none focus:ring-0 p-2 text-md">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+            <button onclick="batchClearByClan()" class="bg-rose-900/30 hover:bg-rose-900/50 text-rose-400 border border-rose-500/30 rounded-xl font-bold text-sm btn-action">
+                <i class="fas fa-users-slash mr-2"></i>按军团清理
+            </button>
+            <button onclick="copyToOtherServer()" class="bg-emerald-900/30 hover:bg-emerald-900/50 text-emerald-400 border border-emerald-500/30 rounded-xl font-bold text-sm btn-action">
+                <i class="fas fa-exchange-alt mr-2"></i><span id="copyBtnLabel">复制到外服</span>
+            </button>
         </div>
     </div>
 
-    <!-- 5. TEST SERVER VIEW -->
-    <div id="view-test" class="view-section">
-        <div class="options-panel">
-            <div class="grid-container" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 15px;">
-                <label class="checkbox-wrapper">
-                    <input type="checkbox" id="optLockLocale">
-                    <span class="checkbox-custom"></span> 锁定中文
-                </label>
-                <label class="checkbox-wrapper">
-                    <input type="checkbox" id="optSkipKey">
-                    <span class="checkbox-custom"></span> 跳过任意键
-                </label>
-                <label class="checkbox-wrapper">
-                    <input type="checkbox" id="optChinaBuild">
-                    <span class="checkbox-custom"></span> 国服界面
-                </label>
-                <label class="checkbox-wrapper">
-                    <input type="checkbox" id="optNewWindow">
-                    <span class="checkbox-custom"></span> 新窗口打开
-                </label>
-            </div>
-            <button class="action-btn" onclick="testScanner.start()">🔄 重新扫描</button>
+    <!-- Table Container -->
+    <div class="glass-card rounded-2xl overflow-hidden shadow-2xl">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-slate-900/50 text-slate-400 text-[11px] uppercase tracking-wider">
+                    <tr>
+                        <th class="p-4 font-bold">等级</th>
+                        <th class="p-4 font-bold">基本信息 (ID/昵称)</th>
+                        <th class="p-4 font-bold">所属军团</th>
+                        <th class="p-4 font-bold">数据演变历史</th>
+                        <th class="p-4 font-bold text-right">管理</th>
+                    </tr>
+                </thead>
+                <tbody id="blacklistBody" class="divide-y divide-slate-800">
+                    <!-- JS Data Rendering -->
+                </tbody>
+            </table>
         </div>
-
-        <div id="testLoader" class="loader-container" style="display:none;">
-            <div class="spinner"></div>
-            <div>正在扫描服务器... (<span id="scanProgress">0</span>/20)</div>
-        </div>
-
-        <div id="testNoServers" class="status-display" style="display:none; padding: 20px;">
-            ⚠️ 当前暂无可用测试服
-        </div>
-
-        <div class="grid-container" id="testResults">
-            <!-- Test server cards will be injected here -->
+        <!-- 分页控件 -->
+        <div id="pagination" class="flex items-center justify-center gap-4 py-3 border-t border-slate-800 text-sm text-slate-400"></div>
+        <div id="loadingState" class="p-24 text-center hidden">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+            <p class="text-slate-500 text-sm animate-pulse">正在安全连接至 Gitee 节点...</p>
         </div>
     </div>
 
-    <!-- 6. STATUS VIEW -->
-    <div id="view-status" class="view-section">
-        <div class="status-display">
-            <h2>国服实时数据</h2>
-            <div class="stat-row">
-                <span class="stat-label">总在线人数</span>
-                <span class="stat-val" id="statOnline">--</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">正在战斗中</span>
-                <span class="stat-val" id="statBattles">--</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">4399 渠道</span>
-                <span class="stat-val" id="stat4399">--</span>
-            </div>
-            <div style="margin-top: 20px; font-size: 14px; color: #888;">
-                自动刷新: <span id="refreshTimer" style="color: var(--primary-color)">11</span>s
-            </div>
-            <button class="action-btn" onclick="statusMonitor.refresh()" style="margin-top: 20px; width: auto; padding: 5px 20px;">立即刷新</button>
+    <!-- Bottom Actions -->
+    <div class="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="text-slate-500 text-xs">
+            <i class="fas fa-info-circle mr-1"></i> 修改后请务必点击“推送至云端”按钮，否则更改不会生效。
+            <span id="dirtyHint" class="text-amber-500 font-bold hidden ml-2"><i class="fas fa-circle-exclamation mr-1"></i>有未保存的修改</span>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="saveToCloud()" id="saveBtn" class="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white px-10 py-3 rounded-xl font-black transition hidden shadow-xl shadow-blue-900/40 btn-action">
+                <i class="fas fa-cloud-upload-alt mr-2"></i>推送至云端同步
+            </button>
         </div>
     </div>
+</div>
 
-    <!-- Modals -->
-    <div id="settingsModal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close" onclick="document.getElementById('settingsModal').style.display='none'">×</button>
-            <h3 style="margin-top:0">全局设置</h3>
-            <div class="input-group">
-                <label class="checkbox-wrapper">
-                    <input type="checkbox" id="globalChineseCheck">
-                    <span class="checkbox-custom"></span> 外服链接强制锁定中文
-                </label>
-            </div>
-            <hr style="border-color: var(--glass-border); margin: 15px 0;">
-            <div class="input-group">
-                <label style="display:block; margin-bottom:5px;">自定义网址跳转</label>
-                <input type="text" id="customUrlInput" placeholder="https://example.com">
-            </div>
-            <button class="action-btn" onclick="app.redirectCustom()">跳转</button>
-        </div>
-    </div>
+<script>
+    let currentServer = 'cn'; // 默认国服
 
-    <div id="mobileModal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close" onclick="document.getElementById('mobileModal').style.display='none'">×</button>
-            <h3 style="margin-top:0">选择移动端平台</h3>
-            <div style="display: grid; gap: 10px;">
-                <a href="https://appgallery.huawei.com/app/C101972055" class="header-btn" style="justify-content:center">华为应用商店</a>
-                <a href="https://h5coml.vivo.com.cn/h5coml/appdetail_h5/browser_v2/index.html?appId=2900145" class="header-btn" style="justify-content:center">vivo 商店</a>
-                <a href="https://app.mi.com/details?id=com.tankionline.mi" class="header-btn" style="justify-content:center">小米商店</a>
-                <a href="https://store.oppomobile.com/" class="header-btn" style="justify-content:center">OPPO 商店</a>
-                <a href="https://www.honor.com/cn/tech/honor-app-market/" class="header-btn" style="justify-content:center">荣耀应用市场</a>
-                <a href="https://a.4399.cn/game-id-162288.html" class="header-btn" style="justify-content:center">4399 游戏盒</a>
-                <a href="https://www.ldmnq.com/app/8762/" class="header-btn" style="justify-content:center">雷电模拟器</a>
-            </div>
-        </div>
-    </div>
+    const CONFIG = {
+        repo: "Kosto179/systemconfig",
+        // 动态返回路径
+        getPath: () => currentServer === 'cn' ? "player_blacklist_cn.json" : "player_blacklist_en.json",
+        getOtherPath: () => currentServer === 'cn' ? "player_blacklist_en.json" : "player_blacklist_cn.json"
+    };
 
-    <script>
-        // --- APP STATE MANAGEMENT ---
-        const app = {
-            currentView: 'home',
-            
-            init: () => {
-                // Settings Init
-                const isChinese = localStorage.getItem('chineseModeEnabled') === 'true';
-                document.getElementById('globalChineseCheck').checked = isChinese;
-                app.updateWaifuLink(isChinese);
-                
-                // Event Listeners
-                document.getElementById('navBackBtn').addEventListener('click', app.handleBack);
-                document.getElementById('openSettingsBtn').addEventListener('click', () => {
-                    document.getElementById('settingsModal').style.display = 'flex';
-                });
-                
-                document.getElementById('globalChineseCheck').addEventListener('change', (e) => {
-                    localStorage.setItem('chineseModeEnabled', e.target.checked);
-                    app.updateWaifuLink(e.target.checked);
-                });
-
-                // Test Server Options Listeners
-                ['optLockLocale', 'optSkipKey', 'optChinaBuild', 'optNewWindow'].forEach(id => {
-                    document.getElementById(id).addEventListener('change', testScanner.updateLinks);
-                });
-
-                // Mobile Check
-                if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
-                    const gl = document.getElementById('linkGuofu');
-                    gl.href += (gl.href.includes('?') ? '&' : '?') + 'distribution=generic_mobile_china';
-                }
-
-                // 卡片点击加载动画
-                app.attachCardLoading();
-                // 观察动态生成的卡片（如测试服扫描结果）
-                app.observeDynamicCards();
-            },
-
-            ensureSpinner: (card) => {
-                if (card.querySelector('.card-spinner')) return;
-                const spinner = document.createElement('div');
-                spinner.className = 'card-spinner';
-                spinner.innerHTML = '<div class="card-spinner-circle"></div><div class="card-spinner-text">加载中...</div>';
-                card.appendChild(spinner);
-            },
-
-            attachCardLoading: () => {
-                document.querySelectorAll('.card').forEach(card => app.bindCardLoading(card));
-            },
-
-            observeDynamicCards: () => {
-                const observer = new MutationObserver((mutations) => {
-                    mutations.forEach(m => {
-                        m.addedNodes.forEach(node => {
-                            if (node.nodeType !== 1) return;
-                            if (node.classList && node.classList.contains('card')) {
-                                app.bindCardLoading(node);
-                            }
-                            node.querySelectorAll && node.querySelectorAll('.card').forEach(c => app.bindCardLoading(c));
-                        });
-                    });
-                });
-                observer.observe(document.body, { childList: true, subtree: true });
-            },
-
-            bindCardLoading: (card) => {
-                if (card.dataset.cardBound === '1') return;
-                card.dataset.cardBound = '1';
-                app.ensureSpinner(card);
-
-                card.addEventListener('click', (e) => {
-                    if (card.classList.contains('loading')) return;
-                    const handler = card.getAttribute('onclick');
-                    const href = card.getAttribute('href');
-
-                    card.classList.add('loading');
-                    // 至少展示 400ms 的加载动画，让视觉可感知
-                    const minDelay = new Promise(r => setTimeout(r, 400));
-
-                    const proceed = async () => {
-                        await minDelay;
-                        if (card.classList.contains('loading')) card.classList.remove('loading');
-
-                        if (typeof handler === 'string' && handler.length > 0) {
-                            // 内部分页导航，允许立即执行
-                            try { eval(handler); } catch (err) { /* ignore */ }
-                        } else if (href) {
-                            if (card.target === '_blank') {
-                                window.open(href, '_blank', 'noopener');
-                            } else {
-                                window.location.href = href;
-                            }
-                        }
-                    };
-
-                    if (href) {
-                        e.preventDefault();
-                        proceed();
-                    } else if (handler) {
-                        e.preventDefault();
-                        proceed();
-                    }
-                });
-            },
-
-            navigate: (viewId) => {
-                document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-                document.getElementById(`view-${viewId}`).classList.add('active');
-                app.currentView = viewId;
-                
-                // Logic switches
-                if (viewId === 'test') testScanner.start();
-                if (viewId === 'status') statusMonitor.start();
-                else statusMonitor.stop();
-
-                // Update Header
-                const titles = { 
-                    'home': '服务器中心', 
-                    'partners': '联运平台', 
-                    'test': '测试服务器', 
-                    'status': '国服监控',
-                    'global': '外服中心',
-                    'classic': '经典版'
-                };
-                document.getElementById('pageTitle').innerText = titles[viewId] || 'Server Center';
-            },
-
-            handleBack: () => {
-                if (app.currentView === 'home') {
-                    window.location.href = 'index.html';
-                } else {
-                    app.navigate('home');
-                }
-            },
-
-            updateWaifuLink: (isChinese) => {
-                const link = document.getElementById('linkWaifu');
-                if(!link) return;
-                const url = new URL(link.href);
-                if (isChinese) url.searchParams.set('locale', 'zh');
-                else url.searchParams.delete('locale');
-                link.href = url.toString();
-            },
-
-            redirectCustom: () => {
-                let url = document.getElementById('customUrlInput').value.trim();
-                if (url) {
-                    if (!url.startsWith('http')) url = 'http://' + url;
-                    window.location.href = url;
-                }
+    // 验证权限配置是否存在
+    async function checkPermissionSync(token) {
+        try {
+            const url = `https://gitee.com/api/v5/repos/${CONFIG.repo}/contents/history_permissions.json?access_token=${token}&t=${Date.now()}`;
+            const res = await fetchWithTimeout(url);
+            if (res.status === 404) {
+                toast('权限配置文件 history_permissions.json 尚未创建', 'error');
+                return false;
             }
-        };
-
-        // --- TEST SERVER LOGIC ---
-        const testScanner = {
-            isRunning: false,
-            
-            start: async () => {
-                const container = document.getElementById('testResults');
-                container.innerHTML = ''; 
-                document.getElementById('testLoader').style.display = 'flex';
-                document.getElementById('testNoServers').style.display = 'none';
-                document.getElementById('scanProgress').innerText = '0';
-                
-                const promises = [];
-                let found = 0;
-
-                const check = async (i, type) => {
-                    const isDeploy = type === 'Deploy';
-                    const checkUrl = isDeploy 
-                        ? `https://balancer.public-deploy${i}.test-eu.tankionline.com/balancer`
-                        : `https://balancer.review-${i}-public.test-ru.tankionline.com/balancer`;
-                    
-                    const playUrl = isDeploy
-                        ? `https://public-deploy${i}.test-eu.tankionline.com/browser-public/index.html`
-                        : `https://client-review-${i}-public.test-ru.tankionline.com/?config-template=https://c{server}.review-${i}-public.test-ru.tankionline.com/config.xml&resources=https://resources-review-${i}-public.test-ru.tankionline.com&balancer=https://balancer.review-${i}-public.test-ru.tankionline.com/balancer`;
-
-                    try {
-                        const res = await fetch(checkUrl, { method: 'HEAD' });
-                        if (res.ok || res.status === 503) {
-                            const statsRes = await fetch(checkUrl);
-                            const data = await statsRes.json();
-                            const online = Object.values(data.nodes).reduce((s, n) => s + n.online, 0);
-                            const battles = Object.values(data.nodes).reduce((s, n) => s + n.inbattles, 0);
-
-                            testScanner.renderCard(type + ' ' + i, playUrl, online, battles);
-                            found++;
-                        }
-                    } catch (e) { /* ignore */ }
-                    
-                    const progEl = document.getElementById('scanProgress');
-                    progEl.innerText = parseInt(progEl.innerText) + 1;
-                };
-
-                for (let i = 1; i <= 10; i++) {
-                    promises.push(check(i, 'Deploy'));
-                    promises.push(check(i, 'Review'));
-                }
-
-                await Promise.allSettled(promises);
-                
-                document.getElementById('testLoader').style.display = 'none';
-                if (found === 0) document.getElementById('testNoServers').style.display = 'block';
-                
-                testScanner.updateLinks();
-            },
-
-            renderCard: (name, url, online, battles) => {
-                const card = document.createElement('a');
-                card.className = 'card server-item test-link';
-                card.href = url;
-                card.dataset.baseUrl = url;
-                
-                const icon = name.includes('Deploy') ? '🚀' : '🛠️';
-                
-                card.innerHTML = `
-                    <div class="card-title" style="display:flex; align-items:center; gap:10px;">
-                        <span>${icon}</span> ${name}
-                    </div>
-                    <div class="stats-badges">
-                        <span class="badge" style="color:var(--primary-color)">在线: ${online}</span>
-                        <span class="badge">战斗: ${battles}</span>
-                    </div>
-                    <div class="card-spinner">
-                        <div class="card-spinner-circle"></div>
-                        <div class="card-spinner-text">加载中...</div>
-                    </div>
-                `;
-                document.getElementById('testResults').appendChild(card);
-            },
-
-            updateLinks: () => {
-                const links = document.querySelectorAll('.test-link');
-                const lock = document.getElementById('optLockLocale').checked;
-                const skip = document.getElementById('optSkipKey').checked;
-                const china = document.getElementById('optChinaBuild').checked;
-                const newWindow = document.getElementById('optNewWindow').checked;
-                const mobile = china && /Mobi|Android/i.test(navigator.userAgent);
-
-                links.forEach(link => {
-                    const url = new URL(link.dataset.baseUrl);
-                    if (skip) url.searchParams.set('skipEntranceAnyKey', 'true');
-                    if (china) {
-                        url.searchParams.set('isChinaBuild', 'true');
-                        url.searchParams.delete('skipEntranceAnyKey');
-                    }
-                    if (lock) url.searchParams.set('locale', 'zh');
-                    if (mobile) url.searchParams.set('distribution', 'generic_mobile_china');
-
-                    // 设置新窗口打开
-                    if (newWindow) {
-                        link.target = '_blank';
-                        link.rel = 'noopener noreferrer';
-                    } else {
-                        link.target = '';
-                        link.rel = '';
-                    }
-
-                    link.href = url.toString();
-                });
+            if (!res.ok) {
+                toast('权限配置同步失败', 'error');
+                return false;
             }
-        };
-
-        // --- STATUS MONITOR LOGIC ---
-        const statusMonitor = {
-            timer: null,
-            interval: null,
-            count: 11,
-
-            start: () => {
-                statusMonitor.refresh();
-                if (statusMonitor.interval) clearInterval(statusMonitor.interval);
-                
-                statusMonitor.interval = setInterval(() => {
-                    statusMonitor.count--;
-                    document.getElementById('refreshTimer').innerText = statusMonitor.count;
-                    if (statusMonitor.count <= 0) statusMonitor.refresh();
-                }, 1000);
-            },
-
-            stop: () => {
-                clearInterval(statusMonitor.interval);
-                statusMonitor.interval = null;
-            },
-
-            refresh: () => {
-                statusMonitor.count = 11;
-                document.getElementById('refreshTimer').innerText = 11;
-                
-                fetch('https://balancer.3dtank.com/balancer')
-                    .then(res => res.json())
-                    .then(data => {
-                        let totalInbattles = 0;
-                        let totalOnline = 0;
-                        let total4399 = 0;
-
-                        Object.values(data.nodes).forEach(node => {
-                            totalInbattles += node.inbattles || 0;
-                            totalOnline += node.online || 0;
-                            total4399 += (node.partners && node.partners.my_4399_com) ? node.partners.my_4399_com : 0;
-                        });
-
-                        document.getElementById('statOnline').innerText = totalOnline;
-                        document.getElementById('statBattles').innerText = totalInbattles;
-                        document.getElementById('stat4399').innerText = total4399;
-                    })
-                    .catch(() => {
-                        document.getElementById('statOnline').innerText = "Error";
-                    });
-            }
-        };
-
-        // --- INIT ---
-        window.addEventListener('DOMContentLoaded', app.init);
-        
-        // Close modals on outside click
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal-overlay')) {
-                event.target.style.display = 'none';
-            }
+            toast('权限配置已同步', 'success');
+            return true;
+        } catch (e) {
+            toast('检查权限配置失败: ' + e.message, 'error');
+            return false;
         }
-    </script>
+    }
 
-    <!-- 右下角 Gitee / GitHub 登录入口 -->
-    <div class="login-entry">
-        <a href="https://gitee.com/Kosto179cn" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.98 23.18c-6.66 0-11.98-4.37-11.98-9.75 0-3.57 2.3-6.68 5.69-8.32.27-.12.58-.06.78.16.2.23.22.56.05.8-1.8 2.62-2.18 4.5-2.18 5.45 0 .53.43.97.97.97h6.82c.54 0 .97-.44.97-.97V.97c0-.54.44-.97.97-.97.28 0 .53.12.7.31 4.45 4.5 6.95 8.6 6.95 12.09 0 5.38-4.37 9.75-11.98 9.75z"/></svg>
-            Gitee
-        </a>
-        <a href="https://github.com/Kosto179cn" target="_blank" rel="noopener">
-            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-            GitHub
-        </a>
-    </div>
+    const RANK_DATA = [
+        "新兵", "二等兵", "一等兵", "下士", "中士", "上士", "三级军士长", "二级军士长", "一级军士长", "军士长", 
+        "五级准尉", "四级准尉", "三级准尉", "二级准尉", "一级准尉", "特级准尉", "少尉", "中尉", "上尉", "少校", 
+        "中校", "上校", "准将", "少将", "中将", "上将", "元帅", "陆军元帅", "统帅", "大元帅", "传奇"
+    ];
+    
+    const RANK_HASHES = [
+        "0171bce6", "14eac60d", "4d22497b", "7c510976", "c136316c", "59fac2c8", "2d5dc20c", "b563130a", "2e8435ba", "4aa99791",
+        "747eb099", "12e6efa4", "b14aa84c", "499e0cc4", "70cf8f5b", "dfdc6796", "7c89e529", "1e5f0eb2", "dca802d5", "4d07ac16",
+        "67355bb5", "02ac56c6", "99d83bfa", "3244a43f", "717ff925", "1b80d1fb", "72e4bb3d", "6ee30e89", "cc76cbcc", "acaaced1", "06d52fbe"
+    ];
+
+    const FETCH_TIMEOUT = 10000; // 请求超时时间
+    const PAGE_SIZE = 50;        // 分页大小
+
+    let blacklistData = {};
+    let clanBlacklistData = [];  // 军团黑名单数据
+    let baseData = null;         // 拉取时的数据快照，用于 SHA 冲突时三方合并
+    let currentSha = "";
+    let currentPage = 1;
+    let dirty = false;           // 是否存在未推送的本地修改
+    let historyPermissions = {}; // 历史记录查看权限 {uid: 'allow'/'deny'}，根据权限决定是否隐藏历史信息
+
+    // ---------- 通用工具 ----------
+
+    // HTML 转义，防止昵称/军团/历史等字段注入
+    function escapeHtml(str) {
+        return String(str ?? '').replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[c]);
+    }
+
+    // 军衔值钳制到 1~31，防御脏数据
+    function clampRank(rank) {
+        let r = parseInt(rank) || 1;
+        return Math.max(1, Math.min(31, r));
+    }
+
+    // 防抖：搜索输入避免每次按键都全量重渲染
+    function debounce(fn, ms) {
+        let t;
+        return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+    }
+
+    // Toast 通知（替代 alert 打断式弹窗）
+    function toast(msg, type = 'info') {
+        const box = document.getElementById('toastBox');
+        const el = document.createElement('div');
+        el.className = `toast-item toast-${type}`;
+        el.textContent = msg;
+        box.appendChild(el);
+        setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; }, 2800);
+        setTimeout(() => el.remove(), 3200);
+    }
+
+    // Base64 <-> UTF-8（使用 TextDecoder/TextEncoder，兼容中文）
+    function b64ToUtf8(b64) {
+        const bin = atob(b64);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        return new TextDecoder('utf-8').decode(bytes);
+    }
+    function utf8ToB64(str) {
+        const bytes = new TextEncoder().encode(str);
+        let bin = '';
+        bytes.forEach(b => bin += String.fromCharCode(b));
+        return btoa(bin);
+    }
+
+    // 深拷贝快照
+    function snapshot(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+    // 脏状态标记
+    function markDirty() {
+        dirty = true;
+        document.getElementById('dirtyHint').classList.remove('hidden');
+    }
+    function clearDirty() {
+        dirty = false;
+        document.getElementById('dirtyHint').classList.add('hidden');
+    }
+
+    // 带超时的 fetch
+    async function fetchWithTimeout(url, options = {}) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+        try {
+            return await fetch(url, { ...options, signal: controller.signal });
+        } catch (e) {
+            if (e.name === 'AbortError') throw new Error('请求超时，请检查网络后重试');
+            throw new Error('网络连接失败，请检查网络后重试');
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
+    // ---------- 数据读取 ----------
+
+    // 解析云端文件内容，兼容新旧格式，返回 {players, clans}
+    function parseFileContent(b64) {
+        let rawData;
+        try {
+            rawData = JSON.parse(b64ToUtf8(b64));
+        } catch (e) {
+            throw new Error('云端数据格式损坏（JSON 解析失败），请手动检查仓库文件');
+        }
+        if (rawData && rawData.players) {
+            return { players: rawData.players, clans: rawData.clans || [] };
+        }
+        return { players: rawData, clans: [] }; // 兼容老格式
+    }
+
+    // 拉取指定服务器文件；404 时返回空数据
+    async function fetchRemoteFile(fileName, token) {
+        const url = `https://gitee.com/api/v5/repos/${CONFIG.repo}/contents/${fileName}?access_token=${token}&t=${Date.now()}`;
+        const res = await fetchWithTimeout(url);
+        if (res.status === 404) return { sha: "", players: {}, clans: [] };
+        if (!res.ok) throw new Error('连接失败: 请检查 Token 权限或仓库地址是否正确');
+        const json = await res.json();
+        const parsed = parseFileContent(json.content);
+        return { sha: json.sha, players: parsed.players, clans: parsed.clans };
+    }
+
+    // 拉取历史记录查看权限配置
+    async function fetchHistoryPermissions() {
+        const token = document.getElementById('giteeToken').value;
+        if (!token) return;
+        try {
+            const url = `https://gitee.com/api/v5/repos/${CONFIG.repo}/contents/history_permissions.json?access_token=${token}&t=${Date.now()}`;
+            const res = await fetchWithTimeout(url);
+            if (res.status === 404) { historyPermissions = {}; return; }
+            if (!res.ok) { historyPermissions = {}; return; }
+            const json = await res.json();
+            const data = JSON.parse(b64ToUtf8(json.content));
+            historyPermissions = data.permissions || {};
+            console.log('历史查看权限已加载:', Object.keys(historyPermissions).length, '条');
+        } catch (e) {
+            console.error('加载历史查看权限失败:', e);
+            historyPermissions = {};
+        }
+    }
+
+    // 检查某 UID 是否允许查看历史
+    function canViewHistory(uid) {
+        const perm = historyPermissions[uid];
+        return perm !== 'deny'; // 默认允许，只有明确标记'deny'才禁止
+    }
+
+    async function fetchData() {
+        const token = document.getElementById('giteeToken').value;
+        if (!token) return toast('请输入 Gitee Token！', 'warn');
+        localStorage.setItem('gitee_token', token);
+
+        document.getElementById('loadingState').classList.remove('hidden');
+        document.getElementById('blacklistBody').innerHTML = '';
+
+        try {
+            const remote = await fetchRemoteFile(CONFIG.getPath(), token);
+            blacklistData = remote.players;
+            clanBlacklistData = remote.clans;
+            baseData = snapshot(blacklistData);
+            currentSha = remote.sha;
+            currentPage = 1;
+            clearDirty();
+            await fetchHistoryPermissions();
+            renderTable();
+            document.getElementById('saveBtn').classList.remove('hidden');
+            toast(`拉取成功，共 ${Object.keys(blacklistData).length} 条记录`, 'success');
+        } catch (e) {
+            console.error(e);
+            toast('加载失败: ' + e.message, 'error');
+        } finally {
+            document.getElementById('loadingState').classList.add('hidden');
+        }
+    }
+
+    // ---------- 渲染 ----------
+
+    function renderTable() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+        const tbody = document.getElementById('blacklistBody');
+        const allIds = Object.keys(blacklistData);
+
+        // 搜索过滤
+        const filtered = allIds.filter(id => {
+            if (!searchTerm) return true;
+            const user = blacklistData[id] || {};
+            const nickname = user.nickname || '';
+            const clan = user.clan || '';
+            const history = (user.history || []).join(' ');
+            const clanHistory = (user.clanHistory || []).join(' ');
+            return id.includes(searchTerm) ||
+                   nickname.toLowerCase().includes(searchTerm) ||
+                   clan.toLowerCase().includes(searchTerm) ||
+                   history.toLowerCase().includes(searchTerm) ||
+                   clanHistory.toLowerCase().includes(searchTerm);
+        });
+
+        // 统计：总数恒定显示，筛选时展示 "筛选数 / 总数"
+        document.getElementById('statCount').textContent = allIds.length;
+        const statFiltered = document.getElementById('statFiltered');
+        if (searchTerm && filtered.length !== allIds.length) {
+            statFiltered.textContent = `筛选命中 ${filtered.length} 人`;
+            statFiltered.classList.remove('hidden');
+        } else {
+            statFiltered.classList.add('hidden');
+        }
+
+        // 分页计算
+        const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+        if (currentPage > totalPages) currentPage = totalPages;
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const pageIds = filtered.slice(start, start + PAGE_SIZE);
+
+        // 空状态提示
+        if (pageIds.length === 0) {
+            tbody.innerHTML = `
+                <tr><td colspan="5" class="p-16 text-center text-slate-500">
+                    <i class="fas ${allIds.length === 0 ? 'fa-cloud-arrow-down' : 'fa-magnifying-glass'} text-4xl mb-4 block text-slate-700"></i>
+                    ${allIds.length === 0
+                        ? '云端暂无数据'
+                        : '未找到匹配的记录，试试更换搜索关键词'}
+                </td></tr>`;
+            renderPagination(filtered.length, totalPages);
+            return;
+        }
+
+        // 渲染历史标签（内容全部转义）
+        const renderHistory = (list, title) => {
+            if (!list || list.length === 0) return '';
+            return `<div class="flex flex-wrap items-center mt-1">
+                        <span class="text-[9px] text-slate-600 mr-2 uppercase font-bold">${title}:</span>
+                        ${list.map(h => `<span class="history-tag">${escapeHtml(h)}</span>`).join('')}
+                    </div>`;
+        };
+
+        // DocumentFragment 一次性插入，避免逐行 append 触发多次重排
+        const frag = document.createDocumentFragment();
+        pageIds.forEach(id => {
+            const user = blacklistData[id] || {};
+            const nickname = user.nickname || '';
+            const clan = user.clan || '';
+            const rank = clampRank(user.rank);
+            const allowed = canViewHistory(id);
+
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-slate-800/30 transition-colors group';
+            tr.innerHTML = `
+                <td class="p-4">
+                    <div class="flex flex-col items-start gap-1">
+                        <img src="${getRankIconUrl(rank)}" loading="lazy" class="rank-img" alt="${escapeHtml(RANK_DATA[rank - 1])}">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase">${escapeHtml(RANK_DATA[rank - 1])}</span>
+                    </div>
+                </td>
+                <td class="p-4">
+                    <div class="font-mono text-[10px] text-blue-500/80 mb-1"># ${escapeHtml(id)}</div>
+                    <div class="text-white font-black text-lg">${escapeHtml(nickname)}</div>
+                </td>
+                <td class="p-4 text-sm">
+                    ${clan ? `<span class="bg-indigo-900/30 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/20 font-bold">${escapeHtml(clan)}</span>` : '<span class="text-slate-700 italic">散人</span>'}
+                </td>
+                <td class="p-4">
+                    <div class="max-w-xs">
+                        ${allowed ? renderHistory(user.history, '更名') : '<span style="color:#64748b">🚫 已隐藏</span>'}
+                        ${renderHistory(user.clanHistory, '军团')}
+                        <div class="text-[9px] text-slate-600 mt-2 italic"><i class="far fa-clock mr-1"></i>封锁于: ${escapeHtml(user.addedAt || '未知')}</div>
+                    </div>
+                </td>
+                <td class="p-4 text-right">
+                    <div class="flex justify-end gap-2">
+                        <button data-action="delete" data-id="${escapeHtml(id)}" title="移除" class="w-9 h-9 flex items-center justify-center bg-slate-800 hover:bg-red-600 text-slate-400 hover:text-white rounded-lg transition"><i class="fas fa-trash"></i></button>
+                    </div>
+                </td>
+            `;
+            frag.appendChild(tr);
+        });
+        tbody.innerHTML = '';
+        tbody.appendChild(frag);
+        renderPagination(filtered.length, totalPages);
+    }
+
+    function renderPagination(filteredCount, totalPages) {
+        const el = document.getElementById('pagination');
+        if (filteredCount === 0) { el.innerHTML = ''; return; }
+        const btnBase = 'px-4 py-1.5 rounded-lg font-bold text-xs transition';
+        el.innerHTML = `
+            <button ${currentPage <= 1 ? 'disabled' : ''} onclick="gotoPage(${currentPage - 1})"
+                class="${btnBase} ${currentPage <= 1 ? 'text-slate-700 cursor-not-allowed' : 'bg-slate-800 hover:bg-slate-700 text-white'}">
+                <i class="fas fa-chevron-left mr-1"></i>上一页
+            </button>
+            <span class="text-xs">第 <b class="text-white">${currentPage}</b> / ${totalPages} 页 · 共 ${filteredCount} 条</span>
+            <button ${currentPage >= totalPages ? 'disabled' : ''} onclick="gotoPage(${currentPage + 1})"
+                class="${btnBase} ${currentPage >= totalPages ? 'text-slate-700 cursor-not-allowed' : 'bg-slate-800 hover:bg-slate-700 text-white'}">
+                下一页<i class="fas fa-chevron-right ml-1"></i>
+            </button>
+        `;
+    }
+
+    function gotoPage(p) {
+        currentPage = p;
+        renderTable();
+    }
+
+    function getRankIconUrl(rank) {
+        const r = clampRank(rank);
+        const prefix = r < 10 ? '0' + r : r;
+        return `https://s.eu.tankionline.com/static/images/${prefix}.${RANK_HASHES[r - 1]}.webp`;
+    }
+
+    // ---------- 服务器切换 ----------
+
+    function switchServer(srv) {
+        if (srv === currentServer) return;
+        if (dirty && !confirm('当前服务器有未推送的修改，切换后将丢失，确定继续吗？')) return;
+        currentServer = srv;
+        // 样式切换
+        const activeCls = 'px-6 py-2 rounded-lg font-bold text-sm transition bg-blue-600 text-white shadow-lg';
+        const idleCls = 'px-6 py-2 rounded-lg font-bold text-sm transition text-slate-400 hover:text-white';
+        document.getElementById('tabCN').className = srv === 'cn' ? activeCls : idleCls;
+        document.getElementById('tabEN').className = srv === 'en' ? activeCls : idleCls;
+        document.getElementById('copyBtnLabel').textContent = srv === 'cn' ? '复制到外服' : '复制到国服';
+
+        // 重置本地状态并重新拉取
+        blacklistData = {};
+        clanBlacklistData = [];
+        baseData = null;
+        currentSha = "";
+        clearDirty();
+        renderTable();
+        const token = document.getElementById('giteeToken').value;
+        if (token) fetchData();
+        else toast('已切换服务器，请输入 Token 后拉取名单', 'info');
+    }
+
+    // ---------- 增删改 ----------
+
+    // 事件委托：表格内按钮统一处理，避免行内 onclick 拼接注入
+    document.getElementById('blacklistBody').addEventListener('click', e => {
+        const btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        const id = btn.dataset.id;
+        if (btn.dataset.action === 'delete') deleteUser(id);
+    });
+
+    // 搜索防抖
+    document.getElementById('searchInput').addEventListener('input', debounce(() => {
+        currentPage = 1;
+        renderTable();
+    }, 150));
+
+    // 批量按军团删除
+    function batchClearByClan() {
+        const clanName = prompt('请输入要清理的军团名 (完全匹配):');
+        if (!clanName) return;
+
+        const toDelete = Object.keys(blacklistData).filter(id => (blacklistData[id] || {}).clan === clanName);
+
+        if (toDelete.length === 0) {
+            toast(`未找到军团为 [${clanName}] 的用户。`, 'warn');
+            return;
+        }
+
+        if (confirm(`检测到该军团共有 ${toDelete.length} 名成员，确定全部移除吗？`)) {
+            toDelete.forEach(id => delete blacklistData[id]);
+            markDirty();
+            renderTable();
+            toast(`已从本地列表移除 ${toDelete.length} 人，请记得同步到云端！`, 'success');
+        }
+    }
+
+    function deleteUser(id) {
+        const user = blacklistData[id];
+        if (!user) return;
+        if (confirm(`确定要解除对 ${user.nickname || id} 的封锁吗？`)) {
+            delete blacklistData[id];
+            markDirty();
+            renderTable();
+            toast('已从本地列表移除，请记得同步到云端', 'success');
+        }
+    }
+
+    // ---------- 双服复制 ----------
+
+    // 将当前服名单复制到另一服（直接写云端目标文件）
+    async function copyToOtherServer() {
+        const token = document.getElementById('giteeToken').value;
+        if (!token) return toast('请先输入 Gitee Token！', 'warn');
+        if (Object.keys(blacklistData).length === 0) return toast('当前名单为空，无可复制数据', 'warn');
+
+        const targetName = currentServer === 'cn' ? '外服' : '国服';
+        if (!confirm(`确定将当前 ${Object.keys(blacklistData).length} 条记录覆盖复制到【${targetName}】名单吗？\n（目标文件现有数据将被完全替换）`)) return;
+
+        toast(`正在读取${targetName}云端文件...`, 'info');
+        try {
+            const target = await fetchRemoteFile(CONFIG.getOtherPath(), token);
+            const saveData = { players: blacklistData, clans: clanBlacklistData };
+            const content = utf8ToB64(JSON.stringify(saveData, null, 2));
+            const url = `https://gitee.com/api/v5/repos/${CONFIG.repo}/contents/${CONFIG.getOtherPath()}`;
+            const res = await fetchWithTimeout(url, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    access_token: token,
+                    content: content,
+                    sha: target.sha,
+                    message: `Blacklist copied from ${currentServer} via Kosto Web UI: ` + new Date().toLocaleString()
+                })
+            });
+            if (!res.ok) throw new Error('写入失败，请重试或检查 Token 权限');
+            toast(`已成功复制 ${Object.keys(blacklistData).length} 条记录到${targetName}！`, 'success');
+        } catch (e) {
+            toast('复制失败: ' + e.message, 'error');
+        }
+    }
+
+    // ---------- 云端同步 ----------
+
+    // 构建推送载荷
+    function buildSaveContent() {
+        const saveData = { players: blacklistData, clans: clanBlacklistData };
+        return utf8ToB64(JSON.stringify(saveData, null, 2));
+    }
+
+    // 发起 PUT 推送
+    async function pushToGitee(token, sha, content, message) {
+        const url = `https://gitee.com/api/v5/repos/${CONFIG.repo}/contents/${CONFIG.getPath()}`;
+        return fetchWithTimeout(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ access_token: token, content: content, sha: sha, message: message })
+        });
+    }
+
+    // SHA 冲突时重新获取最新 sha 后全量覆盖推送（不做合并，本地数据完全覆盖云端）
+    async function forceFullPush(token) {
+        toast('检测到云端已更新，正在获取最新版本号以完全覆盖...', 'info');
+        const remote = await fetchRemoteFile(CONFIG.getPath(), token);
+        currentSha = remote.sha; // 仅更新版本号，云端内容将被本地数据完全覆盖
+        const res = await pushToGitee(token, currentSha, buildSaveContent(),
+            'Blacklist force-updated via Kosto Web UI: ' + new Date().toLocaleString());
+        if (!res.ok) throw new Error('覆盖推送仍失败，请刷新页面重试');
+        const resJson = await res.json();
+        currentSha = resJson.content.sha;
+        clearDirty();
+        toast('已用本地数据完全覆盖云端并同步成功！', 'success');
+    }
+
+    async function saveToCloud() {
+        const token = document.getElementById('giteeToken').value;
+        if (!confirm('警告：此操作将用当前列表【完全覆盖】云端黑名单数据，确定继续吗？')) return;
+
+        const btn = document.getElementById('saveBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>正在同步数据流...';
+
+        try {
+            const res = await pushToGitee(token, currentSha, buildSaveContent(),
+                'Blacklist updated via Kosto Web UI: ' + new Date().toLocaleString());
+
+            if (res.status === 409) {
+                // SHA 冲突：云端已被其他会话修改。本系统语义为全量推送，不做合并
+                if (confirm('云端数据已被修改（SHA 冲突）。\n\n是否仍以本地数据完全覆盖云端？\n（选择“取消”则保留云端现状，请重新拉取后再编辑）')) {
+                    await forceFullPush(token);
+                } else {
+                    toast('已取消推送：云端数据已变化，请先重新拉取', 'warn');
+                }
+                return;
+            }
+
+            if (!res.ok) throw new Error('同步失败：网络中断或 Token 权限不足，请重试');
+
+            const resJson = await res.json();
+            currentSha = resJson.content.sha;
+            baseData = snapshot(blacklistData);
+            clearDirty();
+            toast('云端数据已同步成功！', 'success');
+        } catch (e) {
+            toast(e.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-cloud-upload-alt mr-2"></i>推送至云端同步';
+        }
+    }
+
+    // ---------- 初始化 ----------
+
+    window.onload = () => {
+        const savedToken = localStorage.getItem('gitee_token');
+        if (savedToken) {
+            document.getElementById('giteeToken').value = savedToken;
+            // 有 token 自动拉取云端名单
+            fetchData();
+        }
+
+        // 未保存修改时离开页面提醒
+        window.addEventListener('beforeunload', e => {
+            if (dirty) { e.preventDefault(); e.returnValue = ''; }
+        });
+
+        renderTable();
+    };
+</script>
 </body>
 </html>
