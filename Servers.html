@@ -353,6 +353,52 @@
             animation: spin 1s linear infinite;
             margin-bottom: 15px;
         }
+        .card.loading {
+            pointer-events: none;
+            opacity: 0.75;
+            background: var(--card-hover);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 18px rgba(118, 255, 51, 0.25);
+        }
+
+        .card.loading .card-title,
+        .card.loading .card-sub,
+        .card.loading .stats-badges {
+            visibility: hidden;
+        }
+
+        .card-spinner {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+        }
+
+        .card.loading .card-spinner {
+            opacity: 1;
+        }
+
+        .card-spinner-circle {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(118, 255, 51, 0.25);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+
+        .card-spinner-text {
+            font-size: 12px;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* 右下角登录入口 */
@@ -701,6 +747,78 @@
                     const gl = document.getElementById('linkGuofu');
                     gl.href += (gl.href.includes('?') ? '&' : '?') + 'distribution=generic_mobile_china';
                 }
+
+                // 卡片点击加载动画
+                app.attachCardLoading();
+                // 观察动态生成的卡片（如测试服扫描结果）
+                app.observeDynamicCards();
+            },
+
+            ensureSpinner: (card) => {
+                if (card.querySelector('.card-spinner')) return;
+                const spinner = document.createElement('div');
+                spinner.className = 'card-spinner';
+                spinner.innerHTML = '<div class="card-spinner-circle"></div><div class="card-spinner-text">加载中...</div>';
+                card.appendChild(spinner);
+            },
+
+            attachCardLoading: () => {
+                document.querySelectorAll('.card').forEach(card => app.bindCardLoading(card));
+            },
+
+            observeDynamicCards: () => {
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach(m => {
+                        m.addedNodes.forEach(node => {
+                            if (node.nodeType !== 1) return;
+                            if (node.classList && node.classList.contains('card')) {
+                                app.bindCardLoading(node);
+                            }
+                            node.querySelectorAll && node.querySelectorAll('.card').forEach(c => app.bindCardLoading(c));
+                        });
+                    });
+                });
+                observer.observe(document.body, { childList: true, subtree: true });
+            },
+
+            bindCardLoading: (card) => {
+                if (card.dataset.cardBound === '1') return;
+                card.dataset.cardBound = '1';
+                app.ensureSpinner(card);
+
+                card.addEventListener('click', (e) => {
+                    if (card.classList.contains('loading')) return;
+                    const handler = card.getAttribute('onclick');
+                    const href = card.getAttribute('href');
+
+                    card.classList.add('loading');
+                    // 至少展示 400ms 的加载动画，让视觉可感知
+                    const minDelay = new Promise(r => setTimeout(r, 400));
+
+                    const proceed = async () => {
+                        await minDelay;
+                        if (card.classList.contains('loading')) card.classList.remove('loading');
+
+                        if (typeof handler === 'string' && handler.length > 0) {
+                            // 内部分页导航，允许立即执行
+                            try { eval(handler); } catch (err) { /* ignore */ }
+                        } else if (href) {
+                            if (card.target === '_blank') {
+                                window.open(href, '_blank', 'noopener');
+                            } else {
+                                window.location.href = href;
+                            }
+                        }
+                    };
+
+                    if (href) {
+                        e.preventDefault();
+                        proceed();
+                    } else if (handler) {
+                        e.preventDefault();
+                        proceed();
+                    }
+                });
             },
 
             navigate: (viewId) => {
@@ -820,6 +938,10 @@
                     <div class="stats-badges">
                         <span class="badge" style="color:var(--primary-color)">在线: ${online}</span>
                         <span class="badge">战斗: ${battles}</span>
+                    </div>
+                    <div class="card-spinner">
+                        <div class="card-spinner-circle"></div>
+                        <div class="card-spinner-text">加载中...</div>
                     </div>
                 `;
                 document.getElementById('testResults').appendChild(card);
