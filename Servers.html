@@ -644,13 +644,15 @@
                     <span class="checkbox-custom"></span> 新窗口打开
                 </label>
             </div>
-            <button class="action-btn" onclick="testScanner.start()">🔄 重新扫描</button>
+            <button class="action-btn" onclick="testScanner.refresh()">🔄 立即刷新</button>
         </div>
 
         <div id="testLoader" class="loader-container" style="display:none;">
             <div class="spinner"></div>
-            <div>正在扫描服务器... (<span id="scanProgress">0</span>/<span id="scanTotal">24</span>)</div>
+            <div>正在获取测试服列表...</div>
         </div>
+
+        <div id="testUpdated" style="text-align:center; color:#8a93a5; font-size:11px; margin-bottom:10px;"></div>
 
         <div id="testNoServers" class="status-display" style="display:none; padding: 20px;">
             ⚠️ 当前暂无可用测试服
@@ -722,7 +724,13 @@
 
     <script>
         // --- APP STATE MANAGEMENT ---
-        const app = {
+        // [2026-11-03 修复] 原来写的是 `const app = {...}`：
+        //   如果页面上已存在 window.app（其它脚本 / 浏览器扩展注入），
+        //   `const app` 会抛 "Identifier 'app' has already been declared"，
+        //   导致**整个 script 块不执行** → app 始终 undefined → 点卡片报
+        //   "ReferenceError: app is not defined"。
+        // 改成显式挂 window.app：不会重复声明报错，且内联 onclick 一定能取到。
+        window.app = {
             currentView: 'home',
             
             init: () => {
@@ -832,9 +840,13 @@
                 app.currentView = viewId;
                 
                 // Logic switches
-                if (viewId === 'test') testScanner.start();
-                if (viewId === 'status') statusMonitor.start();
-                else statusMonitor.stop();
+                // 测试服走官方逻辑：/public_test 接口 + 15 秒自动轮询（离开页面要停）
+                if (viewId === 'test') { testScanner.start(); statusMonitor.stop(); }
+                else {
+                    testScanner.stop();
+                    if (viewId === 'status') statusMonitor.start();
+                    else statusMonitor.stop();
+                }
 
                 // Update Header
                 const titles = { 
@@ -882,156 +894,238 @@
         //   ③ 没有重试 → 一次网络抖动直接漏掉服务器。
         //   ④ 只用 HEAD 探活 → balancer 若不认 HEAD（405）会整批漏掉。
         //   ⑤ `data.nodes` 硬假设 → 结构一变整台服务器被跳过。
-        //   ⑥ Review 的 playUrl 里 `{server}` 占位符从未替换 → 链接必坏。
-        //      （balancer 返回的 nodes key 正是 c1/c2，应该按节点生成）
+        //   ⑥ 官方 main.js 的 createClientUrl() 里写的是 `c{server}.{domain}` 字面量，
+        //      而官方 /public_test 接口返回的 Url 字段用的是 `c1` —— 以前直接照抄了前者。
+        //      现在以接口返回的 Url 为准（config 用 c1）。
         //   ⑦ 404（不存在）与 000（连不上）不作区分 → 用户看到"服务器消失"，无法判断原因。
         //   ⑧ 进度分母 20 写死。
+        // --- TEST SERVER LOGIC（对齐官方 test.tankionline.com 的实现）---
+        // 官方实现（https://test.tankionline.com/assets/main.js）:
+        //   API_URL = '/public_test';   API_REQUEST_PERIOD = 15000;
+        //   $.getJSON(API_URL + '?v=' + Date.now(), releases => { 每块 .block-releases 清空重绘 })
+        //   releases 每项：{ Release, Domain, Url, UserCount }
+        //   入口链接：createClientUrl(domain)
+        //
+        // 【一处修正】官方 createClientUrl() 写的是 `https://c{server}.${domain}/config.xml`，
+        //   实测该域名访问失败（HTTP 000），而官方 /public_test 返回的 Url 字段用的是 `c1`
+        //   → 这里统一用 c1（实测 HTTP 200，返回正常 config.xml）。
+        //
+        // 【一处保留】官方用 setInterval 每 15 秒自动刷新，这里照搬。
         const testScanner = {
+            // 三条通道（按优先级）：
+            // ① PROXY_URL —— 自己的 Worker 代理（kosto-test.pages.dev/?model=11）：跨域可用，且能自动发现新开的服
+            // ② API_URL   —— 直连官方接口（官方目前**不带 CORS 头**，浏览器会拦；留着以防官方以后加上）
+            // ③ 兜底      —— balancer 盲扫（balancer 带 Access-Control-Allow-Origin: *，纯静态站就能用）
+            PROXY_URL: 'https://kosto-test.pages.dev/?model=11',
+            API_URL: 'https://test.tankionline.com/public_test',
+            POLL_MS: 15000,          // 官方 API_REQUEST_PERIOD
+            TIMEOUT_MS: 7000,       // 单次请求超时（官方 jQuery 无超时，浏览器会挂）
+            RETRIES: 2,             // 失败重试（官方没有）
+            MAX_INDEX: 12,          // 兜底盲扫范围
             isRunning: false,
-            CONCURRENCY: 4,       // 并发上限（原 20 并发）
-            TIMEOUT_MS: 7000,     // 单次请求超时（原无）
-            RETRIES: 2,           // 失败重试次数（原 0）
-            MAX_INDEX: 12,        // 扫描范围 1..N（原写死 10）
+            timer: null,
 
             sleep: (ms) => new Promise(r => setTimeout(r, ms)),
 
-            // 探测一个 balancer：超时 + 重试，返回 {state:'ok'|'none'|'fail'}
-            probe: async function (url) {
+            // 官方 createClientUrl() 的修正版（c1 替代失效的 c{server}）
+            createClientUrl: function (domain) {
+                return `https://${domain}/browser-public/index.html`
+                     + `?config-template=${encodeURIComponent(`https://c1.${domain}/config.xml`)}`
+                     + `&resources=${encodeURIComponent('../resources')}`
+                     + `&balancer=${encodeURIComponent(`https://balancer.${domain}/balancer`)}`;
+            },
+
+            // 官方 $.getJSON(API_URL + '?v=' + Date.now(), cb) 的 fetch 版
+            // 返回 null 表示拉取失败（此时保留上一次结果，不清空列表）
+            // 取测试服列表：①Worker代理 → ②直连官方 → ③balancer 兜底盲扫
+            // 返回 [{Release, Domain, Url, UserCount}]；全部通道失败返回 null
+            fetchOfficial: async function () {
+                // ① 自己的 Worker 代理（能自动发现新开的服）
+                var via = await testScanner.fetchVia(testScanner.PROXY_URL, true);
+                if (via && via.length) return via;
+                // ② 直连官方（官方目前无 CORS 头，通常会被浏览器拦下；留着以防官方以后加上）
+                via = await testScanner.fetchVia(testScanner.API_URL + '?v=' + Date.now(), false);
+                if (via && via.length) return via;
+                // ③ 兜底：balancer 盲扫（balancer 带 Access-Control-Allow-Origin: *，纯静态站可用）
+                var fb = await testScanner.fallbackScan();
+                if (fb.length) return fb;
+                return null;
+            },
+
+            fetchVia: async function (url, isPost) {
                 var lastErr = null;
-                for (var attempt = 0; attempt <= this.RETRIES; attempt++) {
+                for (var attempt = 0; attempt <= testScanner.RETRIES; attempt++) {
                     try {
                         var ctl = new AbortController();
-                        var timer = setTimeout(function () { ctl.abort(); }, this.TIMEOUT_MS);
+                        var timer = setTimeout(function () { ctl.abort(); }, testScanner.TIMEOUT_MS);
                         var res;
                         try {
-                            // 直接 GET：HEAD 有的 balancer 不认，GET 反而稳，且响应体本来就要
-                            res = await fetch(url, { method: 'GET', signal: ctl.signal, cache: 'no-store' });
+                            res = await fetch(url, isPost
+                                ? { method: 'POST', signal: ctl.signal, cache: 'no-store' }
+                                : { signal: ctl.signal, cache: 'no-store' });
                         } finally { clearTimeout(timer); }
-                        if (res.status === 404) return { state: 'none', status: 404 };
                         if (!res.ok) throw new Error('HTTP ' + res.status);
-                        var data = null;
-                        try { data = await res.json(); } catch (e) { }
-                        return { state: 'ok', status: res.status, data: data };
+                        var arr = await res.json();
+                        return Array.isArray(arr) ? arr.filter(function (x) { return x && x.Domain; }) : [];
                     } catch (e) {
                         lastErr = e;
-                        if (attempt < this.RETRIES) await this.sleep(500 * (attempt + 1));
+                        if (attempt < testScanner.RETRIES) await testScanner.sleep(400 * (attempt + 1));
                     }
                 }
-                return { state: 'fail', status: 0, err: lastErr };
+                console.warn('[Servers] 通道拉取失败:', url, lastErr);
+                return null;
             },
 
-            // 生成进入链接。Deploy 固定一个；Review 按 balancer 回来的节点 key（c1/c2）逐个生成，
-            // 顺手修掉原来 `{server}` 占位符没替换的 bug。
-            buildPlayUrls: function (i, type, nodeKeys) {
-                if (type === 'Deploy') {
-                    return [`https://public-deploy${i}.test-eu.tankionline.com/browser-public/index.html`];
+            // 兜底扫描：balancer 带 CORS 头可跨域。
+            // 域名清单 = 国服 public-deploy-china（域名里没编号，只有官方接口知道）+ public-deploy{1..12}
+            fallbackScan: async function () {
+                var domains = ['public-deploy-china.test-eu.tankionline.com'];
+                for (var i = 1; i <= testScanner.MAX_INDEX; i++) {
+                    domains.push('public-deploy' + i + '.test-eu.tankionline.com');
                 }
-                var base = `https://client-review-${i}-public.test-ru.tankionline.com/`;
-                var resources = `https://resources-review-${i}-public.test-ru.tankionline.com`;
-                var balancer = `https://balancer.review-${i}-public.test-ru.tankionline.com/balancer`;
-                var keys = (nodeKeys && nodeKeys.length) ? nodeKeys : ['c1', 'c2'];
-                return keys.map(function (k) {
-                    var cfg = `https://${k}.review-${i}-public.test-ru.tankionline.com/config.xml`;
-                    return `${base}?config-template=${encodeURIComponent(cfg)}`
-                         + `&resources=${encodeURIComponent(resources)}`
-                         + `&balancer=${encodeURIComponent(balancer)}`;
-                });
-            },
-
-            start: async () => {
-                const container = document.getElementById('testResults');
-                container.innerHTML = '';
-                document.getElementById('testLoader').style.display = 'flex';
-                document.getElementById('testNoServers').style.display = 'none';
-                const progEl = document.getElementById('scanProgress');
-                progEl.innerText = '0';
-
-                const jobs = [];
-                for (let i = 1; i <= testScanner.MAX_INDEX; i++) {
-                    jobs.push({ i: i, type: 'Deploy' });
-                    jobs.push({ i: i, type: 'Review' });
-                }
-                const total = jobs.length;
-                const totalEl = document.getElementById('scanTotal');
-                if (totalEl) totalEl.innerText = String(total);
-
-                let found = 0;
-                let done = 0;
-                const noneList = [];
-                const failList = [];
-
-                const check = async (i, type) => {
-                    const isDeploy = type === 'Deploy';
-                    const checkUrl = isDeploy
-                        ? `https://balancer.public-deploy${i}.test-eu.tankionline.com/balancer`
-                        : `https://balancer.review-${i}-public.test-ru.tankionline.com/balancer`;
-
-                    const r = await testScanner.probe(checkUrl);
-
-                    if (r.state === 'ok') {
-                        const nodes = (r.data && r.data.nodes && typeof r.data.nodes === 'object') ? r.data.nodes : {};
-                        let online = 0, battles = 0;
+                var out = [];
+                var cursor = 0;
+                var worker = async function () {
+                    while (cursor < domains.length) {
+                        var d = domains[cursor++];
                         try {
-                            Object.values(nodes).forEach(n => {
+                            var ctl = new AbortController();
+                            var timer = setTimeout(function () { ctl.abort(); }, testScanner.TIMEOUT_MS);
+                            var res;
+                            try {
+                                res = await fetch('https://balancer.' + d + '/balancer',
+                                    { signal: ctl.signal, cache: 'no-store' });
+                            } finally { clearTimeout(timer); }
+                            if (!res.ok) continue;
+                            var data = await res.json();
+                            var nodes = (data && data.nodes && typeof data.nodes === 'object') ? data.nodes : {};
+                            var online = 0, battles = 0;
+                            Object.values(nodes).forEach(function (n) {
                                 online += Number(n && n.online) || 0;
                                 battles += Number(n && n.inbattles) || 0;
                             });
-                        } catch (e) { }
-                        const urls = testScanner.buildPlayUrls(i, type, Object.keys(nodes));
-                        urls.forEach((u, idx) => {
-                            testScanner.renderCard(
-                                type + ' ' + i + (urls.length > 1 ? ' (' + (idx + 1) + ')' : ''),
-                                u, online, battles);
-                        });
-                        found++;
-                    } else if (r.state === 'none') {
-                        noneList.push(type + ' ' + i);
-                    } else {
-                        failList.push(type + ' ' + i);
-                    }
-
-                    done++;
-                    progEl.innerText = String(done);
-                };
-
-                // 并发池：同时最多 CONCURRENCY 个，避免瞬发几十个请求被限流
-                const worker = async () => {
-                    while (jobs.length) {
-                        const job = jobs.shift();
-                        await check(job.i, job.type);
+                            out.push({
+                                Release: d.replace('.test-eu.tankionline.com', '').replace('public-', ''),
+                                Domain: d,
+                                Url: '',
+                                UserCount: online,
+                                battles: battles
+                            });
+                        } catch (e) { /* 该服不可达，忽略 */ }
                     }
                 };
-                await Promise.all(Array.from({ length: testScanner.CONCURRENCY }, worker));
+                await Promise.all(Array.from({ length: 4 }, worker));
+                out.sort(function (a, b) { return String(a.Release).localeCompare(String(b.Release)); });
+                return out;
+            },
 
-                // 失败/不存在的服务器聚合成提示，而不是"凭空消失"
-                if (noneList.length) {
-                    testScanner.renderNote('以下部署不存在 (404)', noneList.join('、'));
+            // 附加项（官方页面没有）：从 balancer 补一个"战斗数"。
+            // 已知值（兜底扫描时已取到）就不再重复请求。
+            fillBattles: async function (domain, card, known) {
+                if (known !== undefined && known !== null) {
+                    const el0 = card && card.querySelector('[data-role="battles"]');
+                    if (el0) el0.textContent = '战斗: ' + known;
+                    return;
                 }
-                if (failList.length) {
-                    testScanner.renderNote('以下无法连接（证书或网络问题）', failList.join('、'));
+                try {
+                    var ctl = new AbortController();
+                    var timer = setTimeout(function () { ctl.abort(); }, testScanner.TIMEOUT_MS);
+                    var res;
+                    try {
+                        res = await fetch('https://balancer.' + domain + '/balancer',
+                            { signal: ctl.signal, cache: 'no-store' });
+                    } finally { clearTimeout(timer); }
+                    if (!res.ok) return;
+                    var data = await res.json();
+                    var nodes = (data && data.nodes && typeof data.nodes === 'object') ? data.nodes : {};
+                    var battles = 0;
+                    Object.values(nodes).forEach(function (n) { battles += Number(n && n.inbattles) || 0; });
+                    var el = card && card.querySelector('[data-role="battles"]');
+                    if (el) el.textContent = '战斗: ' + battles;
+                } catch (e) { /* 附加项失败不影响主流程 */ }
+            },
+
+            // 官方 Url 是 desktop/index.html（桌面客户端用），这里换成浏览器版
+            toBrowserUrl: function (officialUrl) {
+                try {
+                    const u = new URL(officialUrl);
+                    u.pathname = u.pathname.replace('/desktop/', '/browser-public/');
+                    return u.toString();
+                } catch (e) { return officialUrl; }
+            },
+
+            // 官方每次 tick 清空容器重绘
+            tick: async () => {
+                const container = document.getElementById('testResults');
+                const loader = document.getElementById('testLoader');
+                const noServers = document.getElementById('testNoServers');
+                const updated = document.getElementById('testUpdated');
+
+                const list = await testScanner.fetchOfficial();
+                if (list === null) {
+                    // 拉取失败 → 保留上一次的结果，别把列表清空
+                    if (loader) loader.style.display = 'none';
+                    if (updated) updated.textContent = '获取失败，稍后自动重试';
+                    return;
                 }
 
-                document.getElementById('testLoader').style.display = 'none';
-                if (found === 0) document.getElementById('testNoServers').style.display = 'block';
+                container.innerHTML = '';
+                if (loader) loader.style.display = 'none';
+                if (noServers) noServers.style.display = list.length ? 'none' : 'block';
 
+                list.forEach((item, idx) => {
+                    const domain = item.Domain;
+                    const url = item.Url ? testScanner.toBrowserUrl(item.Url) : testScanner.createClientUrl(domain);
+                    const label = String(item.Release || domain).replace(/-pubto$/, '');
+                    const card = testScanner.renderCard(
+                        label + (list.length > 1 ? ' (' + (idx + 1) + ')' : ''),
+                        url, Number(item.UserCount) || 0, 0);
+                    testScanner.fillBattles(domain, card, item.battles);
+                });
+
+                if (updated) {
+                    const d = new Date();
+                    const p = n => String(n).padStart(2, '0');
+                    updated.textContent = '最后更新 ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds())
+                        + ' · 每 15 秒自动刷新';
+                }
                 testScanner.updateLinks();
             },
+
+            start: async () => {
+                if (testScanner.isRunning) return;
+                testScanner.isRunning = true;
+                const loader = document.getElementById('testLoader');
+                if (loader) loader.style.display = 'flex';
+                await testScanner.tick();
+                // 官方：setInterval(tick, 15000)
+                if (testScanner.timer) clearInterval(testScanner.timer);
+                testScanner.timer = setInterval(function () { testScanner.tick(); }, testScanner.POLL_MS);
+            },
+
+            stop: () => {
+                if (testScanner.timer) { clearInterval(testScanner.timer); testScanner.timer = null; }
+                testScanner.isRunning = false;
+            },
+
+            // 手动刷新一次（不重置轮询）
+            refresh: () => { testScanner.tick(); },
 
             renderCard: (name, url, online, battles) => {
                 const card = document.createElement('a');
                 card.className = 'card server-item test-link';
                 card.href = url;
                 card.dataset.baseUrl = url;
-                
+
                 const icon = name.includes('Deploy') ? '🚀' : '🛠️';
-                
+
                 card.innerHTML = `
                     <div class="card-title" style="display:flex; align-items:center; gap:10px;">
                         <span>${icon}</span> ${name}
                     </div>
                     <div class="stats-badges">
                         <span class="badge" style="color:var(--primary-color)">在线: ${online}</span>
-                        <span class="badge">战斗: ${battles}</span>
+                        <span class="badge" data-role="battles">战斗: ${battles}</span>
                     </div>
                     <div class="card-spinner">
                         <div class="card-spinner-circle"></div>
@@ -1039,22 +1133,9 @@
                     </div>
                 `;
                 document.getElementById('testResults').appendChild(card);
+                return card;
             },
 
-            // 不可用的服务器也渲染出来（灰卡），免得用户以为"扫漏了"
-            renderNote: (title, text) => {
-                const card = document.createElement('div');
-                card.className = 'card server-item';
-                card.style.opacity = '0.5';
-                card.innerHTML = `
-                    <div class="card-title" style="display:flex; align-items:center; gap:10px;">
-                        <span>·</span> ${title}
-                    </div>
-                    <div class="stats-badges">
-                        <span class="badge">${text}</span>
-                    </div>`;
-                document.getElementById('testResults').appendChild(card);
-            },
 
             updateLinks: () => {
                 const links = document.querySelectorAll('.test-link');
