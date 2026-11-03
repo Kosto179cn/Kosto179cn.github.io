@@ -946,8 +946,8 @@
                 // ② 直连官方（官方目前无 CORS 头，通常会被浏览器拦下；留着以防官方以后加上）
                 via = await testScanner.fetchVia(testScanner.API_URL + '?v=' + Date.now(), false);
                 if (via && via.length) return via;
-                // ③ 兜底：balancer 盲扫（balancer 带 Access-Control-Allow-Origin: *，纯静态站可用）
-                var fb = await testScanner.fallbackScan();
+                // ③ 兜底：按服务器清单盲扫（balancer 有 CORS 头，纯静态站可用）
+                var fb = await testScanner.scanServers();
                 if (fb.length) return fb;
                 return null;
             },
@@ -976,25 +976,70 @@
                 return null;
             },
 
-            // 兜底扫描：balancer 带 CORS 头可跨域。
-            // 域名清单 = 国服 public-deploy-china（域名里没编号，只有官方接口知道）+ public-deploy{1..12}
-            fallbackScan: async function () {
-                var domains = ['public-deploy-china.test-eu.tankionline.com'];
+            // 服务器清单（抄自 testanki1.github.io/test 的做法）：
+            //  ① Deploy 1..N —— 裸 browser-public 链接，**不需要** config-template
+            //  ② 三个独立命名的服：classic / ru / china —— 需要 config-template
+            //
+            // 【修正】参考页与官方 main.js 都写 `https://c{server}.{domain}/config.xml`，
+            //   实测该域名**DNS 直接 ENOTFOUND**（{} 不是合法 DNS 字符）→ 链接是坏的。
+            //   正确写法用真实节点名 c1（实测 HTTP 200，返回正常 config.xml）。
+            serverList: function () {
+                var list = [];
                 for (var i = 1; i <= testScanner.MAX_INDEX; i++) {
-                    domains.push('public-deploy' + i + '.test-eu.tankionline.com');
+                    var d = 'public-deploy' + i + '.test-eu.tankionline.com';
+                    list.push({
+                        id: 'deploy-' + i,
+                        name: 'Deploy ' + i,
+                        domain: d,
+                        balancer: 'https://balancer.' + d + '/balancer',
+                        link: 'https://' + d + '/browser-public/index.html',
+                        withConfig: false,
+                        order: i * 10
+                    });
                 }
+                var extra = [
+                    { id: 'classic-btn', name: 'Classic (Test)', domain: 'public-deploy-classic.test-eu.tankionline.com',
+                      balancer: 'https://balancer.public-deploy-classic.test-eu.tankionline.com/balancer',
+                      resources: '../resources', withConfig: true, order: 100 },
+                    { id: 'ru-btn', name: 'RU (Test)', domain: 'ru.tankionline.com',
+                      balancer: 'https://balancer.ru.tankionline.com/balancer',
+                      link: 'https://test.ru.tankionline.com/play/',
+                      resources: 'https://s.ru.tankionline.com', withConfig: true, order: 101 },
+                    { id: 'china-btn', name: 'China (Test)', domain: 'public-deploy-china.test-eu.tankionline.com',
+                      balancer: 'https://balancer.public-deploy-china.test-eu.tankionline.com/balancer',
+                      resources: '../resources', withConfig: true, order: 102 }
+                ];
+                extra.forEach(function (s) {
+                    var link = s.link || ('https://' + s.domain + '/browser-public/index.html');
+                    if (s.withConfig) {
+                        link += (link.indexOf('?') >= 0 ? '&' : '?')
+                              + 'config-template=' + encodeURIComponent('https://c1.' + s.domain + '/config.xml')
+                              + '&resources=' + encodeURIComponent(s.resources)
+                              + '&balancer=' + encodeURIComponent(s.balancer);
+                    }
+                    list.push({
+                        id: s.id, name: s.name, domain: s.domain,
+                        balancer: s.balancer, link: link,
+                        withConfig: s.withConfig, order: s.order
+                    });
+                });
+                return list;
+            },
+
+            // 兜底扫描：balancer 带 CORS 头（Access-Control-Allow-Origin: *）可跨域
+            scanServers: async function () {
+                var list = testScanner.serverList();
                 var out = [];
                 var cursor = 0;
                 var worker = async function () {
-                    while (cursor < domains.length) {
-                        var d = domains[cursor++];
+                    while (cursor < list.length) {
+                        var s = list[cursor++];
                         try {
                             var ctl = new AbortController();
                             var timer = setTimeout(function () { ctl.abort(); }, testScanner.TIMEOUT_MS);
                             var res;
                             try {
-                                res = await fetch('https://balancer.' + d + '/balancer',
-                                    { signal: ctl.signal, cache: 'no-store' });
+                                res = await fetch(s.balancer, { signal: ctl.signal, cache: 'no-store' });
                             } finally { clearTimeout(timer); }
                             if (!res.ok) continue;
                             var data = await res.json();
@@ -1005,17 +1050,15 @@
                                 battles += Number(n && n.inbattles) || 0;
                             });
                             out.push({
-                                Release: d.replace('.test-eu.tankionline.com', '').replace('public-', ''),
-                                Domain: d,
-                                Url: '',
-                                UserCount: online,
-                                battles: battles
+                                Release: s.name, Domain: s.domain, Url: s.link,
+                                UserCount: online, battles: battles,
+                                order: s.order, version: (data && data.serverVersion) || null
                             });
                         } catch (e) { /* 该服不可达，忽略 */ }
                     }
                 };
                 await Promise.all(Array.from({ length: 4 }, worker));
-                out.sort(function (a, b) { return String(a.Release).localeCompare(String(b.Release)); });
+                out.sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
                 return out;
             },
 
@@ -1079,7 +1122,7 @@
                     const label = String(item.Release || domain).replace(/-pubto$/, '');
                     const card = testScanner.renderCard(
                         label + (list.length > 1 ? ' (' + (idx + 1) + ')' : ''),
-                        url, Number(item.UserCount) || 0, 0);
+                        url, Number(item.UserCount) || 0, 0, item.version);
                     testScanner.fillBattles(domain, card, item.battles);
                 });
 
@@ -1111,7 +1154,7 @@
             // 手动刷新一次（不重置轮询）
             refresh: () => { testScanner.tick(); },
 
-            renderCard: (name, url, online, battles) => {
+            renderCard: (name, url, online, battles, version) => {
                 const card = document.createElement('a');
                 card.className = 'card server-item test-link';
                 card.href = url;
@@ -1126,6 +1169,7 @@
                     <div class="stats-badges">
                         <span class="badge" style="color:var(--primary-color)">在线: ${online}</span>
                         <span class="badge" data-role="battles">战斗: ${battles}</span>
+                        ${version ? `<span class="badge">版本: ${version}</span>` : ''}
                     </div>
                     <div class="card-spinner">
                         <div class="card-spinner-circle"></div>
