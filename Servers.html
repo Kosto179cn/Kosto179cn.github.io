@@ -649,7 +649,7 @@
 
         <div id="testLoader" class="loader-container" style="display:none;">
             <div class="spinner"></div>
-            <div>正在扫描服务器... (<span id="scanProgress">0</span>/20)</div>
+            <div>正在扫描服务器... (<span id="scanProgress">0</span>/<span id="scanTotal">24</span>)</div>
         </div>
 
         <div id="testNoServers" class="status-display" style="display:none; padding: 20px;">
@@ -875,56 +875,145 @@
         };
 
         // --- TEST SERVER LOGIC ---
+        // [2026-11-03 修复] 原实现的问题：
+        //   ① 20 个并发 × (HEAD+GET) = 瞬发 40 个请求 → 容易被限流/连接抖动，实测
+        //      Deploy 6 在批量扫描时返回 000、单独测却是 200 → 服务器被误判为"不存在"。
+        //   ② fetch 没有超时 → 某个 balancer 挂起时 loader 永远转，Promise.allSettled 永不返回。
+        //   ③ 没有重试 → 一次网络抖动直接漏掉服务器。
+        //   ④ 只用 HEAD 探活 → balancer 若不认 HEAD（405）会整批漏掉。
+        //   ⑤ `data.nodes` 硬假设 → 结构一变整台服务器被跳过。
+        //   ⑥ Review 的 playUrl 里 `{server}` 占位符从未替换 → 链接必坏。
+        //      （balancer 返回的 nodes key 正是 c1/c2，应该按节点生成）
+        //   ⑦ 404（不存在）与 000（连不上）不作区分 → 用户看到"服务器消失"，无法判断原因。
+        //   ⑧ 进度分母 20 写死。
         const testScanner = {
             isRunning: false,
-            
+            CONCURRENCY: 4,       // 并发上限（原 20 并发）
+            TIMEOUT_MS: 7000,     // 单次请求超时（原无）
+            RETRIES: 2,           // 失败重试次数（原 0）
+            MAX_INDEX: 12,        // 扫描范围 1..N（原写死 10）
+
+            sleep: (ms) => new Promise(r => setTimeout(r, ms)),
+
+            // 探测一个 balancer：超时 + 重试，返回 {state:'ok'|'none'|'fail'}
+            probe: async function (url) {
+                var lastErr = null;
+                for (var attempt = 0; attempt <= this.RETRIES; attempt++) {
+                    try {
+                        var ctl = new AbortController();
+                        var timer = setTimeout(function () { ctl.abort(); }, this.TIMEOUT_MS);
+                        var res;
+                        try {
+                            // 直接 GET：HEAD 有的 balancer 不认，GET 反而稳，且响应体本来就要
+                            res = await fetch(url, { method: 'GET', signal: ctl.signal, cache: 'no-store' });
+                        } finally { clearTimeout(timer); }
+                        if (res.status === 404) return { state: 'none', status: 404 };
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        var data = null;
+                        try { data = await res.json(); } catch (e) { }
+                        return { state: 'ok', status: res.status, data: data };
+                    } catch (e) {
+                        lastErr = e;
+                        if (attempt < this.RETRIES) await this.sleep(500 * (attempt + 1));
+                    }
+                }
+                return { state: 'fail', status: 0, err: lastErr };
+            },
+
+            // 生成进入链接。Deploy 固定一个；Review 按 balancer 回来的节点 key（c1/c2）逐个生成，
+            // 顺手修掉原来 `{server}` 占位符没替换的 bug。
+            buildPlayUrls: function (i, type, nodeKeys) {
+                if (type === 'Deploy') {
+                    return [`https://public-deploy${i}.test-eu.tankionline.com/browser-public/index.html`];
+                }
+                var base = `https://client-review-${i}-public.test-ru.tankionline.com/`;
+                var resources = `https://resources-review-${i}-public.test-ru.tankionline.com`;
+                var balancer = `https://balancer.review-${i}-public.test-ru.tankionline.com/balancer`;
+                var keys = (nodeKeys && nodeKeys.length) ? nodeKeys : ['c1', 'c2'];
+                return keys.map(function (k) {
+                    var cfg = `https://${k}.review-${i}-public.test-ru.tankionline.com/config.xml`;
+                    return `${base}?config-template=${encodeURIComponent(cfg)}`
+                         + `&resources=${encodeURIComponent(resources)}`
+                         + `&balancer=${encodeURIComponent(balancer)}`;
+                });
+            },
+
             start: async () => {
                 const container = document.getElementById('testResults');
-                container.innerHTML = ''; 
+                container.innerHTML = '';
                 document.getElementById('testLoader').style.display = 'flex';
                 document.getElementById('testNoServers').style.display = 'none';
-                document.getElementById('scanProgress').innerText = '0';
-                
-                const promises = [];
+                const progEl = document.getElementById('scanProgress');
+                progEl.innerText = '0';
+
+                const jobs = [];
+                for (let i = 1; i <= testScanner.MAX_INDEX; i++) {
+                    jobs.push({ i: i, type: 'Deploy' });
+                    jobs.push({ i: i, type: 'Review' });
+                }
+                const total = jobs.length;
+                const totalEl = document.getElementById('scanTotal');
+                if (totalEl) totalEl.innerText = String(total);
+
                 let found = 0;
+                let done = 0;
+                const noneList = [];
+                const failList = [];
 
                 const check = async (i, type) => {
                     const isDeploy = type === 'Deploy';
-                    const checkUrl = isDeploy 
+                    const checkUrl = isDeploy
                         ? `https://balancer.public-deploy${i}.test-eu.tankionline.com/balancer`
                         : `https://balancer.review-${i}-public.test-ru.tankionline.com/balancer`;
-                    
-                    const playUrl = isDeploy
-                        ? `https://public-deploy${i}.test-eu.tankionline.com/browser-public/index.html`
-                        : `https://client-review-${i}-public.test-ru.tankionline.com/?config-template=https://c{server}.review-${i}-public.test-ru.tankionline.com/config.xml&resources=https://resources-review-${i}-public.test-ru.tankionline.com&balancer=https://balancer.review-${i}-public.test-ru.tankionline.com/balancer`;
 
-                    try {
-                        const res = await fetch(checkUrl, { method: 'HEAD' });
-                        if (res.ok || res.status === 503) {
-                            const statsRes = await fetch(checkUrl);
-                            const data = await statsRes.json();
-                            const online = Object.values(data.nodes).reduce((s, n) => s + n.online, 0);
-                            const battles = Object.values(data.nodes).reduce((s, n) => s + n.inbattles, 0);
+                    const r = await testScanner.probe(checkUrl);
 
-                            testScanner.renderCard(type + ' ' + i, playUrl, online, battles);
-                            found++;
-                        }
-                    } catch (e) { /* ignore */ }
-                    
-                    const progEl = document.getElementById('scanProgress');
-                    progEl.innerText = parseInt(progEl.innerText) + 1;
+                    if (r.state === 'ok') {
+                        const nodes = (r.data && r.data.nodes && typeof r.data.nodes === 'object') ? r.data.nodes : {};
+                        let online = 0, battles = 0;
+                        try {
+                            Object.values(nodes).forEach(n => {
+                                online += Number(n && n.online) || 0;
+                                battles += Number(n && n.inbattles) || 0;
+                            });
+                        } catch (e) { }
+                        const urls = testScanner.buildPlayUrls(i, type, Object.keys(nodes));
+                        urls.forEach((u, idx) => {
+                            testScanner.renderCard(
+                                type + ' ' + i + (urls.length > 1 ? ' (' + (idx + 1) + ')' : ''),
+                                u, online, battles);
+                        });
+                        found++;
+                    } else if (r.state === 'none') {
+                        noneList.push(type + ' ' + i);
+                    } else {
+                        failList.push(type + ' ' + i);
+                    }
+
+                    done++;
+                    progEl.innerText = String(done);
                 };
 
-                for (let i = 1; i <= 10; i++) {
-                    promises.push(check(i, 'Deploy'));
-                    promises.push(check(i, 'Review'));
+                // 并发池：同时最多 CONCURRENCY 个，避免瞬发几十个请求被限流
+                const worker = async () => {
+                    while (jobs.length) {
+                        const job = jobs.shift();
+                        await check(job.i, job.type);
+                    }
+                };
+                await Promise.all(Array.from({ length: testScanner.CONCURRENCY }, worker));
+
+                // 失败/不存在的服务器聚合成提示，而不是"凭空消失"
+                if (noneList.length) {
+                    testScanner.renderNote('以下部署不存在 (404)', noneList.join('、'));
+                }
+                if (failList.length) {
+                    testScanner.renderNote('以下无法连接（证书或网络问题）', failList.join('、'));
                 }
 
-                await Promise.allSettled(promises);
-                
                 document.getElementById('testLoader').style.display = 'none';
                 if (found === 0) document.getElementById('testNoServers').style.display = 'block';
-                
+
                 testScanner.updateLinks();
             },
 
@@ -949,6 +1038,21 @@
                         <div class="card-spinner-text">加载中...</div>
                     </div>
                 `;
+                document.getElementById('testResults').appendChild(card);
+            },
+
+            // 不可用的服务器也渲染出来（灰卡），免得用户以为"扫漏了"
+            renderNote: (title, text) => {
+                const card = document.createElement('div');
+                card.className = 'card server-item';
+                card.style.opacity = '0.5';
+                card.innerHTML = `
+                    <div class="card-title" style="display:flex; align-items:center; gap:10px;">
+                        <span>·</span> ${title}
+                    </div>
+                    <div class="stats-badges">
+                        <span class="badge">${text}</span>
+                    </div>`;
                 document.getElementById('testResults').appendChild(card);
             },
 
