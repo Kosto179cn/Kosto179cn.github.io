@@ -1,453 +1,1234 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>屏蔽词测试工具</title>
-    <style>
-        /* CSS变量定义主题颜色 */
-        :root {
-            /* 白天模式 */
-            --bg-primary: #f5f5f5;
-            --bg-secondary: #fff;
-            --bg-section: #fafafa;
-            --text-primary: #333;
-            --text-secondary: #666;
-            --border-color: #ddd;
-            --accent-color: #3498db;
-            --accent-hover: #2980b9;
-            --success-color: #27ae60;
-            --error-color: #e74c3c;
-            --result-bg: #e8f4f8;
-            --result-border: #d1ecf1;
-            --table-hover: #f0f8ff;
-            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        /* 夜间模式 */
-        [data-theme="dark"] {
-            --bg-primary: #121212;
-            --bg-secondary: #1e1e1e;
-            --bg-section: #2d2d2d;
-            --text-primary: #e0e0e0;
-            --text-secondary: #aaa;
-            --border-color: #444;
-            --accent-color: #4dabf7;
-            --accent-hover: #339af0;
-            --success-color: #51cf66;
-            --error-color: #ff6b6b;
-            --result-bg: #212529;
-            --result-border: #343a40;
-            --table-hover: #373b41;
-            --shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-        }
-        
-        /* 主题切换按钮 */
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 18px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--shadow);
-            z-index: 1000;
-            transition: background-color 0.3s ease, transform 0.3s ease;
-        }
-        
-        .theme-toggle:hover {
-            background-color: var(--accent-hover);
-            transform: scale(1.1);
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: var(--bg-secondary);
-            border-radius: 8px;
-            box-shadow: var(--shadow);
-        }
-        
-        h1 {
-            text-align: center;
-            color: var(--accent-color);
-            margin-bottom: 30px;
-            font-size: 28px;
-        }
-        
-        .section {
-            margin-bottom: 30px;
-            padding: 20px;
-            background-color: var(--bg-section);
-            border-radius: 8px;
-            border-left: 4px solid var(--accent-color);
-        }
-        
-        h2 {
-            color: var(--accent-color);
-            margin-bottom: 15px;
-            font-size: 20px;
-        }
-        
-        .input-section {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        textarea {
-            width: 100%;
-            padding: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 16px;
-            resize: vertical;
-            min-height: 150px;
-            font-family: inherit;
-            background-color: var(--bg-secondary);
-            color: var(--text-primary);
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 10px;
-        }
-        
-        button {
-            padding: 10px 20px;
-            background-color: var(--accent-color);
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-        }
-        
-        button:hover {
-            background-color: var(--accent-hover);
-        }
-        
-        .result {
-            margin-top: 20px;
-        }
-        
-        .result h3 {
-            color: var(--success-color);
-            margin-bottom: 10px;
-        }
-        
-        .result-box {
-            background-color: var(--result-bg);
-            padding: 15px;
-            border-radius: 4px;
-            border: 1px solid var(--result-border);
-            min-height: 100px;
-            white-space: pre-wrap;
-            font-family: 'Courier New', Courier, monospace;
-            color: var(--text-primary);
-        }
-        
-        .dictionary-section {
-            overflow-x: auto;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-primary);
-        }
-        
-        th {
-            background-color: var(--accent-color);
-            color: #fff;
-            font-weight: bold;
-        }
-        
-        tr:hover {
-            background-color: var(--table-hover);
-        }
-        
-        .search-box {
-            margin-bottom: 15px;
-            padding: 10px;
-            width: 100%;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 16px;
-            background-color: var(--bg-secondary);
-            color: var(--text-primary);
-        }
-        
-        .search-box::placeholder {
-            color: var(--text-secondary);
-        }
-        
-        .stats {
-            margin-bottom: 15px;
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-        
-        .loading {
-            text-align: center;
-            color: var(--text-secondary);
-            padding: 20px;
-        }
-        
-        .error {
-            color: var(--error-color);
-            text-align: center;
-            padding: 20px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>屏蔽词测试工具 · 聊天工具箱</title>
+<link rel="stylesheet" href="assets/kosto-theme.css">
+<script src="assets/theme.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    .page-head { margin: 26px 0 18px; }
+    .page-head h1 { margin: 0 0 6px; font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 800; }
+    .page-head p { margin: 0; color: var(--k-text-muted); font-size: .9rem; }
+
+    .wb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 900px) { .wb-grid { grid-template-columns: 1fr; } }
+
+    .result-box {
+        min-height: 140px; padding: 14px 16px; white-space: pre-wrap; word-break: break-word;
+        background: var(--k-surface-3); border: 1px solid var(--k-border);
+        border-radius: var(--k-radius-xs); font-family: 'Cascadia Code', Consolas, monospace;
+        font-size: .9rem; line-height: 1.7;
+    }
+    .chain-log { margin: 0; padding-left: 20px; font-size: .82rem; color: var(--k-text-muted); }
+    .chain-log li { margin: 3px 0; }
+    .chain-log li.is-changed { color: var(--k-accent-text); font-weight: 600; }
+
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 22px 0 16px; }
+    .tab {
+        font: inherit; cursor: pointer; font-size: .86rem; font-weight: 600;
+        padding: 8px 16px; border-radius: 999px;
+        border: 1px solid var(--k-border-strong); background: var(--k-surface-2);
+        color: var(--k-text-muted); transition: all .2s ease;
+    }
+    .tab:hover { color: var(--k-accent-text); border-color: var(--k-accent-ring); }
+    .tab.is-active { color: #fff; border-color: transparent;
+        background: linear-gradient(135deg, var(--k-accent), var(--k-accent-2)); }
+    .tab-panel { display: none; }
+    .tab-panel.is-active { display: block; animation: k-fade-in .3s ease-out; }
+
+    .group-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .group-title { margin: 0 0 4px; font-size: .95rem; font-weight: 750; }
+    .group-hint { margin: 0 0 12px; font-size: .78rem; color: var(--k-text-muted); }
+
+    .symbol-palette { display: none; margin-top: 12px; padding: 12px;
+        background: var(--k-surface-3); border: 1px solid var(--k-border); border-radius: var(--k-radius-xs); }
+    .symbol-palette.is-visible { display: block; }
+    .symbol-cat-title { font-size: .74rem; color: var(--k-text-faint); margin: 8px 0 6px; font-weight: 700; }
+    .symbol-grid { display: flex; flex-wrap: wrap; gap: 5px; }
+    .symbol-item { cursor: pointer; width: 32px; height: 32px; display: grid; place-items: center;
+        border-radius: 8px; border: 1px solid var(--k-border); background: var(--k-surface-solid);
+        font-size: 17px; transition: transform .15s, border-color .15s; }
+    .symbol-item:hover { transform: scale(1.14); border-color: var(--k-accent); }
+
+    .list-row { display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+        border: 1px solid var(--k-border); border-radius: var(--k-radius-xs);
+        background: var(--k-surface-2); margin-bottom: 6px; font-size: .84rem; }
+    .list-row .grow { flex: 1 1 auto; min-width: 0; word-break: break-all; cursor: pointer; }
+    .list-row .grow:hover { color: var(--k-accent-text); }
+    .dec-preview { font-family: 'Cascadia Code', Consolas, monospace; color: var(--k-accent-text); }
+
+    .quote-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .quote-chip { font: inherit; font-size: .78rem; cursor: pointer; padding: 5px 12px;
+        border-radius: 999px; border: 1px solid var(--k-border-strong);
+        background: var(--k-surface-2); color: var(--k-text-muted); }
+    .quote-chip.is-active { color: #fff; border-color: transparent;
+        background: linear-gradient(135deg, var(--k-accent), var(--k-accent-2)); }
+
+    /* 聊天外观实时预览 */
+    .chat-preview {
+        border-radius: var(--k-radius-sm); border: 1px solid var(--k-border);
+        overflow: hidden; background: var(--k-surface-3);
+    }
+    .chat-preview-head { padding: 10px 14px; font-weight: 700; font-size: .82rem;
+        border-bottom: 1px solid var(--k-border); }
+    .chat-preview-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+    .chat-line { display: flex; align-items: center; gap: 8px; line-height: 1.5; }
+    .chat-rank { flex: 0 0 auto; border-radius: 4px; background: linear-gradient(135deg, var(--k-accent), var(--k-accent-2)); }
+    .chat-name { font-weight: 700; }
+    .chat-name.thin { font-weight: 500; }
+
+    .range-row { margin-bottom: 14px; }
+    .range-head { display: flex; justify-content: space-between; font-size: .82rem;
+        color: var(--k-text-muted); margin-bottom: 4px; }
+    .range-head span:last-child { color: var(--k-accent-text); font-family: Consolas, monospace; }
+    input[type="range"] { width: 100%; accent-color: var(--k-accent); cursor: pointer; }
+
+    .mini-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .dict-scroll { max-height: 460px; overflow-y: auto; }
+    .hidden { display: none !important; }
+</style>
 </head>
-<body>
-    <!-- 主题切换按钮 -->
-    <button class="theme-toggle" id="themeToggle" title="切换主题">🌙</button>
-    
-    <div class="container">
-        <h1>屏蔽词测试工具</h1>
-        
-        <div class="section">
-            <h2>1. 测试文本替换</h2>
-            <div class="input-section">
-                <textarea id="testInput" placeholder="请输入要测试的文本..."></textarea>
-                <div class="button-group">
-                    <button id="replaceBtn">执行替换</button>
-                    <button id="clearBtn">清空</button>
-                    <button id="copyBtn">复制结果</button>
+<body class="k-body">
+
+<header class="k-header">
+    <div class="k-header-inner">
+        <a class="k-brand" href="index.html">
+            <span class="k-brand-mark"><i class="fas fa-shield-halved"></i></span>
+            <span class="k-brand-text">Kosto Tools</span>
+        </a>
+        <span class="k-badge k-badge-accent">屏蔽词测试 · 聊天工具箱</span>
+        <div class="k-spacer"></div>
+        <nav class="k-nav"><a href="index.html"><i class="fas fa-house"></i> 返回门户</a></nav>
+        <button class="k-btn k-theme-toggle" data-theme-toggle type="button"></button>
+    </div>
+</header>
+
+<main class="k-container">
+
+    <div class="page-head k-fade-in">
+        <h1>屏蔽词测试工具 <span style="color:var(--k-accent-text)">/ 聊天工具箱</span></h1>
+        <p>网页版完整移植 Kosto.user.js「聊天工具箱」全部功能：开关、配置与发送处理链均在本地生效，配置自动保存。</p>
+    </div>
+
+    <!-- ============ 常驻工作台 ============ -->
+    <section class="k-panel k-fade-in">
+        <div class="k-panel-head">
+            <div>
+                <h2 class="k-panel-title"><i class="fas fa-terminal"></i> 发送预览 · 处理链</h2>
+                <p class="k-panel-desc">模拟回车发送：按当前开关顺序依次处理消息，右侧展示最终内容与每一步变化。</p>
+            </div>
+            <div class="k-spacer"></div>
+            <span class="k-badge" id="activeCount">0 项功能启用</span>
+        </div>
+
+        <div class="wb-grid">
+            <div class="k-stack">
+                <div class="k-field">
+                    <label class="k-label" for="chatInput">原始消息（Ctrl + Enter 执行）</label>
+                    <textarea class="k-textarea" id="chatInput" placeholder="输入要发送的内容，例如：玩家昵称; 今天打匹配吗"></textarea>
                 </div>
-                <div class="result">
-                    <h3>替换结果：</h3>
-                    <div id="replaceResult" class="result-box"></div>
+                <div class="k-row">
+                    <button class="k-btn k-btn-primary k-btn-sm" id="runChain"><i class="fas fa-play"></i> 执行处理链</button>
+                    <button class="k-btn k-btn-sm" id="clearInput">清空</button>
+                    <button class="k-btn k-btn-sm" id="copyResult">复制结果</button>
+                    <button class="k-btn k-btn-sm" id="appendLog">记入聊天记录</button>
+                    <button class="k-btn k-btn-sm" id="simulateSend">模拟发送（含网络翻译）</button>
+                </div>
+                <div class="symbol-palette" id="symbolPalette">
+                    <div style="font-size:.78rem; font-weight:700; margin-bottom:6px">特殊符号面板（点击插入到光标处）</div>
+                    <div id="symbolCats"></div>
+                </div>
+            </div>
+
+            <div class="k-stack">
+                <div class="k-field">
+                    <label class="k-label">最终发送内容</label>
+                    <div class="result-box" id="chainResult">（等待输入）</div>
+                </div>
+                <div class="k-field">
+                    <label class="k-label">处理链步骤</label>
+                    <ol class="chain-log" id="chainLog"><li>尚未执行</li></ol>
                 </div>
             </div>
         </div>
-        
-        <div class="section">
-            <h2>2. 屏蔽词字典</h2>
-            <div class="stats">
-                <span id="dictionaryStats">正在加载字典...</span>
-            </div>
-            <input type="text" id="searchInput" class="search-box" placeholder="搜索屏蔽词...">
-            <div class="dictionary-section">
-                <table id="dictionaryTable">
-                    <thead>
-                        <tr>
-                            <th>原始词</th>
-                            <th>替换词</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dictionaryBody">
-                        <tr>
-                            <td colspan="2" class="loading">正在加载字典...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+    </section>
+
+    <!-- ============ 选项卡 ============ -->
+    <div class="tabs" id="tabs">
+        <button class="tab is-active" data-tab="chattools" type="button">聊天工具箱</button>
+        <button class="tab" data-tab="dict" type="button">屏蔽词字典</button>
+        <button class="tab" data-tab="quotes" type="button">快捷语录</button>
+        <button class="tab" data-tab="ai" type="button">AI 翻译与记录</button>
+        <button class="tab" data-tab="look" type="button">聊天外观</button>
+    </div>
+
+    <!-- ============ TAB 1：聊天工具箱 ============ -->
+    <div class="tab-panel is-active" id="tab-chattools">
+        <div class="group-grid">
+
+            <section class="k-panel">
+                <h3 class="group-title">装饰符 · 单选</h3>
+                <p class="group-hint">发送前在消息前后添加装饰符，与其他装饰符互斥。</p>
+                <div class="k-toggle-group" id="decoratorToggles"></div>
+                <hr class="k-divider">
+                <div class="k-row" style="margin-bottom:10px">
+                    <input class="k-input" id="decInput" style="flex:1 1 160px; width:auto" placeholder="꧁,꧂ 或 ꧁|꧂ 或 ꧁|" maxlength="32">
+                    <button class="k-btn k-btn-sm" id="decAdd">添加</button>
+                </div>
+                <div class="k-faint" style="font-size:.76rem; margin-bottom:8px">
+                    分隔优先级：<code>|</code> &gt; <code>,</code>/<code>，</code> &gt; 无分隔按字符对半拆。预览：<span class="dec-preview" id="decPreview">—</span>
+                </div>
+                <div id="decCustomList"></div>
+            </section>
+
+            <section class="k-panel">
+                <h3 class="group-title">符号优化</h3>
+                <p class="group-hint">按脚本顺序执行，防屏蔽符 U+200E 会跳过昵称前缀与战场链接。</p>
+                <div class="k-toggle-group">
+                    <button class="k-toggle" data-toggle="ChatPunctComma"><span class="k-dot"></span>中文逗号→,</button>
+                    <button class="k-toggle" data-toggle="ChatPunctPeriod"><span class="k-dot"></span>句号→.</button>
+                    <button class="k-toggle" data-toggle="ChatPunctQmark"><span class="k-dot"></span>问号→?</button>
+                    <button class="k-toggle" data-toggle="ChatPunctSpaceToComma"><span class="k-dot"></span>空格→逗号</button>
+                    <button class="k-toggle" data-toggle="ChatPunctAutoDot"><span class="k-dot"></span>自动补句点</button>
+                    <button class="k-toggle" data-toggle="ChatPunctLRM"><span class="k-dot"></span>每字插入防屏蔽符</button>
+                </div>
+                <hr class="k-divider">
+                <h3 class="group-title">其他功能</h3>
+                <p class="group-hint">保留「昵称; 」前缀，反转正文并附加 】】】 尾缀。</p>
+                <div class="k-toggle-group">
+                    <button class="k-toggle" data-toggle="ChatReverse"><span class="k-dot"></span>语句反转（】】】尾缀）</button>
+                </div>
+            </section>
+
+            <section class="k-panel">
+                <h3 class="group-title">特殊符号面板</h3>
+                <p class="group-hint">对应游戏内「🗩」入口；网页版把符号面板挂到输入框下方。</p>
+                <div class="k-toggle-group">
+                    <button class="k-toggle" data-toggle="ChatSymbolPanel"><span class="k-dot"></span>显示符号入口 (⚙)</button>
+                </div>
+                <hr class="k-divider">
+                <div class="k-faint" style="font-size:.78rem">
+                    分类：表情符号 / 游戏符号 / 数字符号，与脚本内置清单一致。
+                </div>
+            </section>
+
+            <section class="k-panel">
+                <h3 class="group-title">发送前自动翻译 (Edge)</h3>
+                <p class="group-hint">与简繁转换互斥：本项开启时，简繁转换让位。浏览器端受 CORS 限制，失败会回退原文。</p>
+                <div class="k-toggle-group">
+                    <button class="k-toggle" data-toggle="ChatTranslateSend"><span class="k-dot"></span>开启发送前翻译</button>
+                </div>
+                <div class="k-field" style="margin-top:12px">
+                    <label class="k-label" for="translateTarget">翻译为</label>
+                    <select class="k-select" id="translateTarget" data-select="ChatTranslateTarget"></select>
+                </div>
+                <button class="k-btn k-btn-sm" id="testTranslate" style="margin-top:10px">测试翻译</button>
+            </section>
+
+            <section class="k-panel">
+                <h3 class="group-title">简繁转换 (zhconvert)</h3>
+                <p class="group-hint">使用 zhconvert.org 接口；无中文时不触发，接口不可用时回退原文。</p>
+                <div class="k-toggle-group">
+                    <button class="k-toggle" data-toggle="ChatSimpTradToggle"><span class="k-dot"></span>开启发送前简繁转换</button>
+                </div>
+                <div class="k-field" style="margin-top:12px">
+                    <label class="k-label" for="simpTradDir">转换方向</label>
+                    <select class="k-select" id="simpTradDir" data-select="ChatSimpTradDirection">
+                        <option value="s2t">简体 → 繁体</option>
+                        <option value="t2s">繁体 → 简体</option>
+                    </select>
+                </div>
+                <button class="k-btn k-btn-sm" id="testSimpTrad" style="margin-top:10px">测试转换</button>
+            </section>
+
+            <section class="k-panel">
+                <h3 class="group-title">快捷发送ID · 单选</h3>
+                <p class="group-hint">匹配 <code>ID;</code> / <code>ID:</code>（4–24 位字母数字下划线）后自动补全。</p>
+                <div class="k-toggle-group">
+                    <button class="k-toggle" data-toggle="ChatAutoIdSend"><span class="k-dot"></span>自动复制ID</button>
+                    <button class="k-toggle" data-toggle="ChatAutoIdSend1"><span class="k-dot"></span>快捷发送1</button>
+                    <button class="k-toggle" data-toggle="ChatAutoIdSend2"><span class="k-dot"></span>发送ID历史</button>
+                </div>
+                <hr class="k-divider">
+                <div class="mini-head" style="margin-bottom:8px">
+                    <span class="k-label" style="margin:0">玩家档案库（供「发送ID历史」查询）</span>
+                    <button class="k-btn k-btn-sm" id="profileToggle">展开 / 收起</button>
+                </div>
+                <div id="profileBox" class="hidden">
+                    <div class="k-row" style="margin-bottom:8px">
+                        <input class="k-input" id="profileName" style="flex:1 1 100px;width:auto" placeholder="昵称">
+                        <input class="k-input" id="profileUid" style="flex:1 1 110px;width:auto" placeholder="用户 UID（64位）">
+                        <input class="k-input" id="profileAlias" style="flex:1 1 110px;width:auto" placeholder="曾用名，逗号分隔">
+                        <button class="k-btn k-btn-sm" id="profileAdd">保存</button>
+                    </div>
+                    <div id="profileList"></div>
+                </div>
+            </section>
+
+            <section class="k-panel">
+                <h3 class="group-title">屏蔽词替换</h3>
+                <p class="group-hint">按词长降序替换，避免短词吃掉长词。词典来源在「屏蔽词字典」页切换。</p>
+                <div class="k-toggle-group">
+                    <button class="k-toggle" data-toggle="WordReplacer"><span class="k-dot"></span>屏蔽词替换</button>
+                </div>
+                <div class="k-field" style="margin-top:12px">
+                    <label class="k-label" for="dictSource">词典数据源</label>
+                    <select class="k-select" id="dictSource" data-select="DictSource">
+                        <option value="remote">线上 dictionary.json（GitHub Pages）</option>
+                        <option value="local">同源 chinese_words_replacer/dictionary.json</option>
+                        <option value="custom">自定义粘贴词典</option>
+                    </select>
+                </div>
+                <button class="k-btn k-btn-sm" id="reloadDict" style="margin-top:10px"><i class="fas fa-rotate"></i> 重载词典</button>
+            </section>
+
         </div>
     </div>
-    
-    <script>
-        // 全局变量存储字典
-        let dictionary = {};
-        
-        // 获取字典数据
-        async function fetchDictionary() {
-            const url = 'https://kosto179cn.github.io/chinese_words_replacer/dictionary.json?t=${Date.now()';
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                dictionary = await response.json();
-                displayDictionary();
-                updateStats();
-            } catch (error) {
-                console.error('获取字典失败:', error);
-                document.getElementById('dictionaryBody').innerHTML = `<tr><td colspan="2" class="error">加载字典失败: ${error.message}</td></tr>`;
-                document.getElementById('dictionaryStats').textContent = '加载字典失败';
-            }
-        }
-        
-        // 执行文本替换
-        function replaceText(text) {
-            let result = text;
-            // 按照词长降序排序，避免短词替换长词的一部分
-            const sortedKeys = Object.keys(dictionary).sort((a, b) => b.length - a.length);
-            
-            for (const key of sortedKeys) {
-                const value = dictionary[key];
-                if (value) {
-                    const regex = new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
-                    result = result.replace(regex, value);
-                }
-            }
-            return result;
-        }
-        
-        // 显示字典
-        function displayDictionary(filter = '') {
-            const tbody = document.getElementById('dictionaryBody');
-            const sortedKeys = Object.keys(dictionary).sort();
-            
-            let filteredKeys = sortedKeys;
-            if (filter) {
-                const lowerFilter = filter.toLowerCase();
-                filteredKeys = sortedKeys.filter(key => 
-                    key.toLowerCase().includes(lowerFilter) || 
-                    dictionary[key].toLowerCase().includes(lowerFilter)
-                );
-            }
-            
-            if (filteredKeys.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="2" class="loading">没有找到匹配的屏蔽词</td></tr>`;
-                return;
-            }
-            
-            let html = '';
-            for (const key of filteredKeys) {
-                const value = dictionary[key];
-                html += `
-                    <tr>
-                        <td>${escapeHtml(key)}</td>
-                        <td>${escapeHtml(value)}</td>
-                    </tr>
-                `;
-            }
-            tbody.innerHTML = html;
-        }
-        
-        // 更新统计信息
-        function updateStats() {
-            const totalWords = Object.keys(dictionary).length;
-            document.getElementById('dictionaryStats').textContent = `共 ${totalWords} 条屏蔽词规则`;
-        }
-        
-        // HTML转义
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        // 复制到剪贴板
-        async function copyToClipboard(text) {
-            try {
-                await navigator.clipboard.writeText(text);
-                alert('复制成功！');
-            } catch (err) {
-                console.error('复制失败:', err);
-                alert('复制失败，请手动复制。');
-            }
-        }
-        
-        // 主题切换功能
-        function initTheme() {
-            // 从本地存储获取主题设置，默认为白天模式
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            updateThemeToggleIcon(savedTheme);
-        }
-        
-        function toggleTheme() {
-            // 切换主题
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
-            // 更新属性和本地存储
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            
-            // 更新按钮图标
-            updateThemeToggleIcon(newTheme);
-        }
-        
-        function updateThemeToggleIcon(theme) {
-            // 更新主题切换按钮的图标
-            const toggleBtn = document.getElementById('themeToggle');
-            toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
-            toggleBtn.title = theme === 'dark' ? '切换到白天模式' : '切换到夜间模式';
-        }
-        
-        // 事件监听
-        document.addEventListener('DOMContentLoaded', () => {
-            // 初始化主题
-            initTheme();
-            
-            // 加载字典
-            fetchDictionary();
-            
-            // 主题切换按钮
-            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-            
-            // 执行替换按钮
-            document.getElementById('replaceBtn').addEventListener('click', () => {
-                const input = document.getElementById('testInput').value;
-                const result = replaceText(input);
-                document.getElementById('replaceResult').textContent = result;
-            });
-            
-            // 清空按钮
-            document.getElementById('clearBtn').addEventListener('click', () => {
-                document.getElementById('testInput').value = '';
-                document.getElementById('replaceResult').textContent = '';
-            });
-            
-            // 复制结果按钮
-            document.getElementById('copyBtn').addEventListener('click', () => {
-                const result = document.getElementById('replaceResult').textContent;
-                if (result) {
-                    copyToClipboard(result);
-                } else {
-                    alert('没有可复制的结果！');
-                }
-            });
-            
-            // 搜索功能
-            document.getElementById('searchInput').addEventListener('input', (e) => {
-                const searchText = e.target.value;
-                displayDictionary(searchText);
-            });
-            
-            // 输入框回车键执行替换
-            document.getElementById('testInput').addEventListener('keydown', (e) => {
-                if (e.ctrlKey && e.key === 'Enter') {
-                    document.getElementById('replaceBtn').click();
-                }
-            });
+
+    <!-- ============ TAB 2：屏蔽词字典 ============ -->
+    <div class="tab-panel" id="tab-dict">
+        <section class="k-panel">
+            <div class="k-panel-head">
+                <div>
+                    <h2 class="k-panel-title"><i class="fas fa-book"></i> 屏蔽词字典</h2>
+                    <p class="k-panel-desc" id="dictStats">正在加载字典…</p>
+                </div>
+                <div class="k-spacer"></div>
+                <button class="k-btn k-btn-sm" id="reloadDict2">重新加载</button>
+            </div>
+            <div class="k-row" style="margin-bottom:14px">
+                <input class="k-input" id="dictSearch" style="flex:1 1 220px;width:auto" placeholder="搜索原始词或替换词…">
+                <label class="k-badge"><input type="checkbox" id="dictCase" style="accent-color:var(--k-accent)"> 区分大小写</label>
+            </div>
+            <div class="k-table-wrap dict-scroll">
+                <table class="k-table">
+                    <thead><tr><th style="width:50%">原始词</th><th>替换词</th></tr></thead>
+                    <tbody id="dictBody"><tr><td colspan="2" class="k-center k-muted">加载中…</td></tr></tbody>
+                </table>
+            </div>
+        </section>
+        <section class="k-panel">
+            <h3 class="group-title">自定义词典（JSON 对象）</h3>
+            <p class="group-hint">选择「自定义粘贴词典」数据源后生效，格式：{"原词": "替换词"}。</p>
+            <textarea class="k-textarea" id="customDict" style="min-height:150px" placeholder='{"示例词": "替代表达"}'></textarea>
+            <div class="k-row" style="margin-top:10px">
+                <button class="k-btn k-btn-sm k-btn-primary" id="applyCustomDict">应用自定义词典</button>
+                <button class="k-btn k-btn-sm" id="exportDict">导出当前词典</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- ============ TAB 3：快捷语录 ============ -->
+    <div class="tab-panel" id="tab-quotes">
+        <section class="k-panel">
+            <div class="k-panel-head">
+                <div>
+                    <h2 class="k-panel-title"><i class="fas fa-comment-dots"></i> 快捷语录</h2>
+                    <p class="k-panel-desc">点击语录即写入输入框；分组、热键与启用状态全部本地持久化。</p>
+                </div>
+                <div class="k-spacer"></div>
+                <button class="k-toggle" data-toggle="QuotesEnabled"><span class="k-dot"></span>启用快捷语录</button>
+            </div>
+            <div class="quote-chips" id="quoteGroups"></div>
+            <div class="k-row" style="margin-bottom:12px">
+                <input class="k-input" id="newGroup" style="flex:0 1 150px;width:auto" placeholder="新分组名">
+                <button class="k-btn k-btn-sm" id="addGroup">新增分组</button>
+                <button class="k-btn k-btn-sm" id="delGroup">删除当前分组</button>
+            </div>
+            <div id="quoteList"></div>
+            <div class="k-row" style="margin-top:12px">
+                <input class="k-input" id="newQuote" style="flex:1 1 220px;width:auto" placeholder="输入新语录…">
+                <button class="k-btn k-btn-sm k-btn-primary" id="addQuote">添加语录</button>
+            </div>
+            <hr class="k-divider">
+            <div class="k-row">
+                <div class="k-field" style="flex:0 1 180px"><label class="k-label">呼出语录热键</label><input class="k-input" data-input="QuotesKey" placeholder="例如 Q"></div>
+                <div class="k-field" style="flex:0 1 180px"><label class="k-label">切换分组热键</label><input class="k-input" data-input="QuotesGroupKey" placeholder="例如 Tab"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ============ TAB 4：AI 翻译与记录 ============ -->
+    <div class="tab-panel" id="tab-ai">
+        <div class="group-grid">
+            <section class="k-panel">
+                <h3 class="group-title">AI 翻译模式 · 互斥</h3>
+                <p class="group-hint">原版模式：隐藏原始聊天框显示翻译面板；记录模式：仅后台记录。网页版以配置与接口测试呈现。</p>
+                <div class="k-toggle-group">
+                    <button class="k-toggle" data-toggle="AITranslateEnabled"><span class="k-dot"></span>原版模式</button>
+                    <button class="k-toggle" data-toggle="AITranslateRecord"><span class="k-dot"></span>记录模式</button>
+                    <button class="k-toggle" data-toggle="TranslateInCN"><span class="k-dot"></span>国服直接显示译文</button>
+                </div>
+                <hr class="k-divider">
+                <div class="k-stack">
+                    <div class="k-field"><label class="k-label">接口地址（不含路径）</label><input class="k-input" data-input="TranslateApiBase" placeholder="https://generativelanguage.googleapis.com"></div>
+                    <div class="k-field"><label class="k-label">模型名</label><input class="k-input" data-input="TranslateApiModel" placeholder="gemini-flash-lite-latest"></div>
+                    <div class="k-field"><label class="k-label">API Key（仅存本地浏览器）</label><input class="k-input" type="password" data-input="TranslateApiKey" placeholder="粘贴你的 API Key"></div>
+                    <div class="k-row">
+                        <button class="k-btn k-btn-sm k-btn-primary" id="testAi">测试接口</button>
+                        <span class="k-faint" style="font-size:.78rem">gemini* / Google 官方 → Gemini 协议；其余 → OpenAI 兼容 /v1/chat/completions</span>
+                    </div>
+                    <div class="result-box" id="aiResult" style="min-height:70px">（未测试）</div>
+                </div>
+            </section>
+
+            <section class="k-panel">
+                <h3 class="group-title">战场聊天记录</h3>
+                <p class="group-hint">对应脚本「导出近一百条聊天记录」；网页版维护本地记录，可导出 txt。</p>
+                <div class="k-row" style="margin-bottom:12px">
+                    <input class="k-input" id="logName" style="flex:0 1 130px;width:auto" placeholder="昵称">
+                    <input class="k-input" id="logText" style="flex:1 1 180px;width:auto" placeholder="聊天内容">
+                    <button class="k-btn k-btn-sm" id="addLog">添加</button>
+                </div>
+                <div id="chatLog" style="max-height:260px; overflow-y:auto; margin-bottom:12px"></div>
+                <div class="k-row">
+                    <button class="k-btn k-btn-sm k-btn-primary" id="exportLog"><i class="fas fa-file-export"></i> 导出聊天记录 txt</button>
+                    <button class="k-btn k-btn-sm" id="clearLog">清空记录</button>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- ============ TAB 5：聊天外观 ============ -->
+    <div class="tab-panel" id="tab-look">
+        <div class="group-grid">
+            <section class="k-panel">
+                <h3 class="group-title">聊天外观</h3>
+                <p class="group-hint">字号 / 背景不透明度 / 等级图标 / 显示标题 / 名字加粗，实时作用于右侧预览。</p>
+                <div class="range-row">
+                    <div class="range-head"><span>字号</span><span id="valFontSize">13px</span></div>
+                    <input type="range" data-range="ChatFontSize" min="9" max="24" step="1">
+                </div>
+                <div class="range-row">
+                    <div class="range-head"><span>背景不透明度</span><span id="valBgOpacity">30%</span></div>
+                    <input type="range" data-range="ChatBgOpacity" min="0" max="1" step="0.05">
+                </div>
+                <div class="range-row">
+                    <div class="range-head"><span>等级图标（0 = 跟随字号）</span><span id="valRankIcon">跟随字号</span></div>
+                    <input type="range" data-range="ChatRankIconSize" min="0" max="32" step="1">
+                </div>
+                <hr class="k-divider">
+                <div class="k-toggle-group">
+                    <button class="k-toggle" data-toggle="ChatShowTitle"><span class="k-dot"></span>显示标题</button>
+                    <button class="k-toggle" data-toggle="ChatNameBold"><span class="k-dot"></span>名字加粗</button>
+                </div>
+            </section>
+
+            <section class="k-panel">
+                <h3 class="group-title">实时预览</h3>
+                <p class="group-hint">与脚本 kostoApplyChatStyle 的变量保持一致。</p>
+                <div class="chat-preview" id="chatPreview">
+                    <div class="chat-preview-head" id="previewHead">KOSTO 战场中实时聊天记录</div>
+                    <div class="chat-preview-body" id="previewBody">
+                        <div class="chat-line"><span class="chat-rank"></span><span class="chat-name">[CLAN] Kosto:</span><span class="chat-text">今天打匹配吗，兄弟？</span></div>
+                        <div class="chat-line"><span class="chat-rank"></span><span class="chat-name">Legend_Nriz:</span><span class="chat-text">没一个人进的，都是人家的</span></div>
+                        <div class="chat-line"><span class="chat-rank"></span><span class="chat-name">Bei_T:</span><span class="chat-text">撤退！</span></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <footer class="k-footer">配置保存在浏览器 localStorage（键：<code>kosto_chattools_v1</code>），不会上传服务器。</footer>
+</main>
+
+<div class="k-toast" id="toast"></div>
+
+<script>
+/* =========================================================================
+ * 屏蔽词测试工具 · 聊天工具箱（网页版）
+ * 功能与 Kosto.user.js「聊天工具箱」标签页一一对应：
+ *   装饰符(含自定义) / 符号优化 / 语句反转 / 特殊符号面板 /
+ *   发送前翻译(Edge) / 简繁转换 / 快捷发送ID / 屏蔽词替换 /
+ *   AI 翻译(模式+接口配置+导出记录) / 聊天外观 / 快捷语录
+ * ========================================================================= */
+'use strict';
+
+const STORE_KEY = 'kosto_chattools_v1';
+const DICT_URL  = 'https://kosto179cn.github.io/chinese_words_replacer/dictionary.json';
+const DICT_LOCAL = 'chinese_words_replacer/dictionary.json';
+
+const DECORATORS = [
+    { key: 'ChatDecorator1', label: '装饰符 ꧁꧂',       pre: '꧁',    suf: '꧂' },
+    { key: 'ChatDecorator2', label: '装饰符 ꧌꧍',       pre: '꧌',    suf: '꧍' },
+    { key: 'ChatDecorator3', label: '装饰符 ༺ཌ༈ ༈ད༻', pre: '༺ཌ༈', suf: '༈ད༻' },
+    { key: 'ChatDecorator4', label: '装饰符 ༺ ༻',       pre: '༺',    suf: '༻' }
+];
+const LANG_OPTIONS = [
+    ['ru','俄语 (RU) - 推荐'], ['en','英语 (EN)'], ['ja','日语 (JA)'], ['ko','韩语 (KO)'],
+    ['de','德语 (DE)'], ['pl','波兰语 (PL)'], ['fr','法语 (FR)'], ['es','西班牙语 (ES)'],
+    ['ar','阿拉伯语 (AR)'], ['pt','葡萄牙语 (PT)'], ['tr','土耳其语 (TR)'],
+    ['uk','乌克兰语 (UK)'], ['it','意大利语 (IT)'], ['zh-Hant','繁体中文 (ZH-HANT)']
+];
+const SYMBOL_CATEGORIES = [
+    { title: '表情符号', emojis: ['☺️','☹️','✌️','✊','❤️','⚽','⛹️','☝','✍','☕','⛪','⚓','⛵','⏳','✨','☔','⛄','⚾','✈','⌨','☎','✂','⛏','♻'] },
+    { title: '游戏符号', emojis: ['☢','☣','❄','⭐','⚡'] },
+    { title: '数字符号', emojis: ['⓷','⓸','⓼','⓽'] }
+];
+const QUOTES_DEFAULTS = {
+    '胖墩': [
+        '对于20031130是什么 我表示一个不清楚', '天呐！！20031130闪亮登场',
+        '是的 我添加了新的彩蛋 记得查收', '对于胖墩来说 2026年的8月10日是个黑色星期日',
+        '2026年08月30日 00:11 这是一个不好的日子', '天呐！骗了别人可以，切记不要骗了自己',
+        '2020年3月，有一位伟大的父亲将电话打到了前线指挥所',
+        '2024年6月，有一位神通广大的贵妇人因为厌猪跑到了姜犀喃怅，这是怎么回事。我不知道',
+        '我见过很多人才，但是进团需要发自己艺术照的你是第一个',
+        '是的，我知道你在说什么，但是我还是要说，你需要发一张艺术照才能加入СӀць军团',
+        '退团一小时号2.5的军团 我也是头一次见', '兄弟 打匹配吗 我来拉你 我使用了异常程序'
+    ],
+    '北天': [
+        '天空一声巨响，货拉拉闪亮登场！', '前方乱乱糟糟，原来是货拉拉超时送到！',
+        '拉货就叫货拉拉！', '关于2026-10-20日晚上，北天在山岗被神迹34-1你怎么看',
+        '2020年，有一位精通账号篇前市场的鱼头，因为厌倦了汉包的压力，进行了一个退游的操作，请问这是什么问题',
+        '2026年10月21日凌晨0:24分,卫东携手不知名用户封禁了一天赚一千块的Legend_Orange.',
+        'Legend_Nriz:"没一个人进的，都是人家的"', '[Bei_T]Jin.chen.wu:撤退！',
+        '我头一回见到打团打输了团长会在直播的时候在yy压力团员的'
+    ],
+    '佳旺': ['天空一声巨响，蛋糕闪亮登场！', '今天佳器作业写完了吗，你就来打坦克。', '我要吃蛋糕，快去給我揉两个面包'],
+    '客服': ['专员会查看具体信息', '感谢您对游戏的支持,再见.', '会查看具体信息', '无获得有用的信息', '自行查看状态显示']
+};
+const RANK_NAMES = {1:'新兵',2:'二等兵',3:'一等兵',4:'下士',5:'中士',6:'上士',7:'三级军士长',8:'二级军士长',9:'一级军士长',10:'军士长',11:'五级准尉',12:'四级准尉',13:'三级准尉',14:'二级准尉',15:'一级准尉',16:'特级准尉',17:'少尉',18:'中尉',19:'上尉',20:'少校',21:'中校',22:'上校',23:'准将',24:'少将',25:'中将',26:'上将',27:'元帅',28:'陆军元帅',29:'统帅',30:'大元帅',31:'传奇'};
+
+const DEFAULTS = {
+    ChatDecorator1:false, ChatDecorator2:false, ChatDecorator3:false, ChatDecorator4:false,
+    CustomDecorators: [], CustomDecoratorActive: null,
+    ChatPunctComma:false, ChatPunctPeriod:false, ChatPunctQmark:false,
+    ChatPunctSpaceToComma:false, ChatPunctAutoDot:false, ChatPunctLRM:false,
+    ChatReverse:false, ChatSymbolPanel:false,
+    ChatTranslateSend:false, ChatTranslateTarget:'ru',
+    ChatTranslateProxy:'',
+    ChatSimpTradToggle:false, ChatSimpTradDirection:'s2t',
+    ChatAutoIdSend:false, ChatAutoIdSend1:false, ChatAutoIdSend2:false,
+    WordReplacer:true, DictSource:'remote', CustomDict:{},
+    AITranslateEnabled:false, AITranslateRecord:false, TranslateInCN:true,
+    TranslateApiBase:'https://generativelanguage.googleapis.com',
+    TranslateApiModel:'gemini-flash-lite-latest', TranslateApiKey:'',
+    ChatFontSize:13, ChatBgOpacity:0.30, ChatRankIconSize:0,
+    ChatShowTitle:false, ChatNameBold:true,
+    QuotesEnabled:true, Quotes:JSON.parse(JSON.stringify(QUOTES_DEFAULTS)),
+    QuotesGroup:'胖墩', QuotesKey:'Q', QuotesGroupKey:'Tab',
+    PlayerProfiles:{}, ChatHistory:[]
+};
+
+let state = loadState();
+let dictionary = {};
+let activeTab = 'chattools';
+
+/* ---------------- 基础工具 ---------------- */
+function loadState() {
+    try {
+        const raw = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
+        const merged = Object.assign({}, DEFAULTS, raw);
+        if (!merged.Quotes || typeof merged.Quotes !== 'object') merged.Quotes = JSON.parse(JSON.stringify(QUOTES_DEFAULTS));
+        if (!Array.isArray(merged.ChatHistory)) merged.ChatHistory = [];
+        if (!Array.isArray(merged.CustomDecorators)) merged.CustomDecorators = [];
+        if (!merged.PlayerProfiles || typeof merged.PlayerProfiles !== 'object') merged.PlayerProfiles = {};
+        return merged;
+    } catch (e) { return JSON.parse(JSON.stringify(DEFAULTS)); }
+}
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function $(sel) { return document.querySelector(sel); }
+function $all(sel) { return Array.from(document.querySelectorAll(sel)); }
+let toastTimer = 0;
+function toast(msg) {
+    const el = $('#toast'); el.textContent = msg; el.classList.add('is-visible');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('is-visible'), 2200);
+}
+
+/* ---------------- UI 同步 ---------------- */
+function refreshUI() {
+    // 开关
+    $all('[data-toggle]').forEach(btn => {
+        const on = state[btn.dataset.toggle] === true;
+        btn.classList.toggle('is-on', on);
+        const dot = btn.querySelector('.k-dot');
+        if (dot) dot.textContent = '';
+    });
+    // 下拉 / 输入 / 滑块
+    $all('[data-select]').forEach(el => { el.value = state[el.dataset.select] ?? ''; });
+    $all('[data-input]').forEach(el => { el.value = state[el.dataset.input] ?? ''; });
+    $all('[data-range]').forEach(el => { el.value = state[el.dataset.range]; });
+
+    // 单选组：互斥状态高亮
+    renderDecoratorToggles();
+    renderCustomDecorators();
+    renderSymbolPalette();
+    renderQuoteGroups();
+    renderQuotes();
+    renderProfiles();
+    renderChatLog();
+    renderPreview();
+    updateActiveCount();
+    // 用户正在编辑自定义词典时不要覆盖输入内容
+    const customBox = $('#customDict');
+    if (customBox && document.activeElement !== customBox) {
+        customBox.value = JSON.stringify(state.CustomDict || {}, null, 2);
+    }
+}
+
+function updateActiveCount() {
+    const keys = [
+        'ChatDecorator1','ChatDecorator2','ChatDecorator3','ChatDecorator4',
+        'ChatPunctComma','ChatPunctPeriod','ChatPunctQmark','ChatPunctSpaceToComma','ChatPunctAutoDot','ChatPunctLRM',
+        'ChatReverse','ChatSymbolPanel','ChatTranslateSend','ChatSimpTradToggle',
+        'ChatAutoIdSend','ChatAutoIdSend1','ChatAutoIdSend2','WordReplacer',
+        'AITranslateEnabled','AITranslateRecord','ChatShowTitle','ChatNameBold','QuotesEnabled'
+    ];
+    let n = keys.filter(k => state[k] === true).length;
+    if (state.CustomDecoratorActive) n++;
+    $('#activeCount').textContent = n + ' 项功能启用';
+}
+
+/* ---------------- 装饰符 ---------------- */
+function renderDecoratorToggles() {
+    const box = $('#decoratorToggles');
+    if (!box.children.length) {
+        DECORATORS.forEach(d => {
+            const b = document.createElement('button');
+            b.className = 'k-toggle'; b.type = 'button'; b.dataset.decKey = d.key;
+            b.innerHTML = '<span class="k-dot"></span>' + esc(d.label);
+            box.appendChild(b);
         });
-    </script>
+    }
+    $all('[data-dec-key]').forEach(b => b.classList.toggle('is-on', state[b.dataset.decKey] === true));
+}
+function findCustom(id) { return (state.CustomDecorators || []).find(x => x && x.id === id) || null; }
+function applyCustomDecorator(id) {
+    if (!findCustom(id)) { renderCustomDecorators(); return; }
+    if (state.CustomDecoratorActive === id) state.CustomDecoratorActive = null;
+    else {
+        DECORATORS.forEach(d => state[d.key] = false);
+        state.CustomDecoratorActive = id;
+    }
+    save(); refreshUI();
+}
+function parseDecoratorInput(raw) {
+    const s = String(raw == null ? '' : raw);
+    if (!s) return null;
+    const bar = s.indexOf('|');
+    if (bar !== -1) {
+        const pre = s.slice(0, bar), suf = s.slice(bar + 1);
+        return (!pre && !suf) ? null : { pre, suf };
+    }
+    const cm = s.match(/[,，]/);
+    if (cm && cm.index !== undefined) {
+        const pre = s.slice(0, cm.index), suf = s.slice(cm.index + cm[0].length);
+        return (!pre && !suf) ? null : { pre, suf };
+    }
+    const chars = Array.from(s);
+    if (!chars.length) return null;
+    if (chars.length === 1) return { pre: chars[0], suf: '' };
+    const mid = Math.ceil(chars.length / 2);
+    return { pre: chars.slice(0, mid).join(''), suf: chars.slice(mid).join('') };
+}
+function renderCustomDecorators() {
+    const box = $('#decCustomList');
+    box.innerHTML = '';
+    (state.CustomDecorators || []).forEach(item => {
+        if (!item || !item.id) return;
+        const row = document.createElement('div');
+        row.className = 'list-row';
+        const on = state.CustomDecoratorActive === item.id;
+        row.innerHTML =
+            '<button class="k-toggle ' + (on ? 'is-on' : '') + '" data-dec-custom="' + esc(item.id) + '" type="button"><span class="k-dot"></span>' + esc(item.pre + (item.suf || '')) + '</button>' +
+            '<span class="grow k-faint" style="font-size:.76rem">点击启用 / 再点关闭</span>' +
+            '<button class="k-btn k-btn-sm" data-dec-del="' + esc(item.id) + '" type="button">删除</button>';
+        box.appendChild(row);
+    });
+    if (!(state.CustomDecorators || []).length) box.innerHTML = '<div class="k-faint" style="font-size:.78rem">暂无自定义装饰符</div>';
+}
+function getDecorator() {
+    for (const d of DECORATORS) if (state[d.key] === true) return [d.pre, d.suf];
+    const item = findCustom(state.CustomDecoratorActive);
+    if (item && item.pre) return [String(item.pre), String(item.suf || '')];
+    return null;
+}
+
+/* ---------------- 特殊符号面板 ---------------- */
+function renderSymbolPalette() {
+    $('#symbolPalette').classList.toggle('is-visible', state.ChatSymbolPanel === true);
+    const cats = $('#symbolCats');
+    if (cats.children.length) return;
+    SYMBOL_CATEGORIES.forEach(cat => {
+        const title = document.createElement('div');
+        title.className = 'symbol-cat-title'; title.textContent = cat.title;
+        const grid = document.createElement('div'); grid.className = 'symbol-grid';
+        cat.emojis.forEach(emoji => {
+            const span = document.createElement('span');
+            span.className = 'symbol-item'; span.textContent = emoji; span.title = '插入 ' + emoji;
+            span.addEventListener('click', () => insertAtCursor(emoji));
+            grid.appendChild(span);
+        });
+        cats.appendChild(title); cats.appendChild(grid);
+    });
+}
+function insertAtCursor(text) {
+    const ta = $('#chatInput');
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    ta.value = ta.value.slice(0, start) + text + ta.value.slice(end);
+    ta.selectionStart = ta.selectionEnd = start + text.length;
+    ta.focus(); runChain();
+}
+
+/* ---------------- 快捷语录 ---------------- */
+function renderQuoteGroups() {
+    const box = $('#quoteGroups'); box.innerHTML = '';
+    Object.keys(state.Quotes || {}).forEach(name => {
+        const b = document.createElement('button');
+        b.className = 'quote-chip' + (state.QuotesGroup === name ? ' is-active' : '');
+        b.type = 'button'; b.dataset.group = name; b.textContent = name;
+        box.appendChild(b);
+    });
+    if (!Object.keys(state.Quotes || {}).length) box.innerHTML = '<span class="k-faint">暂无分组</span>';
+}
+function renderQuotes() {
+    const box = $('#quoteList'); box.innerHTML = '';
+    const list = (state.Quotes || {})[state.QuotesGroup] || [];
+    list.forEach((q, i) => {
+        const row = document.createElement('div'); row.className = 'list-row';
+        row.innerHTML = '<span class="grow" data-quote="' + i + '" title="点击写入输入框">' + esc(q) + '</span>' +
+                        '<button class="k-btn k-btn-sm" data-quote-del="' + i + '" type="button">删除</button>';
+        box.appendChild(row);
+    });
+    if (!list.length) box.innerHTML = '<div class="k-faint" style="font-size:.82rem">该分组暂无语录</div>';
+}
+function renderProfiles() {
+    const box = $('#profileList'); box.innerHTML = '';
+    Object.keys(state.PlayerProfiles || {}).forEach(name => {
+        const p = state.PlayerProfiles[name];
+        const row = document.createElement('div'); row.className = 'list-row';
+        row.innerHTML = '<span class="grow"><strong>' + esc(name) + '</strong> · UID: ' + esc(p.uid || '—') +
+                        ' · 曾用名: ' + esc((p.aliases || []).join('、') || '—') + '</span>' +
+                        '<button class="k-btn k-btn-sm" data-profile-del="' + esc(name) + '" type="button">删除</button>';
+        box.appendChild(row);
+    });
+    if (!Object.keys(state.PlayerProfiles || {}).length) box.innerHTML = '<div class="k-faint" style="font-size:.8rem">暂无档案，添加后可用「昵称;」查询</div>';
+}
+function renderChatLog() {
+    const box = $('#chatLog'); box.innerHTML = '';
+    state.ChatHistory.slice(-100).forEach((m, i) => {
+        const row = document.createElement('div'); row.className = 'list-row';
+        row.innerHTML = '<span class="grow"><span class="k-faint">' + esc(m.time) + '</span> [' + esc(m.rank || '新兵') + '] ' +
+                        '<strong>' + esc(m.name) + '</strong>: ' + esc(m.text) +
+                        (m.translation ? '<br><span class="k-muted">译文: ' + esc(m.translation) + '</span>' : '') + '</span>' +
+                        '<button class="k-btn k-btn-sm" data-log-del="' + i + '" type="button">删除</button>';
+        box.appendChild(row);
+    });
+    if (!state.ChatHistory.length) box.innerHTML = '<div class="k-faint" style="font-size:.82rem">暂无聊天记录</div>';
+}
+
+/* ---------------- 聊天外观预览 ---------------- */
+function renderPreview() {
+    const fs = Number(state.ChatFontSize) || 13;
+    const op = Number(state.ChatBgOpacity);
+    const rank = Number(state.ChatRankIconSize) || (fs + 3);
+    $('#previewHead').style.display = state.ChatShowTitle ? 'block' : 'none';
+    const body = $('#previewBody');
+    body.style.fontSize = fs + 'px';
+    body.style.background = 'color-mix(in srgb, var(--k-surface-solid) ' + Math.round((1 - op) * 100) + '%, var(--k-accent-soft))';
+    $all('#previewBody .chat-rank').forEach(el => {
+        el.style.width = Math.max(8, rank) + 'px'; el.style.height = Math.max(8, rank) + 'px';
+    });
+    $all('#previewBody .chat-name').forEach(el => el.classList.toggle('thin', state.ChatNameBold !== true));
+    $('#valFontSize').textContent = fs + 'px';
+    $('#valBgOpacity').textContent = Math.round(op * 100) + '%';
+    $('#valRankIcon').textContent = Number(state.ChatRankIconSize) > 0 ? Math.max(8, rank) + 'px' : '跟随字号';
+}
+
+/* ---------------- 词典 ---------------- */
+async function fetchDictionary() {
+    let url;
+    if (state.DictSource === 'custom') {
+        dictionary = state.CustomDict || {};
+        renderDictionary(); return;
+    }
+    url = state.DictSource === 'local' ? DICT_LOCAL : DICT_URL;
+    try {
+        const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        dictionary = await res.json();
+        if (!dictionary || typeof dictionary !== 'object') throw new Error('词典格式错误');
+    } catch (e) {
+        // 线上失败自动回退同源词典
+        try {
+            const res2 = await fetch(DICT_LOCAL + '?t=' + Date.now(), { cache: 'no-store' });
+            dictionary = await res2.json();
+            toast('线上词典不可用，已回退同源词典');
+        } catch (e2) {
+            dictionary = state.CustomDict || {};
+            toast('词典加载失败：' + e.message);
+        }
+    }
+    renderDictionary();
+}
+function renderDictionary() {
+    const keys = Object.keys(dictionary);
+    $('#dictStats').textContent = '共 ' + keys.length + ' 条屏蔽词规则 · 来源：' +
+        ({ remote: '线上 GitHub Pages', local: '同源文件', custom: '自定义词典' }[state.DictSource] || '—');
+    const q = $('#dictSearch').value.trim();
+    const caseSensitive = $('#dictCase').checked;
+    let filtered = keys.filter(k => {
+        if (!q) return true;
+        const a = caseSensitive ? k : k.toLowerCase();
+        const b = caseSensitive ? String(dictionary[k]) : String(dictionary[k]).toLowerCase();
+        const needle = caseSensitive ? q : q.toLowerCase();
+        return a.includes(needle) || b.includes(needle);
+    }).sort();
+    const show = filtered.slice(0, 800);
+    $('#dictBody').innerHTML = show.length
+        ? show.map(k => '<tr><td>' + esc(k) + '</td><td>' + esc(dictionary[k]) + '</td></tr>').join('') +
+          (filtered.length > show.length ? '<tr><td colspan="2" class="k-center k-faint">仅显示前 800 条，共 ' + filtered.length + ' 条，请缩小搜索范围</td></tr>' : '')
+        : '<tr><td colspan="2" class="k-center k-muted">' + (keys.length ? '没有匹配的屏蔽词' : '词典为空') + '</td></tr>';
+}
+function replaceText(text) {
+    let result = text;
+    const keys = Object.keys(dictionary).sort((a, b) => b.length - a.length);
+    for (const key of keys) {
+        const value = dictionary[key];
+        if (!value) continue;
+        const regex = new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+        result = result.replace(regex, value);
+    }
+    return result;
+}
+
+/* ---------------- 处理链（同步部分） ---------------- */
+const hasUrl = (text) => /(https?:\/\/|#\/battle=)/i.test(text);
+const reverseText = (s) => Array.from(s).reverse().join('');
+
+function optimizePunct(text) {
+    if (state.ChatPunctComma)  text = text.replace(/\uff0c/g, ',');
+    if (state.ChatPunctPeriod) text = text.replace(/\u3002/g, '.');
+    if (state.ChatPunctQmark)  text = text.replace(/\uff1f/g, '?');
+    if (state.ChatPunctSpaceToComma) {
+        const m = text.match(/^([^;:]+[;:])\s+/);
+        if (m) text = m[0] + text.slice(m[0].length).replace(/ +/g, ',');
+        else text = text.replace(/ +/g, ',');
+    }
+    if (state.ChatPunctAutoDot && text.trim()) {
+        const trimmed = text.trim();
+        if (!/[.!?！？。，,;；:：]/.test(trimmed.charAt(trimmed.length - 1))) text = text.trimEnd() + '.';
+    }
+    if (state.ChatPunctLRM && text) {
+        text = (function (src) {
+            const protectedRe = /(?:^[^\s;:]+[;:]\s+|#\/battle=[A-Za-z0-9_]+)/g;
+            let result = '', last = 0, m;
+            while ((m = protectedRe.exec(src)) !== null) {
+                if (m.index > last) result += Array.from(src.slice(last, m.index)).join('\u200e') + '\u200e';
+                result += m[0]; last = m.index + m[0].length;
+            }
+            if (last < src.length) result += Array.from(src.slice(last)).join('\u200e');
+            return result;
+        })(text);
+    }
+    return text;
+}
+function applyIdShortcut(text) {
+    const m = text.match(/^([A-Za-z0-9_]{4,24})([;:])\s*$/);
+    if (!m) return text;
+    const id = m[1], sep = m[2];
+    if (state.ChatAutoIdSend)  return id + sep + ' ' + id;
+    if (state.ChatAutoIdSend1) return id + sep + ' 1';
+    if (state.ChatAutoIdSend2) {
+        const rawName = id.replace(/^\[[^\]]*\]\s*/, '').trim();
+        const p = state.PlayerProfiles[rawName];
+        if (!p) return text;   // 查不到档案则放行（与脚本一致）
+        const aliases = (p.aliases || []).length ? '曾用名(' + p.aliases.length + '条): ' + p.aliases.join('/') : '曾用名: 无';
+        return rawName + sep + ' 玩家 ID: ' + rawName + ',用户 UID: ' + (p.uid || '未知') + ',当前等级: ' + (p.rank || '未知') + ',' + aliases;
+    }
+    return text;
+}
+function applyReverse(text) {
+    const base = text.endsWith('】】】') ? text.slice(0, -3) : text;
+    const semi = base.indexOf(';'), colon = base.indexOf(':');
+    let sepIdx = -1, sep = '';
+    if (semi !== -1 && (colon === -1 || semi < colon)) { sepIdx = semi; sep = ';'; }
+    else if (colon !== -1) { sepIdx = colon; sep = ':'; }
+    let out;
+    if (sepIdx !== -1 && /^[a-zA-Z0-9._-]+$/.test(base.substring(0, sepIdx))) {
+        // 网页版用 trim() 去掉反转后残留的首尾空格（脚本用 trimStart，尾缀前会多一个空格）
+        out = base.substring(0, sepIdx) + sep + ' ' + reverseText(base.substring(sepIdx + 1)).trim();
+    } else out = reverseText(base);
+    return out + '】】】';
+}
+function collectSeparators(text) {
+    const specs = [[' :', false], ['; ', false], [': ', true]];
+    const idx = [];
+    specs.forEach(([sep, skipIfSpaceBefore]) => {
+        let p = 0;
+        while ((p = text.indexOf(sep, p)) !== -1) {
+            if (!(skipIfSpaceBefore && p > 0 && text.charAt(p - 1) === ' ')) idx.push(p);
+            p += sep.length;
+        }
+    });
+    return [...new Set(idx)].sort((a, b) => a - b);
+}
+function applyDecorator(text) {
+    const dec = getDecorator();
+    if (!dec || !text.trim() || hasUrl(text)) return text;
+    const [pre, suf] = dec;
+    let out = text, offset = 0;
+    // 大厅多段消息：只装饰分隔符后的正文
+    collectSeparators(text).forEach(pos => {
+        const p = pos + offset;
+        const part = out.substring(p + 2);
+        if (part && !part.startsWith(pre) && !part.endsWith(suf) && !hasUrl(part)) {
+            out = out.substring(0, p + 2) + pre + part + suf;
+            offset += pre.length + suf.length;
+        }
+    });
+    if (!out.startsWith(pre) && !out.endsWith(suf)) out = pre + out + suf;
+    return out;
+}
+function buildChain(raw) {
+    const steps = [];
+    let text = raw;
+    const step = (name, fn, enabled) => {
+        if (!enabled) { steps.push({ name, changed: false, note: '未启用' }); return; }
+        const before = text; text = fn(text);
+        steps.push({ name, changed: text !== before, note: text !== before ? '已生效' : '无变化' });
+    };
+    step('1. 快捷发送ID补全', applyIdShortcut,
+        state.ChatAutoIdSend || state.ChatAutoIdSend1 || state.ChatAutoIdSend2);
+    step('2. 屏蔽词替换', replaceText, state.WordReplacer === true);
+    step('3. 符号优化（含防屏蔽符）', optimizePunct,
+        state.ChatPunctComma || state.ChatPunctPeriod || state.ChatPunctQmark ||
+        state.ChatPunctSpaceToComma || state.ChatPunctAutoDot || state.ChatPunctLRM);
+    step('4. 语句反转 + 】】】', applyReverse, state.ChatReverse === true);
+    step('5. 装饰符包裹', applyDecorator, !!getDecorator());
+    return { text, steps };
+}
+function runChain() {
+    const raw = $('#chatInput').value;
+    if (!raw.trim()) {
+        $('#chainResult').textContent = '（等待输入）';
+        $('#chainLog').innerHTML = '<li>尚未执行</li>';
+        return raw;
+    }
+    const { text, steps } = buildChain(raw);
+    $('#chainResult').textContent = text;
+    $('#chainLog').innerHTML = steps.map(s =>
+        '<li class="' + (s.changed ? 'is-changed' : '') + '">' + esc(s.name) + ' — ' + esc(s.note) + '</li>').join('');
+    return text;
+}
+
+/* ---------------- 网络功能：翻译 / 简繁 / AI ---------------- */
+async function doEdgeTranslate(text, target) {
+    // Edge 网页翻译：先取临时 token，再调用认知服务翻译端点
+    const auth = await fetch('https://edge.microsoft.com/translate/auth');
+    if (!auth.ok) throw new Error('无法获取 Edge 授权');
+    const token = await auth.text();
+    const res = await fetch('https://api-edge.cognitive.microsofttranslator.com/translate?to=' +
+        encodeURIComponent(target) + '&api-version=3.0', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify([{ Text: text }])
+    });
+    if (!res.ok) throw new Error('翻译接口 HTTP ' + res.status);
+    const data = await res.json();
+    return data[0].translations[0].text;
+}
+async function doSimpTrad(text, direction) {
+    const converter = direction === 't2s' ? 'Simplified' : 'Traditional';
+    const res = await fetch('https://api.zhconvert.org/v1/convert?converter=' + converter +
+        '&text=' + encodeURIComponent(text) + '&prettify=false');
+    if (!res.ok) throw new Error('转换接口 HTTP ' + res.status);
+    const data = await res.json();
+    return data.data && data.data.text ? data.data.text : text;
+}
+async function doAiTranslate(text) {
+    const base = (state.TranslateApiBase || '').replace(/\/$/, '');
+    const model = state.TranslateApiModel || '';
+    const key = state.TranslateApiKey || '';
+    if (!base || !model || !key) throw new Error('请先填写接口地址、模型与 API Key');
+    const isGemini = model.toLowerCase().startsWith('gemini') || base.includes('googleapis.com');
+    const prompt = '把下面的游戏聊天消息翻译成简体中文，只输出译文：\n' + text;
+    let res;
+    if (isGemini) {
+        res = await fetch(base + '/v1beta/models/' + encodeURIComponent(model) + ':generateContent?key=' + encodeURIComponent(key), {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+        if (!res.ok) throw new Error('Gemini 接口 HTTP ' + res.status);
+        const d = await res.json();
+        return d.candidates[0].content.parts[0].text;
+    }
+    res = await fetch(base + '/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+        body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }] })
+    });
+    if (!res.ok) throw new Error('OpenAI 兼容接口 HTTP ' + res.status);
+    const d = await res.json();
+    return d.choices[0].message.content;
+}
+function hasChinese(s) { return /[\u4e00-\u9fa5]/.test(s); }
+async function simulateSend() {
+    let text = runChain();
+    const log = $('#chainLog');
+    const addStep = (name, note, ok) => {
+        const li = document.createElement('li');
+        li.className = ok ? 'is-changed' : '';
+        li.textContent = name + ' — ' + note;
+        log.appendChild(li);
+    };
+    try {
+        if (state.ChatTranslateSend && hasChinese(text)) {
+            addStep('6. 发送前自动翻译', '请求中…', false);
+            text = await doEdgeTranslate(text, state.ChatTranslateTarget || 'ru');
+            addStep('6. 发送前自动翻译', '已完成 → ' + (state.ChatTranslateTarget || 'ru'), true);
+        } else if (state.ChatSimpTradToggle && hasChinese(text)) {
+            addStep('6. 简繁转换', '请求中…', false);
+            text = await doSimpTrad(text, state.ChatSimpTradDirection || 's2t');
+            addStep('6. 简繁转换', '已完成', true);
+        } else {
+            addStep('6. 网络处理', '未启用或无需转换', false);
+        }
+    } catch (e) {
+        addStep('6. 网络处理', '失败，回退原文：' + e.message, false);
+        toast('网络处理失败，已回退原文');
+    }
+    $('#chainResult').textContent = text;
+}
+
+/* ---------------- 事件绑定 ---------------- */
+document.addEventListener('DOMContentLoaded', () => {
+    // 语言下拉
+    $('#translateTarget').innerHTML = LANG_OPTIONS.map(([v, n]) =>
+        '<option value="' + v + '">' + esc(n) + '</option>').join('');
+    refreshUI();
+    fetchDictionary().then(runChain);
+    $('#decInput').addEventListener('input', () => {
+        const p = parseDecoratorInput($('#decInput').value);
+        $('#decPreview').textContent = p ? (p.pre + '消息' + p.suf) : '—';
+    });
+
+    // 选项卡
+    $('#tabs').addEventListener('click', e => {
+        const tab = e.target.closest('.tab'); if (!tab) return;
+        activeTab = tab.dataset.tab;
+        $all('#tabs .tab').forEach(t => t.classList.toggle('is-active', t === tab));
+        $all('.tab-panel').forEach(p => p.classList.toggle('is-active', p.id === 'tab-' + activeTab));
+    });
+
+    // 通用开关（含互斥组）
+    document.addEventListener('click', e => {
+        const btn = e.target.closest('[data-toggle]');
+        if (!btn) return;
+        const key = btn.dataset.toggle;
+        const next = state[key] !== true;
+        if (next) {
+            // 装饰符单选：打开一个则关闭其余内置 + 自定义
+            if (DECORATORS.some(d => d.key === key)) {
+                DECORATORS.forEach(d => state[d.key] = false);
+                state.CustomDecoratorActive = null;
+            }
+            // 快捷发送ID 单选
+            if (['ChatAutoIdSend','ChatAutoIdSend1','ChatAutoIdSend2'].includes(key)) {
+                ['ChatAutoIdSend','ChatAutoIdSend1','ChatAutoIdSend2'].forEach(k => state[k] = false);
+            }
+            // 发送前翻译 / 简繁转换互斥：翻译优先
+            if (key === 'ChatSimpTradToggle') state.ChatTranslateSend = false;
+            // AI 模式互斥
+            if (key === 'AITranslateEnabled') state.AITranslateRecord = false;
+            if (key === 'AITranslateRecord') state.AITranslateEnabled = false;
+        }
+        state[key] = next;
+        save(); refreshUI(); runChain();
+    });
+
+    // 装饰符
+    $('#decoratorToggles').addEventListener('click', e => {
+        const b = e.target.closest('[data-dec-key]'); if (!b) return;
+        const key = b.dataset.decKey;
+        DECORATORS.forEach(d => state[d.key] = (d.key === key ? state[d.key] !== true : false));
+        state.CustomDecoratorActive = null;
+        save(); refreshUI(); runChain();
+    });
+    $('#decAdd').addEventListener('click', () => {
+        const parsed = parseDecoratorInput($('#decInput').value);
+        if (!parsed) { toast('请输入有效的装饰符'); return; }
+        state.CustomDecorators.push({ id: 'd' + Date.now().toString(36), pre: parsed.pre, suf: parsed.suf });
+        $('#decInput').value = ''; $('#decPreview').textContent = '—';
+        save(); refreshUI(); toast('自定义装饰符已添加');
+    });
+    $('#decCustomList').addEventListener('click', e => {
+        const on = e.target.closest('[data-dec-custom]');
+        const del = e.target.closest('[data-dec-del]');
+        if (on) applyCustomDecorator(on.dataset.decCustom);
+        if (del) {
+            const id = del.dataset.decDel;
+            state.CustomDecorators = state.CustomDecorators.filter(x => x.id !== id);
+            if (state.CustomDecoratorActive === id) state.CustomDecoratorActive = null;
+            save(); refreshUI(); runChain();
+        }
+    });
+
+    // 通用下拉 / 输入 / 滑块
+    document.addEventListener('change', e => {
+        const el = e.target;
+        if (el.dataset.select) { state[el.dataset.select] = el.value; save(); if (el.dataset.select === 'DictSource') fetchDictionary().then(runChain); }
+        if (el.dataset.range) { state[el.dataset.range] = Number(el.value); save(); renderPreview(); }
+    });
+    document.addEventListener('input', e => {
+        const el = e.target;
+        if (el.dataset.input) { state[el.dataset.input] = el.value; save(); }
+        if (el.dataset.range) { state[el.dataset.range] = Number(el.value); renderPreview(); }
+    });
+
+    // 工作台
+    $('#runChain').addEventListener('click', runChain);
+    $('#simulateSend').addEventListener('click', simulateSend);
+    $('#clearInput').addEventListener('click', () => { $('#chatInput').value = ''; runChain(); });
+    $('#copyResult').addEventListener('click', async () => {
+        const text = $('#chainResult').textContent;
+        if (!text || text === '（等待输入）') { toast('没有可复制的结果'); return; }
+        try { await navigator.clipboard.writeText(text); toast('结果已复制'); }
+        catch (e) { toast('复制失败，请手动选择'); }
+    });
+    $('#appendLog').addEventListener('click', () => {
+        const text = $('#chainResult').textContent;
+        if (!text || text === '（等待输入）') { toast('没有可记录的内容'); return; }
+        addLogEntry('Kosto', text);
+        toast('已记入聊天记录');
+    });
+    $('#chatInput').addEventListener('keydown', e => {
+        if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); runChain(); }
+    });
+    $('#chatInput').addEventListener('input', runChain);
+
+    // 词典
+    $('#dictSearch').addEventListener('input', renderDictionary);
+    $('#dictCase').addEventListener('change', renderDictionary);
+    $('#reloadDict').addEventListener('click', () => { toast('正在重载词典…'); fetchDictionary().then(() => { runChain(); toast('词典已重载'); }); });
+    $('#reloadDict2').addEventListener('click', () => { toast('正在重载词典…'); fetchDictionary().then(() => toast('词典已重载')); });
+    $('#applyCustomDict').addEventListener('click', () => {
+        try {
+            const obj = JSON.parse($('#customDict').value || '{}');
+            if (typeof obj !== 'object' || Array.isArray(obj)) throw new Error('必须是 JSON 对象');
+            state.CustomDict = obj; state.DictSource = 'custom';
+            save(); refreshUI(); fetchDictionary().then(() => { runChain(); toast('自定义词典已应用'); });
+        } catch (e) { toast('JSON 解析失败：' + e.message); }
+    });
+    $('#exportDict').addEventListener('click', () => download(JSON.stringify(dictionary, null, 2), 'dictionary.json', 'application/json'));
+
+    // 语录
+    $('#quoteGroups').addEventListener('click', e => {
+        const b = e.target.closest('[data-group]'); if (!b) return;
+        state.QuotesGroup = b.dataset.group; save(); renderQuoteGroups(); renderQuotes();
+    });
+    $('#quoteList').addEventListener('click', e => {
+        const del = e.target.closest('[data-quote-del]');
+        const use = e.target.closest('[data-quote]');
+        if (del) {
+            (state.Quotes[state.QuotesGroup] || []).splice(Number(del.dataset.quoteDel), 1);
+            save(); renderQuotes();
+        }
+        if (use) {
+            const q = (state.Quotes[state.QuotesGroup] || [])[Number(use.dataset.quote)];
+            if (q != null) { $('#chatInput').value = q; runChain(); toast('语录已写入输入框'); }
+        }
+    });
+    $('#addQuote').addEventListener('click', () => {
+        const v = $('#newQuote').value.trim(); if (!v) return;
+        if (!state.Quotes[state.QuotesGroup]) state.Quotes[state.QuotesGroup] = [];
+        state.Quotes[state.QuotesGroup].push(v);
+        $('#newQuote').value = ''; save(); renderQuotes();
+    });
+    $('#addGroup').addEventListener('click', () => {
+        const v = $('#newGroup').value.trim(); if (!v) return;
+        if (state.Quotes[v]) { toast('分组已存在'); return; }
+        state.Quotes[v] = []; state.QuotesGroup = v; $('#newGroup').value = '';
+        save(); renderQuoteGroups(); renderQuotes();
+    });
+    $('#delGroup').addEventListener('click', () => {
+        const g = state.QuotesGroup;
+        if (!state.Quotes[g]) return;
+        delete state.Quotes[g];
+        state.QuotesGroup = Object.keys(state.Quotes)[0] || '';
+        save(); renderQuoteGroups(); renderQuotes(); toast('分组已删除');
+    });
+
+    // 玩家档案
+    $('#profileToggle').addEventListener('click', () => $('#profileBox').classList.toggle('hidden'));
+    $('#profileAdd').addEventListener('click', () => {
+        const name = $('#profileName').value.trim(); if (!name) { toast('请填写昵称'); return; }
+        state.PlayerProfiles[name] = {
+            uid: $('#profileUid').value.trim(),
+            aliases: $('#profileAlias').value.split(/[,，]/).map(s => s.trim()).filter(Boolean),
+            rank: '未知'
+        };
+        $('#profileName').value = $('#profileUid').value = $('#profileAlias').value = '';
+        save(); renderProfiles(); toast('档案已保存');
+    });
+    $('#profileList').addEventListener('click', e => {
+        const del = e.target.closest('[data-profile-del]'); if (!del) return;
+        delete state.PlayerProfiles[del.dataset.profileDel]; save(); renderProfiles();
+    });
+
+    // 翻译 / 转换测试
+    $('#testTranslate').addEventListener('click', async () => {
+        const text = $('#chatInput').value.trim(); if (!text) { toast('请先输入内容'); return; }
+        toast('正在请求 Edge 翻译…');
+        try { $('#chainResult').textContent = await doEdgeTranslate(text, state.ChatTranslateTarget || 'ru'); toast('翻译成功'); }
+        catch (e) { toast('翻译失败（浏览器 CORS 限制）：' + e.message); $('#chainResult').textContent = text; }
+    });
+    $('#testSimpTrad').addEventListener('click', async () => {
+        const text = $('#chatInput').value.trim(); if (!text) { toast('请先输入内容'); return; }
+        toast('正在请求简繁转换…');
+        try { $('#chainResult').textContent = await doSimpTrad(text, state.ChatSimpTradDirection || 's2t'); toast('转换成功'); }
+        catch (e) { toast('转换失败：' + e.message); $('#chainResult').textContent = text; }
+    });
+    $('#testAi').addEventListener('click', async () => {
+        const text = $('#chatInput').value.trim() || 'Hello, anyone up for a match?';
+        $('#aiResult').textContent = '请求中…';
+        try { $('#aiResult').textContent = await doAiTranslate(text); toast('AI 接口测试成功'); }
+        catch (e) { $('#aiResult').textContent = '失败：' + e.message; toast('AI 接口测试失败'); }
+    });
+
+    // 聊天记录
+    $('#addLog').addEventListener('click', () => {
+        const text = $('#logText').value.trim(); if (!text) return;
+        addLogEntry($('#logName').value.trim() || 'Kosto', text);
+        $('#logText').value = '';
+    });
+    $('#chatLog').addEventListener('click', e => {
+        const del = e.target.closest('[data-log-del]'); if (!del) return;
+        state.ChatHistory.splice(Number(del.dataset.logDel), 1); save(); renderChatLog();
+    });
+    $('#exportLog').addEventListener('click', exportChatLog);
+    $('#clearLog').addEventListener('click', () => { state.ChatHistory = []; save(); renderChatLog(); toast('记录已清空'); });
+});
+
+function addLogEntry(name, text) {
+    state.ChatHistory.push({
+        time: new Date().toLocaleString('zh-CN'),
+        rank: RANK_NAMES[31], name, text, translation: ''
+    });
+    if (state.ChatHistory.length > 100) state.ChatHistory = state.ChatHistory.slice(-100);
+    save(); renderChatLog();
+}
+function exportChatLog() {
+    if (!state.ChatHistory.length) { toast('当前暂无聊天缓存'); return; }
+    let content = '=== 近一百条聊天记录 ===\n导出时间: ' + new Date().toLocaleString('zh-CN') +
+                  '\n共 ' + state.ChatHistory.length + ' 条记录\n\n';
+    state.ChatHistory.forEach((m, i) => {
+        content += (i + 1) + '. [' + m.time + '] [公共] [' + (m.rank || '新兵') + '] ' + m.name + ': ' + m.text +
+                   (m.translation ? '\n   翻译: ' + m.translation : '') + '\n';
+    });
+    download(content, '近一百条聊天记录_' + new Date().toISOString().replace(/[:.]/g, '-') + '.txt', 'text/plain;charset=utf-8');
+    toast('已导出 ' + state.ChatHistory.length + ' 条记录');
+}
+function download(content, filename, type) {
+    const blob = new Blob([content], { type: type || 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+</script>
 </body>
 </html>

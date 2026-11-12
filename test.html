@@ -4,216 +4,114 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>3D坦克测试服务器</title>
+    <link rel="stylesheet" href="assets/kosto-theme.css">
+    <script src="assets/theme.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+1p&display=swap');
-        body {
-            font-family: 'Rubik', 'M PLUS 1p';
-            margin: 0;
-            padding-top: 80px; /* Offset for the fixed header */
-            background-color: #001926;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
-        }
-        
-        * {
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        #optionsButtonContainer {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    z-index: 1001;
-}
 
-#optionsButton {
-    background-color: #76FF33;
-    color: #001926;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3, color 0.3, transform 0.2; /* 添加按钮动画 */
-}
+    /* ===== Kosto Aurora 统一视觉（令牌见 assets/kosto-theme.css） ===== */
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+        font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+        margin: 0; min-height: 100vh; padding-top: 90px;
+        color: var(--k-text);
+        background:
+            radial-gradient(1000px 620px at 8% -8%,  var(--k-glow-1), transparent 65%),
+            radial-gradient(900px 560px at 92% 4%,   var(--k-glow-3), transparent 62%),
+            radial-gradient(900px 700px at 50% 108%, var(--k-glow-2), transparent 62%),
+            linear-gradient(160deg, var(--k-bg) 0%, var(--k-bg-2) 100%);
+        background-attachment: fixed;
+        display: flex; flex-direction: column; align-items: center;
+        transition: background-color .3s ease, color .3s ease;
+    }
+    .hidden { display: none; }
 
-#optionsButton:hover {
-    background-color: #BFD5FF;
-    color: #001926;
-    transform: scale(1.05); /* 悬停时按钮放大 */
-}
+    .header {
+        position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+        background: var(--k-surface); backdrop-filter: blur(var(--k-blur));
+        -webkit-backdrop-filter: blur(var(--k-blur));
+        border-bottom: 1px solid var(--k-border); box-shadow: var(--k-shadow);
+        padding: 12px 18px; display: flex; align-items: center; justify-content: center; gap: 14px;
+    }
+    .header h1 { margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--k-accent-text); }
+    .header-actions { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); display: flex; gap: 8px; }
 
-.hidden {
-    display: none;
-}
+    .loader {
+        display: flex; justify-content: center; align-items: center; height: 100vh; width: 100%;
+        background: var(--k-bg); position: absolute; top: 0; left: 0; z-index: 900;
+    }
+    .loader svg { stroke: var(--k-accent); }
 
-#options {
-    background-color: rgba(50, 50, 50, 0.95); /* 半透明深色背景 */
-    padding: 20px;
-    border-radius: 12px; /* 圆角更大 */
-    color: white;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7); /* 柔和阴影 */
-    z-index: 1001;
-    width: 300px;
-    max-width: 90%; /* 响应式宽度 */
-    text-align: left;
-    transition: opacity 0.3 ease, transform 0.3 ease; /* 添加弹窗动画 */
-    opacity: 1;
-}
+    #optionsButtonContainer { position: fixed; top: 84px; right: 20px; z-index: 1001; }
+    #optionsButton {
+        font: inherit; font-size: .84rem; font-weight: 650; cursor: pointer;
+        padding: 9px 18px; border-radius: 999px; border: 1px solid transparent;
+        color: #fff; background: linear-gradient(135deg, var(--k-accent), var(--k-accent-2));
+        box-shadow: 0 8px 20px var(--k-accent-ring);
+        transition: transform .2s, box-shadow .2s;
+    }
+    #optionsButton:hover { transform: translateY(-2px); box-shadow: var(--k-shadow-lg); }
 
-#options.hidden {
-    opacity: 0;
-    pointer-events: none;
-    transform: translate(-50%, -40%);
-    transition: opacity 0.3 ease, transform 0.3 ease;
-}
+    #options {
+        background: var(--k-surface-solid); color: var(--k-text);
+        padding: 22px; border-radius: var(--k-radius);
+        border: 1px solid var(--k-border); box-shadow: var(--k-shadow-lg);
+        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        z-index: 1001; width: 320px; max-width: 90%; text-align: left;
+        transition: opacity .3s ease, transform .3s ease; opacity: 1;
+    }
+    #options.hidden { opacity: 0; pointer-events: none; transform: translate(-50%, -40%); }
+    #options.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%); }
+    #options label { display: flex; align-items: center; margin-bottom: 12px; cursor: pointer; transition: color .3s; }
+    #options label:hover { color: var(--k-accent-text); }
+    #options input[type="checkbox"] { display: none; }
+    #options input[type="checkbox"] + span { position: relative; padding-left: 30px; cursor: pointer; }
+    #options input[type="checkbox"] + span:before {
+        content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+        width: 19px; height: 19px; border: 2px solid var(--k-accent);
+        border-radius: 5px; background: transparent; transition: background .3s, border-color .3s;
+    }
+    #options input[type="checkbox"]:checked + span:before { background: var(--k-accent); border-color: var(--k-accent); }
+    #options input[type="checkbox"]:checked + span:after {
+        content: ''; position: absolute; left: 5px; top: 9px; width: 10px; height: 5px;
+        border: solid var(--k-surface-solid); border-width: 0 2px 2px 0; transform: rotate(45deg);
+    }
+    #options span { font-size: .9rem; }
 
-#options.show {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translate(-50%, -50%);
-}
+    #deploy-results, #review-results { display: flex; flex-direction: column; align-items: center; width: 100%; }
+    .button-container { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .button {
+        display: inline-block; margin: 8px; padding: 9px 20px;
+        background: var(--k-surface); color: var(--k-text);
+        border: 1px solid var(--k-border-strong); border-radius: 999px;
+        text-decoration: none; font-weight: 650; font-size: .86rem;
+        transition: transform .2s, border-color .2s, box-shadow .2s;
+    }
+    .button:hover { transform: translateY(-2px); border-color: var(--k-accent); box-shadow: var(--k-shadow); }
+    .online-count, .inbattles-count {
+        font-size: .75rem; color: var(--k-text-muted);
+        padding: 3px 10px; border-radius: 999px;
+        background: var(--k-surface-2); border: 1px solid var(--k-border);
+    }
+    .button.back-button { position: fixed; top: 84px; left: 16px; z-index: 1001; }
+    #no-servers {
+        margin-top: 24px; padding: 14px 22px; border-radius: var(--k-radius-sm);
+        background: var(--k-surface); border: 1px solid var(--k-border); color: var(--k-text-muted);
+    }
+    @media (max-width: 640px) {
+        .header-actions { position: static; transform: none; }
+        .header { flex-wrap: wrap; }
+        #optionsButtonContainer { position: static; margin-top: 12px; }
+    }
 
-/* 复选框样式 */
-#options label {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-    cursor: pointer;
-    transition: color 0.3;
-}
-
-#options label:hover {
-    color: #76FF33; /* 悬停时文字变绿 */
-}
-
-#options input[type="checkbox"] {
-            display: none; /* 隐藏原始复选框 */
-        }
-
-        /* 自定义复选框样式 */
-        #options input[type="checkbox"] + span {
-            position: relative;
-            padding-left: 30px; /* 为复选框留出空间 */
-            cursor: pointer; /* 提示可点击 */
-        }
-
-        #options input[type="checkbox"] + span:before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 20px; /* 自定义复选框宽度 */
-            height: 20px; /* 自定义复选框高度 */
-            border: 2px solid #76FF33; /* 边框颜色 */
-            border-radius: 4px; /* 边框圆角 */
-            background: transparent; /* 背景透明 */
-            transition: background 0.3, border-color 0.3; /* 过渡效果 */
-        }
-
-        #options input[type="checkbox"]:checked + span:before {
-            background: #76FF33; /* 选中时的背景颜色 */
-            border-color: #76FF33; /* 选中时的边框颜色 */
-        }
-
-        #options input[type="checkbox"]:checked + span:after {
-            content: '';
-            position: absolute;
-            left: 5px; /* 复选标记位置 */
-            top: 10px; /* 复选标记位置 */
-            width: 10px; /* 复选标记宽度 */
-            height: 5px; /* 复选标记高度 */
-            border: solid #001926; /* 复选标记颜色 */
-            border-width: 0 2px 2px 0; /* 复选标记边框宽度 */
-            transform: rotate(45deg); /* 旋转形成对勾形状 */
-        }
-
-#options span {
-    font-size: 16px;
-}
-
-
-
-        .header {
-            position: fixed; /* Fix the header at the top */
-            top: 0;
-            width: 100%;
-            background-color: #001926;
-            padding: 10px 0;
-            text-align: center;
-            z-index: 1000; /* Ensure the header is above other content */
-        }
-        
-        .hidden {
-            display: none;
-        }
-        
-        .loader {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            width: 100%; /* Ensure it covers the whole viewport */
-            background-color: #001926; /* Ensure it matches the body background color */
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-        
-        #deploy-results, #review-results {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .button-container {
-            display: flex;
-            align-items: center; /* Align items horizontally */
-        }
-        
-        .button {
-            display: inline-block;
-            margin: 10px;
-            padding: 10px 20px;
-            background-color: transparent;
-            color: #BFD5FF;
-            border: 1px solid #667D9DBA;
-            text-decoration: none;
-            border-radius: 6px;
-            transition: background-color 0.3, color 0.3;
-            margin-right: 10px; /* Add margin to separate from counts */
-        }
-        
-        .button:hover {
-            background-color: #76FF33;
-            color: #001926;
-        }
-        
-        .online-count, .inbattles-count {
-            margin-left: 10px; /* Space between the button and counts */
-            color: #BFD5FF;
-        }
-        
-        .button.back-button {
-            position: fixed; /* Change to fixed positioning */
-            top: 110px; /* Adjust the top position to be below the header */
-            left: 10px;
-            z-index: 1001; /* Increase the z-index */
-        }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>3D坦克测试服务器</h1>
+        <div class="header-actions">
+            <a class="k-btn k-btn-sm" href="Servers.html">服务器中心</a>
+            <button class="k-btn k-btn-sm k-theme-toggle" data-theme-toggle type="button"></button>
+        </div>
     </div>
     <div id="loader" class="loader">
         <div data-testid="oval-loading" style="display: flex;padding: 3px;">

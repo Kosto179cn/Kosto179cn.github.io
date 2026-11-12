@@ -56,6 +56,14 @@
     "theme": "theme-game"
   },
   {
+    "filename": "online.html",
+    "title": "国服每时段在线人数",
+    "desc": "每小时采集的在线/战斗人数趋势与分时明细。",
+    "icon": "fa-chart-column",
+    "category": "tool",
+    "theme": "theme-tool"
+  },
+  {
     "filename": "upgrades.html",
     "title": "3D坦克装备升级计算器",
     "desc": "自动发现的新页面",

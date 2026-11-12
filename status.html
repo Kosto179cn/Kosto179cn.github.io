@@ -1,151 +1,159 @@
-
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap" />
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D坦克服务器状态页面</title>
+    <link rel="stylesheet" href="assets/kosto-theme.css">
+    <script src="assets/theme.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            background: radial-gradient(rgb(32, 48, 64) 0%, rgb(3, 8, 13) 100%);
-            font-family: 'Rubik', 'M PLUS 1p';
-            color: white;
-            margin: 0;
-            padding: 0;
-        }
-        #backButton {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background-color: #76ff33;
-            padding: 10px;
-            border: none;
-            color: #001926;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 10px;
-            transition: background-color 0.3s;
-            display: none;
-        }
-        #backButton:hover {
-            background-color: #4CAF50;
-        }
-        * {
-            -webkit-tap-highlight-color: transparent;
-        }
-        #refreshButton {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #76ff33;
-            padding: 10px;
-            border: none;
-            color: #001926;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 10px;
-            transition: background-color 0.3s;
-        }
-        #refreshButton:hover {
-            background-color: #4CAF50;
-        }
-        #refreshTimer {
-            position: absolute;
-            top: 10px;
-            right: 80px;
-            font-size: 16px;
-        }
-        #updateStatus {
-            margin-top: 30px;
-        }
-        .container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            text-align: center;
-        }
-        .section {
-            text-align: center;
-        }
-        .section h1 {
-            font-size: 18px;
-            margin-bottom: 20px;
-        }
-        .section p {
-            margin-bottom: 10px;
-        }
-        a {
-            color: white;
-            text-decoration: none;
-        }
-        a:hover {
-            color: #76ff33;
-        }
+        .page-head { margin: 26px 0 18px; }
+        .page-head h1 { margin: 0 0 6px; font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 800; }
+        .page-head p { margin: 0; color: var(--k-text-muted); font-size: .9rem; }
+        .stat-panel { text-align: center; padding: 34px 24px; }
+        .stat-panel h2 { margin: 0 0 18px; font-size: 1.1rem; }
+        .refresh-line { margin-top: 18px; font-size: .85rem; color: var(--k-text-muted); }
+        .refresh-line span { color: var(--k-accent-text); font-weight: 700; font-variant-numeric: tabular-nums; }
+        .node-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+                    padding: 10px 0; border-bottom: 1px solid var(--k-border); font-size: .86rem; }
+        .node-row:last-child { border-bottom: 0; }
+        .node-name { font-weight: 700; min-width: 130px; }
+        .float-actions { position: fixed; top: 78px; right: 18px; display: flex; gap: 8px; z-index: 1200; }
+        @media (max-width: 640px) { .float-actions { position: static; justify-content: center; margin-bottom: 12px; } }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="section">
-            <h1>国服</h1>
-            <p>在线：<span id="onlineCount"></span></p>
-            <p>战斗中：<span id="inbattlesCount"></span></p>
-            <p>4399：<span id="my4399ComCount"></span></p>
-        </div>
+<body class="k-body">
+
+<header class="k-header">
+    <div class="k-header-inner">
+        <a class="k-brand" href="Servers.html">
+            <span class="k-brand-mark"><i class="fas fa-server"></i></span>
+            <span class="k-brand-text">Kosto Hub</span>
+        </a>
+        <span class="k-badge k-badge-accent">国服实时状态</span>
+        <div class="k-spacer"></div>
+        <nav class="k-nav">
+            <a href="Servers.html">服务器中心</a>
+            <a href="online.html">每时段在线人数</a>
+            <a href="index.html">门户</a>
+        </nav>
+        <button class="k-btn k-theme-toggle" data-theme-toggle type="button"></button>
     </div>
-    <button id="backButton" onclick="goBack()">返回</button>
-    <button id="refreshButton" onclick="manualRefresh()">刷新</button>
-    <span id="refreshTimer"><span>0</span></span>
-    <script>
-        let refreshInterval;
-        let refreshTime = 11;
-        function fetchBalancerStats() {
-            fetch('https://balancer.3dtank.com/balancer')
-                .then(response => response.json())
-                .then(data => {
-                    let totalInbattles = 0;
-                    let totalOnline = 0;
-                    let totalMy4399Com = 0;
-                    Object.values(data.nodes).forEach(node => {
-                        totalInbattles += node.inbattles || 0;
-                        totalOnline += node.online || 0;
-                        totalMy4399Com += node.partners && node.partners.my_4399_com ? node.partners.my_4399_com : 0;
-                    });
-                    const my4399ComCount = totalMy4399Com || 0;
-                    document.getElementById('inbattlesCount').innerText = totalInbattles;
-                    document.getElementById('onlineCount').innerText = totalOnline;
-                    document.getElementById('my4399ComCount').innerText = my4399ComCount;
-                })
-                .catch(error => console.error('Error fetching balancer data:', error));
-        }
-        function manualRefresh() {
-            clearInterval(refreshInterval);
-            refreshTime = 11;
-            startRefreshTimer();
-            fetchBalancerStats();
-        }
-        function startRefreshTimer() {
-            refreshInterval = setInterval(() => {
-                refreshTime--;
-                document.getElementById('refreshTimer').innerText = refreshTime;
-                if (refreshTime === 0) {
-                    manualRefresh();
-                }
-            }, 1000);
-        }
-        function goBack() {
-            if (document.referrer.includes("https://kosto179cn.github.io/")) {
-                window.history.back();
-            }
-        }
-        if (document.referrer.includes("https://kosto179cn.github.io/")) {
-            document.getElementById("backButton").style.display = "block";
+</header>
+
+<main class="k-container">
+    <div class="page-head k-fade-in">
+        <h1>3D 坦克服务器状态</h1>
+        <p>实时读取 <code>balancer.3dtank.com/balancer</code>，每 11 秒刷新一次。</p>
+    </div>
+
+    <div class="float-actions">
+        <button class="k-btn k-btn-sm" id="backButton" style="display:none">返回</button>
+        <button class="k-btn k-btn-sm k-btn-primary" id="refreshButton">立即刷新</button>
+    </div>
+
+    <section class="k-panel stat-panel k-fade-in">
+        <h2>国服实时数据</h2>
+        <div class="k-stats">
+            <div class="k-stat"><span class="k-stat-label">总在线人数</span><span class="k-stat-value" id="onlineCount">--</span></div>
+            <div class="k-stat"><span class="k-stat-label">正在战斗中</span><span class="k-stat-value" id="inbattlesCount">--</span></div>
+            <div class="k-stat"><span class="k-stat-label">4399 渠道</span><span class="k-stat-value" id="my4399ComCount">--</span></div>
+        </div>
+        <div class="refresh-line">自动刷新倒计时：<span id="refreshTimer">11</span> s · <span id="updateStatus">等待数据…</span></div>
+        <div class="k-row" style="justify-content:center; margin-top:16px">
+            <a class="k-btn k-btn-sm" href="online.html"><i class="fas fa-chart-column"></i> 查看历史分时数据</a>
+        </div>
+    </section>
+
+    <section class="k-panel k-fade-in">
+        <div class="k-panel-head">
+            <div><h2 class="k-panel-title">节点明细</h2><p class="k-panel-desc">各 balancer 节点的在线、战斗与渠道人数</p></div>
+            <div class="k-spacer"></div>
+            <span class="k-badge" id="serverVersion">—</span>
+        </div>
+        <div id="nodeList" class="k-faint">加载中…</div>
+    </section>
+
+    <footer class="k-footer">数据来自官方 balancer 接口 · 历史归档见「国服每时段在线人数」页面</footer>
+</main>
+
+<script>
+    let refreshInterval;
+    let refreshTime = 11;
+
+    function renderNodes(data) {
+        const box = document.getElementById('nodeList');
+        const nodes = (data && data.nodes && typeof data.nodes === 'object') ? data.nodes : {};
+        const keys = Object.keys(nodes);
+        if (!keys.length) { box.textContent = '暂无节点数据'; return; }
+        box.innerHTML = keys.map(k => {
+            const n = nodes[k] || {};
+            const partners = n.partners || {};
+            return '<div class="node-row">' +
+                '<span class="node-name">' + escapeHtml(k) + '</span>' +
+                '<span class="k-chip">在线 ' + Number(n.online || 0) + '</span>' +
+                '<span class="k-chip">战斗中 ' + Number(n.inbattles || 0) + '</span>' +
+                '<span class="k-chip">4399 ' + Number(partners.my_4399_com || 0) + '</span>' +
+                '<span class="k-chip k-badge-ok">' + escapeHtml((n.endpoint && n.endpoint.status) || 'UNKNOWN') + '</span>' +
+            '</div>';
+        }).join('');
+        document.getElementById('serverVersion').textContent = '版本 ' + (data.serverVersion || '—') + ' · ' + (data.serverNamespace || '—');
+    }
+    function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g,
+            c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function fetchBalancerStats() {
+        const status = document.getElementById('updateStatus');
+        fetch('https://balancer.3dtank.com/balancer', { cache: 'no-store' })
+            .then(response => response.json())
+            .then(data => {
+                let totalInbattles = 0, totalOnline = 0, totalMy4399Com = 0;
+                Object.values(data.nodes || {}).forEach(node => {
+                    totalInbattles += Number(node.inbattles) || 0;
+                    totalOnline += Number(node.online) || 0;
+                    totalMy4399Com += (node.partners && Number(node.partners.my_4399_com)) || 0;
+                });
+                document.getElementById('inbattlesCount').innerText = totalInbattles;
+                document.getElementById('onlineCount').innerText = totalOnline;
+                document.getElementById('my4399ComCount').innerText = totalMy4399Com;
+                renderNodes(data);
+                status.textContent = '更新于 ' + new Date().toLocaleTimeString('zh-CN');
+            })
+            .catch(error => {
+                console.error('Error fetching balancer data:', error);
+                status.textContent = '本次刷新失败';
+            });
+    }
+    function manualRefresh() {
+        clearInterval(refreshInterval);
+        refreshTime = 11;
+        startRefreshTimer();
+        fetchBalancerStats();
+    }
+    function startRefreshTimer() {
+        refreshInterval = setInterval(() => {
+            refreshTime--;
+            document.getElementById('refreshTimer').innerText = refreshTime;
+            if (refreshTime === 0) manualRefresh();
+        }, 1000);
+    }
+    function goBack() {
+        if (document.referrer.includes('https://kosto179cn.github.io/')) window.history.back();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('refreshButton').addEventListener('click', manualRefresh);
+        document.getElementById('backButton').addEventListener('click', goBack);
+        if (document.referrer.includes('https://kosto179cn.github.io/')) {
+            document.getElementById('backButton').style.display = 'inline-flex';
         }
         fetchBalancerStats();
         startRefreshTimer();
         setInterval(fetchBalancerStats, 11000);
-    </script>
+    });
+</script>
 </body>
 </html>

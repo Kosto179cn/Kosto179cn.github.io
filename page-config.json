@@ -30,6 +30,13 @@
       "theme": "theme-game",
       "desc": "3D坦克各服快速入口整合。"
     },
+    "online.html": {
+      "icon": "fa-chart-column",
+      "category": "tool",
+      "theme": "theme-tool",
+      "title": "国服每时段在线人数",
+      "desc": "每小时采集的在线/战斗人数趋势与分时明细。"
+    },
     "status.html": {
       "icon": "fa-heartbeat",
       "category": "game",

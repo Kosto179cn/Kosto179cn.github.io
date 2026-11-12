@@ -1,0 +1,23 @@
+{
+  "timezone": "Asia/Shanghai",
+  "source": "https://balancer.3dtank.com/balancer",
+  "granularity": "hourly",
+  "layout": "data/online/<YYYY-MM-DD>/<HH>.json",
+  "updatedAt": "2026-11-12T13:13:18Z",
+  "days": [
+    {
+      "date": "2026-11-12",
+      "samples": 1,
+      "hours": [
+        21
+      ],
+      "peak_online": 744,
+      "peak_hour": 21,
+      "low_online": 744,
+      "avg_online": 744.0,
+      "avg_inbattles": 445.0,
+      "dir": "data/online/2026-11-12"
+    }
+  ],
+  "latestDate": "2026-11-12"
+}
