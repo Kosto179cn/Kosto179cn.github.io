@@ -3,6 +3,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>历史记录权限管理 - 3D 坦克</title>
+    <link rel="stylesheet" href="assets/kosto-theme.css">
+    <script src="assets/theme.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=M+PLUS+1p&family=Rubik&display=swap');
         
@@ -14,8 +16,8 @@
         
         body {
             font-family: 'Rubik', 'M PLUS 1p', sans-serif;
-            background: linear-gradient(180deg, #001926 0%, #001a28 100%);
-            color: #e0e0e0;
+            background: linear-gradient(180deg, var(--k-bg) 0%, var(--k-bg-2) 100%);
+            color: var(--k-text);
             min-height: 100vh;
             padding: 20px;
         }
@@ -32,18 +34,18 @@
         
         .header h1 {
             font-size: 24px;
-            color: #00ff88;
+            color: var(--k-accent);
             margin-bottom: 10px;
         }
         
         .header p {
-            color: #888;
+            color: var(--k-text-muted);
             font-size: 13px;
         }
         
         .card {
-            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-            border: 1px solid rgba(255,255,255,0.06);
+            background: linear-gradient(180deg, var(--k-border), var(--k-border));
+            border: 1px solid var(--k-border);
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
@@ -53,7 +55,7 @@
         .card-title {
             font-size: 16px;
             font-weight: bold;
-            color: #00ff88;
+            color: var(--k-accent);
             margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 1px solid rgba(0,255,136,0.2);
@@ -71,8 +73,8 @@
         
         .btn-primary {
             background: rgba(0,255,136,0.2);
-            color: #00ff88;
-            border: 1px solid #00ff88;
+            color: var(--k-accent);
+            border: 1px solid var(--k-accent);
         }
         
         .btn-primary:hover {
@@ -81,8 +83,8 @@
         
         .btn-danger {
             background: rgba(255,68,68,0.15);
-            color: #ff4444;
-            border: 1px solid #ff4444;
+            color: var(--k-danger);
+            border: 1px solid var(--k-danger);
             padding: 5px 12px;
             font-size: 12px;
         }
@@ -93,8 +95,8 @@
         
         .btn-success {
             background: rgba(0,255,136,0.15);
-            color: #00ff88;
-            border: 1px solid #00ff88;
+            color: var(--k-accent);
+            border: 1px solid var(--k-accent);
             padding: 12px 30px;
             font-size: 14px;
         }
@@ -105,8 +107,8 @@
         
         .btn-warning {
             background: rgba(255,238,0,0.15);
-            color: #ffee00;
-            border: 1px solid #ffee00;
+            color: var(--k-warn);
+            border: 1px solid var(--k-warn);
             padding: 5px 12px;
             font-size: 12px;
         }
@@ -124,8 +126,8 @@
         .stat-item {
             flex: 1;
             padding: 15px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.06);
+            background: var(--k-surface-2);
+            border: 1px solid var(--k-border);
             border-radius: 8px;
             text-align: center;
         }
@@ -133,12 +135,12 @@
         .stat-number {
             font-size: 24px;
             font-weight: bold;
-            color: #00ff88;
+            color: var(--k-accent);
         }
         
         .stat-label {
             font-size: 12px;
-            color: #888;
+            color: var(--k-text-muted);
             margin-top: 5px;
         }
         
@@ -152,8 +154,8 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px 15px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.05);
+            background: var(--k-surface-2);
+            border: 1px solid var(--k-border);
             border-radius: 6px;
             margin-bottom: 8px;
             transition: all 0.2s;
@@ -161,7 +163,7 @@
         }
         
         .player-item:hover {
-            background: rgba(255,255,255,0.06);
+            background: var(--k-surface-2);
             border-color: rgba(0,255,136,0.2);
         }
         
@@ -170,13 +172,13 @@
         }
         
         .player-nickname {
-            color: #fff;
+            color: var(--k-text);
             font-size: 14px;
             font-weight: bold;
         }
         
         .player-uid {
-            color: #666;
+            color: var(--k-text-faint);
             font-size: 11px;
             font-family: monospace;
         }
@@ -192,7 +194,7 @@
             width: 32px;
             height: 16px;
             object-fit: contain;
-            filter: drop-shadow(0 0 3px rgba(255,255,255,0.2));
+            filter: drop-shadow(0 0 3px var(--k-border));
         }
         
         .player-meta {
@@ -202,12 +204,12 @@
         }
         
         .history-count {
-            color: #ffd700;
+            color: var(--k-warn);
             font-size: 12px;
         }
         
         .clan-info {
-            color: #4fc3f7;
+            color: var(--k-accent-2);
             font-size: 12px;
         }
         
@@ -220,19 +222,19 @@
         
         .permission-allow {
             background: rgba(0,255,136,0.2);
-            color: #00ff88;
+            color: var(--k-accent);
             border: 1px solid rgba(0,255,136,0.3);
         }
         
         .permission-deny {
             background: rgba(255,68,68,0.2);
-            color: #ff4444;
+            color: var(--k-danger);
             border: 1px solid rgba(255,68,68,0.3);
         }
         
         .permission-default {
             background: rgba(136,136,136,0.2);
-            color: #888;
+            color: var(--k-text-muted);
             border: 1px solid rgba(136,136,136,0.3);
         }
         
@@ -243,10 +245,10 @@
         .search-box input {
             width: 100%;
             padding: 10px 12px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: var(--k-surface-2);
+            border: 1px solid var(--k-border);
             border-radius: 6px;
-            color: #fff;
+            color: var(--k-text);
             font-size: 13px;
             outline: none;
         }
@@ -294,7 +296,7 @@
         }
         
         .modal-content {
-            background: #0a1a2a;
+            background: var(--k-bg-2);
             border: 1px solid rgba(0,255,136,0.3);
             border-radius: 12px;
             padding: 25px;
@@ -306,10 +308,10 @@
         
         .modal-title {
             font-size: 18px;
-            color: #00ff88;
+            color: var(--k-accent);
             margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid var(--k-border);
             display: flex;
             align-items: center;
             gap: 10px;
@@ -345,27 +347,27 @@
             float: right;
             cursor: pointer;
             font-size: 20px;
-            color: #666;
+            color: var(--k-text-faint);
         }
         
         .modal-close:hover {
-            color: #fff;
+            color: var(--k-text);
         }
         
         .info-row {
             display: flex;
             justify-content: space-between;
             padding: 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid var(--k-border);
         }
         
         .info-label {
-            color: #888;
+            color: var(--k-text-muted);
             font-size: 13px;
         }
         
         .info-value {
-            color: #fff;
+            color: var(--k-text);
             font-size: 13px;
             text-align: right;
         }
@@ -373,7 +375,7 @@
         .loading {
             text-align: center;
             padding: 40px;
-            color: #888;
+            color: var(--k-text-muted);
         }
         
         .spinner {
@@ -381,7 +383,7 @@
             width: 20px;
             height: 20px;
             border: 2px solid rgba(0,255,136,0.3);
-            border-top-color: #00ff88;
+            border-top-color: var(--k-accent);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -399,29 +401,29 @@
         .permission-btn {
             flex: 1;
             padding: 10px;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid var(--k-border);
             border-radius: 6px;
-            background: rgba(255,255,255,0.05);
-            color: #fff;
+            background: var(--k-surface-2);
+            color: var(--k-text);
             cursor: pointer;
             font-size: 12px;
             transition: all 0.2s;
         }
         
         .permission-btn:hover {
-            background: rgba(255,255,255,0.1);
+            background: var(--k-surface-2);
         }
         
         .permission-btn.active {
             background: rgba(0,255,136,0.2);
-            border-color: #00ff88;
-            color: #00ff88;
+            border-color: var(--k-accent);
+            color: var(--k-accent);
         }
         
         .permission-btn.active-deny {
             background: rgba(255,68,68,0.2);
-            border-color: #ff4444;
-            color: #ff4444;
+            border-color: var(--k-danger);
+            color: var(--k-danger);
         }
         
         .token-input-group {
@@ -433,10 +435,10 @@
         .token-input-group input {
             flex: 1;
             padding: 12px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: var(--k-surface-2);
+            border: 1px solid var(--k-border);
             border-radius: 6px;
-            color: #fff;
+            color: var(--k-text);
             font-size: 13px;
             font-family: monospace;
             outline: none;
@@ -447,11 +449,11 @@
         }
         
         .token-input-group input.error {
-            border-color: #ff4444;
+            border-color: var(--k-danger);
         }
         
         .token-input-group input.success {
-            border-color: #00ff88;
+            border-color: var(--k-accent);
         }
         
         .token-help {
@@ -467,11 +469,11 @@
         
         .token-help-text {
             font-size: 12px;
-            color: #ffee00;
+            color: var(--k-warn);
         }
         
         .token-help-text a {
-            color: #00ff88;
+            color: var(--k-accent);
             text-decoration: underline;
         }
         
@@ -493,15 +495,15 @@
         }
         
         .token-status.valid {
-            color: #00ff88;
+            color: var(--k-accent);
         }
         
         .token-status.invalid {
-            color: #ff4444;
+            color: var(--k-danger);
         }
         
         .token-status.loading {
-            color: #ffee00;
+            color: var(--k-warn);
         }
         
         .login-overlay {
@@ -518,19 +520,19 @@
         }
         
         .login-box {
-            background: linear-gradient(180deg, #0a1a2a 0%, #0d1f33 100%);
+            background: linear-gradient(180deg, var(--k-bg-2) 0%, var(--k-surface-3) 100%);
             border: 1px solid rgba(0,255,136,0.3);
             border-radius: 16px;
             padding: 35px;
             max-width: 450px;
             width: 90%;
-            box-shadow: 0 0 40px rgba(0,255,136,0.1);
+            box-shadow: 0 0 40px var(--k-accent-soft);
         }
         
         .login-title {
             text-align: center;
             font-size: 20px;
-            color: #00ff88;
+            color: var(--k-accent);
             margin-bottom: 8px;
             font-weight: bold;
         }
@@ -538,7 +540,7 @@
         .login-subtitle {
             text-align: center;
             font-size: 12px;
-            color: #888;
+            color: var(--k-text-muted);
             margin-bottom: 25px;
         }
         
@@ -557,10 +559,10 @@
         .server-btn {
             flex: 1;
             padding: 10px;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid var(--k-border);
             border-radius: 6px;
-            background: rgba(255,255,255,0.03);
-            color: #888;
+            background: var(--k-surface-2);
+            color: var(--k-text-muted);
             cursor: pointer;
             font-size: 12px;
             text-align: center;
@@ -568,14 +570,14 @@
         }
         
         .server-btn:hover {
-            background: rgba(255,255,255,0.06);
-            color: #fff;
+            background: var(--k-surface-2);
+            color: var(--k-text);
         }
         
         .server-btn.active {
             background: rgba(0,255,136,0.2);
-            border-color: #00ff88;
-            color: #00ff88;
+            border-color: var(--k-accent);
+            color: var(--k-accent);
         }
         
         .token-remember {
@@ -584,7 +586,7 @@
             gap: 8px;
             margin-bottom: 15px;
             font-size: 12px;
-            color: #888;
+            color: var(--k-text-muted);
         }
         
         .token-remember input[type="checkbox"] {
@@ -597,8 +599,8 @@
             right: 10px;
             padding: 8px 15px;
             background: rgba(255,68,68,0.15);
-            color: #ff4444;
-            border: 1px solid #ff4444;
+            color: var(--k-danger);
+            border: 1px solid var(--k-danger);
             border-radius: 6px;
             font-size: 12px;
             cursor: pointer;
@@ -621,30 +623,30 @@
         
         .filter-tab {
             padding: 8px 16px;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid var(--k-border);
             border-radius: 6px;
-            background: rgba(255,255,255,0.03);
-            color: #888;
+            background: var(--k-surface-2);
+            color: var(--k-text-muted);
             cursor: pointer;
             font-size: 12px;
             transition: all 0.2s;
         }
         
         .filter-tab:hover {
-            background: rgba(255,255,255,0.06);
-            color: #fff;
+            background: var(--k-surface-2);
+            color: var(--k-text);
         }
         
         .filter-tab.active {
             background: rgba(0,255,136,0.2);
-            border-color: #00ff88;
-            color: #00ff88;
+            border-color: var(--k-accent);
+            color: var(--k-accent);
         }
         
         .empty-state {
             text-align: center;
             padding: 60px;
-            color: #666;
+            color: var(--k-text-faint);
         }
         
         .empty-state .icon {
@@ -657,8 +659,8 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px 15px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.06);
+            background: var(--k-surface-2);
+            border: 1px solid var(--k-border);
             border-radius: 8px;
             margin-bottom: 15px;
             font-size: 12px;
@@ -679,16 +681,16 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: #00ff88;
+            background: var(--k-accent);
         }
         
         .status-dot.loading {
-            background: #ffee00;
+            background: var(--k-warn);
             animation: blink 1s infinite;
         }
         
         .status-dot.error {
-            background: #ff4444;
+            background: var(--k-danger);
         }
         
         @keyframes blink {
@@ -702,7 +704,7 @@
             justify-content: center;
             gap: 12px;
             padding: 40px 20px;
-            color: #888;
+            color: var(--k-text-muted);
             font-size: 13px;
         }
         
@@ -791,7 +793,7 @@
                 flex-wrap: wrap;
                 gap: 8px;
                 padding-top: 8px;
-                border-top: 1px dashed rgba(255,255,255,0.08);
+                border-top: 1px dashed var(--k-border);
             }
             .player-meta .permission-badge { order: -1; }
             .player-meta .btn,
@@ -875,6 +877,81 @@
             }
         }
     </style>
+    <style id="kosto-aurora">
+
+        /* ===== Kosto Aurora 兼容层（保留原 DOM/JS，仅统一视觉） ===== */
+        body {
+            background:
+                radial-gradient(1000px 620px at 8% -8%,  var(--k-glow-1), transparent 65%),
+                radial-gradient(900px 560px at 92% 4%,   var(--k-glow-3), transparent 62%),
+                radial-gradient(900px 700px at 50% 108%, var(--k-glow-2), transparent 62%),
+                linear-gradient(160deg, var(--k-bg) 0%, var(--k-bg-2) 100%) !important;
+            background-attachment: fixed !important;
+            color: var(--k-text) !important;
+        }
+        a { color: var(--k-accent-text) !important; }
+        [style*="color:#fff"], [style*="color: #fff"] { color: var(--k-text) !important; }
+        input, select, textarea {
+            background: var(--k-surface-solid) !important;
+            color: var(--k-text) !important;
+            border: 1px solid var(--k-border-strong) !important;
+            border-radius: var(--k-radius-xs) !important;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--k-accent) !important;
+            box-shadow: 0 0 0 3px var(--k-accent-soft) !important;
+            outline: none !important;
+        }
+        input::placeholder, textarea::placeholder { color: var(--k-text-faint) !important; }
+
+        .container { width: min(1200px, calc(100% - 32px)); }
+        .header h1 {
+            background: linear-gradient(100deg, var(--k-accent), var(--k-accent-2)) !important;
+            -webkit-background-clip: text !important; background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+        }
+        .header p { color: var(--k-text-muted) !important; }
+        .card, .login-box, .modal-content, .edit-modal {
+            background: var(--k-surface) !important;
+            border: 1px solid var(--k-border) !important;
+            border-radius: var(--k-radius) !important;
+            box-shadow: var(--k-shadow-lg) !important;
+            backdrop-filter: blur(var(--k-blur));
+        }
+        .card-title { color: var(--k-accent-text) !important; border-bottom-color: var(--k-border) !important; }
+        .login-overlay, .modal, .modal-overlay { background: rgba(8, 14, 28, .58) !important; backdrop-filter: blur(6px); }
+        button, .btn, .btn-primary, .btn-success, .btn-danger, .btn-warning,
+        .logout-btn, .server-btn, .filter-tab, .permission-btn, .page-btn {
+            color: var(--k-text) !important;
+            background: var(--k-surface-2) !important;
+            border: 1px solid var(--k-border-strong) !important;
+            border-radius: 999px !important;
+            box-shadow: none !important;
+            transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+        }
+        button:hover, .btn:hover, .btn-primary:hover, .btn-success:hover {
+            border-color: var(--k-accent) !important; box-shadow: var(--k-shadow) !important;
+        }
+        .btn-primary, .btn-success, .server-btn.active, .filter-tab.active {
+            background: linear-gradient(135deg, var(--k-accent), var(--k-accent-2)) !important;
+            color: #fff !important; border-color: transparent !important;
+        }
+        .btn-danger { color: var(--k-danger) !important; }
+        .btn-warning { color: var(--k-warn) !important; }
+        .status-bar, .stats, .player-item, .token-help, .token-remember, .stat-item {
+            background: var(--k-surface-2) !important;
+            border: 1px solid var(--k-border) !important;
+            border-radius: var(--k-radius-sm) !important;
+        }
+        .stat-number { color: var(--k-accent-text) !important; }
+        .player-nickname, .player-uid { color: var(--k-text) !important; }
+        .player-meta, .stat-label, .token-help-text, .login-subtitle { color: var(--k-text-muted) !important; }
+        table th { background: var(--k-surface-3) !important; color: var(--k-text-muted) !important; }
+        table td { border-bottom: 1px solid var(--k-border) !important; }
+        .toast { background: var(--k-surface-solid) !important; color: var(--k-text) !important;
+                 border: 1px solid var(--k-border-strong) !important; box-shadow: var(--k-shadow-lg) !important; }
+
+    </style>
 </head>
 <body>
     <!-- 登录遮罩 -->
@@ -900,7 +977,7 @@
             <!-- 帮助信息 -->
             <div class="token-help">
                 <div class="token-help-text">
-                    📖 获取 Token：<a href="https://gitee.com/profile/personal_access_tokens" target="_blank" style="color:#00ff88;">gitee.com/profile/personal_access_tokens</a>
+                    📖 获取 Token：<a href="https://gitee.com/profile/personal_access_tokens" target="_blank" style="color:var(--k-accent);">gitee.com/profile/personal_access_tokens</a>
                 </div>
             </div>
             
@@ -920,6 +997,7 @@
             <h1>🎯 历史记录权限管理</h1>
             <p>从云端拉取数据，配置玩家历史记录的可见权限</p>
             <button class="logout-btn" onclick="logout()">退出登录</button>
+            <button class="k-btn k-btn-sm k-theme-toggle" data-theme-toggle type="button" style="margin-top:12px"></button>
         </div>
         
         <!-- 状态栏 -->
@@ -1020,39 +1098,39 @@
             <span class="modal-close" onclick="closeEditModal()">×</span>
             <div class="modal-title">编辑档案</div>
             <div id="editContent">
-                <div style="margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px;">
-                    <div style="color:#888;font-size:12px;font-family:monospace;">UID: 91577421</div>
+                <div style="margin-bottom: 15px; padding: 12px; background: var(--k-surface-2); border-radius: 8px;">
+                    <div style="color:var(--k-text-muted);font-size:12px;font-family:monospace;">UID: 91577421</div>
                 </div>
                 
                 <div style="margin-bottom: 12px;">
-                    <label style="display:block;color:#888;font-size:12px;margin-bottom:5px;">当前昵称</label>
-                    <input type="text" id="editNickname" value="3dtank" style="width:100%;padding:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#fff;font-size:14px;">
+                    <label style="display:block;color:var(--k-text-muted);font-size:12px;margin-bottom:5px;">当前昵称</label>
+                    <input type="text" id="editNickname" value="3dtank" style="width:100%;padding:10px;background:var(--k-surface-2);border:1px solid var(--k-border);border-radius:6px;color:var(--k-text);font-size:14px;">
                 </div>
                 
                 <div style="margin-bottom: 12px;">
-                    <label style="display:block;color:#888;font-size:12px;margin-bottom:5px;">当前军团 TAG</label>
-                    <input type="text" id="editClan" value="" style="width:100%;padding:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#fff;font-size:14px;">
+                    <label style="display:block;color:var(--k-text-muted);font-size:12px;margin-bottom:5px;">当前军团 TAG</label>
+                    <input type="text" id="editClan" value="" style="width:100%;padding:10px;background:var(--k-surface-2);border:1px solid var(--k-border);border-radius:6px;color:var(--k-text);font-size:14px;">
                 </div>
                 
                 <div style="margin-bottom: 12px;">
-                    <label style="display:block;color:#888;font-size:12px;margin-bottom:5px;">军衔等级 (1-31)</label>
+                    <label style="display:block;color:var(--k-text-muted);font-size:12px;margin-bottom:5px;">军衔等级 (1-31)</label>
                     <input type="number" id="editRank" value="27" min="1" max="31" style="width: 100%; padding: 10px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; color: rgb(255, 255, 255); font-size: 14px; position: relative;">
                 </div>
                 
                 <div style="margin-bottom: 12px;">
-                    <label style="display:block;color:#888;font-size:12px;margin-bottom:5px;">曾用名（点击标签修改，×删除）</label>
+                    <label style="display:block;color:var(--k-text-muted);font-size:12px;margin-bottom:5px;">曾用名（点击标签修改，×删除）</label>
                     <div id="editHistoryTags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;min-height:30px;"><span style="color:#555;font-size:12px;font-style:italic;">暂无曾用名</span></div>
                     <div style="display:flex;gap:6px;">
-                        <input type="text" id="editHistoryInput" placeholder="输入曾用名..." style="flex:1;padding:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#fff;font-size:13px;">
+                        <input type="text" id="editHistoryInput" placeholder="输入曾用名..." style="flex:1;padding:8px;background:var(--k-surface-2);border:1px solid var(--k-border);border-radius:6px;color:var(--k-text);font-size:13px;">
                         <button class="btn btn-primary" style="padding:8px 16px;" onclick="addEditHistory('history')">添加</button>
                     </div>
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                    <label style="display:block;color:#888;font-size:12px;margin-bottom:5px;">曾属军团（点击标签修改，×删除）</label>
+                    <label style="display:block;color:var(--k-text-muted);font-size:12px;margin-bottom:5px;">曾属军团（点击标签修改，×删除）</label>
                     <div id="editClanTags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;min-height:30px;"><span style="color:#555;font-size:12px;font-style:italic;">暂无军团记录</span></div>
                     <div style="display:flex;gap:6px;">
-                        <input type="text" id="editClanInput" placeholder="输入军团 TAG..." style="flex:1;padding:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#fff;font-size:13px;">
+                        <input type="text" id="editClanInput" placeholder="输入军团 TAG..." style="flex:1;padding:8px;background:var(--k-surface-2);border:1px solid var(--k-border);border-radius:6px;color:var(--k-text);font-size:13px;">
                         <button class="btn btn-primary" style="padding:8px 16px;" onclick="addEditHistory('clan')">添加</button>
                     </div>
                 </div>
@@ -1069,7 +1147,7 @@
     
     <script>
         // ==================== 配置 ====================
-        const GITEE_REPO = 'Kosto179/kosto-battle-clicker-new';
+        const GITEE_REPO = 'Kosto179/systemconfig';  // 与 black.html 的 CONFIG.repo 保持一致
         let GITEE_TOKEN = '';
         const FILE_NAMES = {
             cn: 'player_blacklist_cn.json',
@@ -1578,19 +1656,19 @@
         }
         
         function renderPagination(current, total) {
-            if (total <= 1) return '<div style="text-align:center;padding:15px;color:#888;font-size:12px;">共 ' + total + ' 页</div>';
+            if (total <= 1) return '<div style="text-align:center;padding:15px;color:var(--k-text-muted);font-size:12px;">共 ' + total + ' 页</div>';
             
             const baseStyle = 'padding:5px 12px;font-size:12px;';
             const disabledExtra = 'opacity:0.35;cursor:not-allowed;pointer-events:none;';
             
-            let html = '<div style="display:flex;justify-content:center;align-items:center;gap:10px;padding:15px;border-top:1px solid rgba(255,255,255,0.06);">';
+            let html = '<div style="display:flex;justify-content:center;align-items:center;gap:10px;padding:15px;border-top:1px solid var(--k-border);">';
             
             // 上一页
             const prevDisabled = current === 1;
             html += `<button class="btn btn-primary" style="${baseStyle}${prevDisabled ? disabledExtra : ''}" onclick="goPage(${current - 1})" ${prevDisabled ? 'disabled' : ''}>← 上一页</button>`;
             
             // 页码信息
-            html += `<span style="color:#00ff88;font-size:13px;">第 ${current} / ${total} 页</span>`;
+            html += `<span style="color:var(--k-accent);font-size:13px;">第 ${current} / ${total} 页</span>`;
             
             // 下一页
             const nextDisabled = current === total;
@@ -1721,11 +1799,11 @@
             const currentPermission = getPermission(uid);
             
             content.innerHTML = `
-                <div style="margin-bottom: 15px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 8px;">
-                    <div style="font-size: 16px; color: #fff; font-weight: bold;">${data.nickname || '未知'}</div>
-                    <div style="color: #666; font-size: 12px; font-family: monospace; margin-top: 5px;">UID: ${uid}</div>
+                <div style="margin-bottom: 15px; padding: 15px; background: var(--k-surface-2); border-radius: 8px;">
+                    <div style="font-size: 16px; color: var(--k-text); font-weight: bold;">${data.nickname || '未知'}</div>
+                    <div style="color: var(--k-text-faint); font-size: 12px; font-family: monospace; margin-top: 5px;">UID: ${uid}</div>
                 </div>
-                <div style="color: #888; font-size: 13px; margin-bottom: 15px;">
+                <div style="color: var(--k-text-muted); font-size: 13px; margin-bottom: 15px;">
                     选择该玩家历史记录的查看权限：
                 </div>
                 <div class="permission-controls">
@@ -1742,7 +1820,7 @@
                         ○ 默认
                     </div>
                 </div>
-                <div style="margin-top: 15px; color: #666; font-size: 11px; text-align: center;">
+                <div style="margin-top: 15px; color: var(--k-text-faint); font-size: 11px; text-align: center;">
                     说明：允许查看 = 任何人可查看历史；禁止查看 = 隐藏历史；默认 = 跟随全局设置
                 </div>
             `;
@@ -1769,49 +1847,49 @@
             editTempClanHistory = [...(data.clanHistory || [])];
             
             content.innerHTML = `
-                <div style="margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px;">
-                    <div style="color:#888;font-size:12px;font-family:monospace;">UID: ${uid}</div>
+                <div style="margin-bottom: 15px; padding: 12px; background: var(--k-surface-2); border-radius: 8px;">
+                    <div style="color:var(--k-text-muted);font-size:12px;font-family:monospace;">UID: ${uid}</div>
                 </div>
                 
                 <div style="margin-bottom: 12px;">
-                    <label style="display:block;color:#888;font-size:12px;margin-bottom:5px;">当前昵称</label>
+                    <label style="display:block;color:var(--k-text-muted);font-size:12px;margin-bottom:5px;">当前昵称</label>
                     <input type="text" id="editNickname" value="${escapeHtml(data.nickname || '')}" 
-                           style="width:100%;padding:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#fff;font-size:14px;">
+                           style="width:100%;padding:10px;background:var(--k-surface-2);border:1px solid var(--k-border);border-radius:6px;color:var(--k-text);font-size:14px;">
                 </div>
                 
                 <div style="margin-bottom: 12px;">
-                    <label style="display:block;color:#888;font-size:12px;margin-bottom:5px;">当前军团 TAG</label>
+                    <label style="display:block;color:var(--k-text-muted);font-size:12px;margin-bottom:5px;">当前军团 TAG</label>
                     <input type="text" id="editClan" value="${escapeHtml(data.clan || '')}" 
-                           style="width:100%;padding:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#fff;font-size:14px;">
+                           style="width:100%;padding:10px;background:var(--k-surface-2);border:1px solid var(--k-border);border-radius:6px;color:var(--k-text);font-size:14px;">
                 </div>
                 
                 <div style="margin-bottom: 12px;">
-                    <label style="display:block;color:#888;font-size:12px;margin-bottom:5px;">军衔等级 (1-31)</label>
+                    <label style="display:block;color:var(--k-text-muted);font-size:12px;margin-bottom:5px;">军衔等级 (1-31)</label>
                     <div style="display:flex;align-items:center;gap:12px;">
                         <input type="number" id="editRank" value="${data.rank || 1}" min="1" max="31"
                                oninput="updateRankPreview(this.value)"
-                               style="width:110px;padding:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#fff;font-size:14px;">
+                               style="width:110px;padding:10px;background:var(--k-surface-2);border:1px solid var(--k-border);border-radius:6px;color:var(--k-text);font-size:14px;">
                         <img id="rankIconPreview" src="${getRankIconUrl(data.rank)}" alt="${getRankName(data.rank)}" class="rank-img" style="height:20px;width:40px;">
                         <span id="rankNamePreview" style="font-size:12px;color:#94a3b8;font-weight:bold;text-transform:uppercase;">${getRankName(data.rank)}</span>
                     </div>
                 </div>
                 
                 <div style="margin-bottom: 12px;">
-                    <label style="display:block;color:#888;font-size:12px;margin-bottom:5px;">曾用名（点击标签修改，×删除）</label>
+                    <label style="display:block;color:var(--k-text-muted);font-size:12px;margin-bottom:5px;">曾用名（点击标签修改，×删除）</label>
                     <div id="editHistoryTags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;min-height:30px;"></div>
                     <div style="display:flex;gap:6px;">
                         <input type="text" id="editHistoryInput" placeholder="输入曾用名..." 
-                               style="flex:1;padding:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#fff;font-size:13px;">
+                               style="flex:1;padding:8px;background:var(--k-surface-2);border:1px solid var(--k-border);border-radius:6px;color:var(--k-text);font-size:13px;">
                         <button class="btn btn-primary" style="padding:8px 16px;" onclick="addEditHistory('history')">添加</button>
                     </div>
                 </div>
                 
                 <div style="margin-bottom: 15px;">
-                    <label style="display:block;color:#888;font-size:12px;margin-bottom:5px;">曾属军团（点击标签修改，×删除）</label>
+                    <label style="display:block;color:var(--k-text-muted);font-size:12px;margin-bottom:5px;">曾属军团（点击标签修改，×删除）</label>
                     <div id="editClanTags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;min-height:30px;"></div>
                     <div style="display:flex;gap:6px;">
                         <input type="text" id="editClanInput" placeholder="输入军团 TAG..." 
-                               style="flex:1;padding:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#fff;font-size:13px;">
+                               style="flex:1;padding:8px;background:var(--k-surface-2);border:1px solid var(--k-border);border-radius:6px;color:var(--k-text);font-size:13px;">
                         <button class="btn btn-primary" style="padding:8px 16px;" onclick="addEditHistory('clan')">添加</button>
                     </div>
                 </div>
@@ -1847,7 +1925,7 @@
                 histBox.innerHTML = editTempHistory.length === 0 
                     ? '<span style="color:#555;font-size:12px;font-style:italic;">暂无曾用名</span>'
                     : editTempHistory.map((h, i) => `
-                        <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;font-size:12px;color:#00ff88;">
+                        <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:var(--k-accent-soft);border:1px solid rgba(0,255,136,0.3);border-radius:12px;font-size:12px;color:var(--k-accent);">
                             <span style="cursor:pointer;" onclick="editHistoryTag('history', ${i})" title="点击修改">${escapeHtml(h)}</span>
                             <span style="cursor:pointer;color:#ff6b6b;font-weight:bold;" onclick="removeEditHistory('history', ${i})" title="删除">×</span>
                         </span>

@@ -57,6 +57,7 @@
         <h2>国服实时数据</h2>
         <div class="k-stats">
             <div class="k-stat"><span class="k-stat-label">总在线人数</span><span class="k-stat-value" id="onlineCount">--</span></div>
+            <div class="k-stat" title="总在线人数 − 4399 渠道人数"><span class="k-stat-label">国服在线</span><span class="k-stat-value" id="cnOnlineCount">--</span></div>
             <div class="k-stat"><span class="k-stat-label">正在战斗中</span><span class="k-stat-value" id="inbattlesCount">--</span></div>
             <div class="k-stat"><span class="k-stat-label">4399 渠道</span><span class="k-stat-value" id="my4399ComCount">--</span></div>
         </div>
@@ -93,6 +94,7 @@
             return '<div class="node-row">' +
                 '<span class="node-name">' + escapeHtml(k) + '</span>' +
                 '<span class="k-chip">在线 ' + Number(n.online || 0) + '</span>' +
+                '<span class="k-chip">国服 ' + Math.max(0, Number(n.online || 0) - Number(partners.my_4399_com || 0)) + '</span>' +
                 '<span class="k-chip">战斗中 ' + Number(n.inbattles || 0) + '</span>' +
                 '<span class="k-chip">4399 ' + Number(partners.my_4399_com || 0) + '</span>' +
                 '<span class="k-chip k-badge-ok">' + escapeHtml((n.endpoint && n.endpoint.status) || 'UNKNOWN') + '</span>' +
@@ -118,6 +120,7 @@
                 });
                 document.getElementById('inbattlesCount').innerText = totalInbattles;
                 document.getElementById('onlineCount').innerText = totalOnline;
+                document.getElementById('cnOnlineCount').innerText = Math.max(0, totalOnline - totalMy4399Com);
                 document.getElementById('my4399ComCount').innerText = totalMy4399Com;
                 renderNodes(data);
                 status.textContent = '更新于 ' + new Date().toLocaleTimeString('zh-CN');

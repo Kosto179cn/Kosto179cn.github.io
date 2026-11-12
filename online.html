@@ -29,11 +29,6 @@
     .bar-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--k-accent-soft); z-index: 0; }
     .bar-cell span { position: relative; z-index: 1; }
 
-    .schema-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
-    .schema-item { background: var(--k-surface-2); border: 1px solid var(--k-border);
-                   border-radius: var(--k-radius-xs); padding: 12px 14px; font-size: .82rem; }
-    .schema-item code { color: var(--k-accent-text); }
-    .schema-item p { margin: 5px 0 0; color: var(--k-text-muted); }
     .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
                 background: var(--k-ok); margin-right: 6px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--k-ok) 20%, transparent); }
 </style>
@@ -81,6 +76,7 @@
         <div class="k-stat"><span class="k-stat-label">最低在线</span><span class="k-stat-value" id="sLow">--</span></div>
         <div class="k-stat"><span class="k-stat-label">日均在线</span><span class="k-stat-value" id="sAvg">--</span></div>
         <div class="k-stat"><span class="k-stat-label">日均战斗中</span><span class="k-stat-value" id="sAvgBattle">--</span></div>
+        <div class="k-stat" title="在线人数 − 4399 渠道人数，取当日最新一次采集"><span class="k-stat-label">国服在线</span><span class="k-stat-value" id="sCnOnline">--</span></div>
         <div class="k-stat"><span class="k-stat-label">有效采样</span><span class="k-stat-value" id="sSamples">--</span></div>
     </section>
 
@@ -94,6 +90,7 @@
             <span><i style="background:var(--k-accent)"></i>在线人数</span>
             <span><i style="background:var(--k-accent-2)"></i>战斗中</span>
             <span><i style="background:var(--k-warn)"></i>4399 渠道</span>
+            <span><i style="background:var(--k-danger)"></i>国服在线（扣 4399）</span>
             <span class="k-faint">空白时段表示该小时暂无采集记录</span>
         </div>
     </section>
@@ -106,10 +103,10 @@
         <div class="k-table-wrap">
             <table class="k-table">
                 <thead><tr>
-                    <th>时段</th><th>在线人数</th><th>战斗中</th><th>4399 渠道</th>
+                    <th>时段</th><th>在线人数</th><th title="在线人数 − 4399 渠道人数">国服在线</th><th>战斗中</th><th>4399 渠道</th>
                     <th>战斗占比</th><th>节点数</th><th>采集时间</th>
                 </tr></thead>
-                <tbody id="hourBody"><tr><td colspan="7" class="k-center k-muted">加载中…</td></tr></tbody>
+                <tbody id="hourBody"><tr><td colspan="8" class="k-center k-muted">加载中…</td></tr></tbody>
             </table>
         </div>
     </section>
@@ -123,42 +120,9 @@
         </div>
         <div class="k-table-wrap">
             <table class="k-table">
-                <thead><tr><th>节点 ID</th><th>主机</th><th>状态</th><th>在线</th><th>战斗中</th><th>4399</th></tr></thead>
-                <tbody id="nodeBody"><tr><td colspan="6" class="k-center k-muted">暂无数据</td></tr></tbody>
+                <thead><tr><th>节点 ID</th><th>主机</th><th>状态</th><th>在线</th><th>国服在线</th><th>战斗中</th><th>4399</th></tr></thead>
+                <tbody id="nodeBody"><tr><td colspan="7" class="k-center k-muted">暂无数据</td></tr></tbody>
             </table>
-        </div>
-    </section>
-
-    <!-- 数据结构说明 -->
-    <section class="k-panel k-fade-in">
-        <div class="k-panel-head">
-            <div><h2 class="k-panel-title"><i class="fas fa-folder-tree"></i> 数据存储结构</h2>
-                 <p class="k-panel-desc">独立数据文件夹 → 一天一个子文件夹 → 每小时一个独立 JSON 文件。</p></div>
-        </div>
-        <div class="k-alert" style="margin-bottom:14px; font-family:Consolas,monospace; font-size:.82rem; line-height:1.8">
-            data/online/<br>
-            ├── index.json &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;日期索引 + 每日汇总 + 可用小时列表<br>
-            ├── latest.json &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最近一次快照<br>
-            └── 2026-11-12/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← 一天一个子文件夹<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;├── 00.json &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← 每小时一个独立文件<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;├── 01.json<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;└── … 23.json
-        </div>
-        <div class="schema-grid">
-            <div class="schema-item"><strong><code>data/online/&lt;YYYY-MM-DD&gt;/</code></strong>
-                <p>每天一个子文件夹，目录名即日期；天然按天分组，一年约 365 个目录。</p></div>
-            <div class="schema-item"><strong><code>&lt;YYYY-MM-DD&gt;/&lt;HH&gt;.json</code></strong>
-                <p>每小时一个独立文件，内容就是该次完整快照（<code>total</code> + <code>nodes</code> + 时间戳），互不共享文件。</p></div>
-            <div class="schema-item"><strong><code>data/online/index.json</code></strong>
-                <p>日期索引、每日汇总与 <code>hours</code> 小时列表；静态站点没有目录列举接口，页面靠它才知道该拉哪些 HH.json。</p></div>
-            <div class="schema-item"><strong><code>data/online/latest.json</code></strong>
-                <p>最近一次快照，供实时卡片直接读取，无需遍历日期目录。</p></div>
-            <div class="schema-item"><strong><code>scripts/fetch_online_stats.py</code></strong>
-                <p>采集与归档逻辑；由 <code>.github/workflows/collect-online-stats.yml</code> 每小时定时触发并自动提交。</p></div>
-        </div>
-        <div class="k-alert k-alert-warn" style="margin-top:14px">
-            为什么每小时单独一个文件：每次采集只新增或修改一个几百字节的文件，Git diff 干净、不会产生无意义的整文件重写；
-            补录或修正某一小时也只需替换那一个文件。页面按 <code>index.json</code> 的小时列表并行拉取，命中即用、缺失即空。
         </div>
     </section>
 
@@ -173,10 +137,16 @@
 /* 离线预览兜底：无法通过 HTTP 读取 data/ 时，使用仓库内首条真实采集快照 */
 const SEED = {"ts":"2026-11-12T13:13:18Z","ts_local":"2026-11-12T21:13:18+08:00","date":"2026-11-12","hour":21,"timezone":"Asia/Shanghai","serverNamespace":"CN","serverVersion":"846","total":{"online":744,"inbattles":445,"my_4399_com":196},"nodes":[{"id":"cn-main.c1","host":"c1.3dtank.com","status":"NORMAL","online":427,"inbattles":254,"my_4399_com":107},{"id":"cn-main.c2","host":"c2.3dtank.com","status":"NORMAL","online":317,"inbattles":191,"my_4399_com":89}]};
 const DATA_BASE = 'data/online';
+/* 国服在线口径：总在线 − 4399 渠道人数（页面现算，历史数据同样适用） */
+function cnOnline(snap) {
+    const t = (snap && snap.total) || {};
+    return Math.max(0, (Number(t.online) || 0) - (Number(t.my_4399_com) || 0));
+}
 const SERIES = [
-    { key: 'online',       label: '在线人数', colorVar: '--k-accent' },
-    { key: 'inbattles',    label: '战斗中',   colorVar: '--k-accent-2' },
-    { key: 'my_4399_com',  label: '4399',     colorVar: '--k-warn' }
+    { key: 'online',      label: '在线人数', colorVar: '--k-accent',   value: s => Number(s.total.online) || 0 },
+    { key: 'cn_online',   label: '国服在线', colorVar: '--k-danger',   value: s => cnOnline(s) },
+    { key: 'inbattles',   label: '战斗中',   colorVar: '--k-accent-2', value: s => Number(s.total.inbattles) || 0 },
+    { key: 'my_4399_com', label: '4399',     colorVar: '--k-warn',     value: s => Number(s.total.my_4399_com) || 0 }
 ];
 
 let indexData = { days: [], latestDate: null };
@@ -219,8 +189,7 @@ async function loadIndex() {
     if (indexData.latestDate) sel.value = indexData.latestDate;
 }
 
-/* 磁盘布局：data/online/<YYYY-MM-DD>/<HH>.json —— 一天一个子文件夹，每小时一个文件。
-   静态站点没有目录列举接口，靠 index.json 的 hours 列表并行拉取；缺失的小时视为无数据。 */
+/* 按 index.json 的 hours 列表并行拉取对应快照；缺失的小时视为无数据。 */
 async function loadDay(date) {
     const meta = indexData.days.find(d => d.date === date);
     const keys = (meta && Array.isArray(meta.hours) && meta.hours.length)
@@ -259,7 +228,7 @@ function renderSummary() {
     const onlines = list.map(x => Number(x.snap.total.online) || 0);
     const battles = list.map(x => Number(x.snap.total.inbattles) || 0);
     if (!list.length) {
-        ['sPeak','sPeakHour','sLow','sAvg','sAvgBattle','sSamples'].forEach(id => $('#'+id).textContent = '--');
+        ['sPeak','sPeakHour','sLow','sAvg','sAvgBattle','sCnOnline','sSamples'].forEach(id => $('#'+id).textContent = '--');
         return;
     }
     const peak = Math.max(...onlines);
@@ -268,6 +237,7 @@ function renderSummary() {
     $('#sLow').textContent = Math.min(...onlines).toLocaleString('zh-CN');
     $('#sAvg').textContent = (onlines.reduce((a,b)=>a+b,0) / onlines.length).toFixed(1);
     $('#sAvgBattle').textContent = (battles.reduce((a,b)=>a+b,0) / battles.length).toFixed(1);
+    $('#sCnOnline').textContent = cnOnline(list[list.length - 1].snap).toLocaleString('zh-CN');
     $('#sSamples').textContent = list.length + ' / 24';
 }
 function renderTable() {
@@ -280,7 +250,7 @@ function renderTable() {
         const snap = dayData.hours[key];
         const label = key + ':00';
         if (!snap || !snap.total) {
-            rows += '<tr><td class="k-num">' + label + '</td><td colspan="6" class="k-faint">— 暂无采集记录</td></tr>';
+            rows += '<tr><td class="k-num">' + label + '</td><td colspan="7" class="k-faint">— 暂无采集记录</td></tr>';
             continue;
         }
         const t = snap.total;
@@ -289,6 +259,7 @@ function renderTable() {
         rows += '<tr data-hour="' + h + '" class="' + (selectedHour === h ? 'row-selected' : '') + '">' +
             '<td><button class="hour-btn" data-hour-btn="' + h + '">' + label + '</button></td>' +
             '<td class="k-num bar-cell"><div class="bar-fill" style="width:' + width + '%"></div><span>' + t.online.toLocaleString('zh-CN') + '</span></td>' +
+            '<td class="k-num"><strong>' + cnOnline(snap).toLocaleString('zh-CN') + '</strong></td>' +
             '<td class="k-num">' + t.inbattles.toLocaleString('zh-CN') + '</td>' +
             '<td class="k-num">' + (t.my_4399_com || 0).toLocaleString('zh-CN') + '</td>' +
             '<td class="k-num">' + pct + '</td>' +
@@ -301,7 +272,7 @@ function renderTable() {
 function renderNodes(snap) {
     const body = $('#nodeBody');
     if (!snap) {
-        body.innerHTML = '<tr><td colspan="6" class="k-center k-muted">暂无数据</td></tr>';
+        body.innerHTML = '<tr><td colspan="7" class="k-center k-muted">暂无数据</td></tr>';
         $('#nodeTitle').textContent = '节点明细'; $('#nodeMeta').textContent = '—';
         return;
     }
@@ -313,9 +284,10 @@ function renderNodes(snap) {
         '<tr><td class="k-mono">' + esc(n.id) + '</td><td class="k-faint">' + esc(n.host) + '</td>' +
         '<td><span class="k-chip k-badge-ok">' + esc(n.status) + '</span></td>' +
         '<td class="k-num">' + Number(n.online || 0).toLocaleString('zh-CN') + '</td>' +
+        '<td class="k-num"><strong>' + Math.max(0, Number(n.online || 0) - Number(n.my_4399_com || 0)).toLocaleString('zh-CN') + '</strong></td>' +
         '<td class="k-num">' + Number(n.inbattles || 0).toLocaleString('zh-CN') + '</td>' +
         '<td class="k-num">' + Number(n.my_4399_com || 0).toLocaleString('zh-CN') + '</td></tr>').join('')
-        : '<tr><td colspan="6" class="k-center k-muted">该快照无节点明细</td></tr>';
+        : '<tr><td colspan="7" class="k-center k-muted">该快照无节点明细</td></tr>';
 }
 
 /* ---------- SVG 趋势图（无第三方依赖，随主题重绘） ---------- */
@@ -327,7 +299,7 @@ function renderChart() {
     const W = 900, H = 300, pad = { l: 54, r: 18, t: 18, b: 34 };
     const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
     const list = snapshots();
-    const maxVal = Math.max(10, ...list.flatMap(x => SERIES.map(s => Number(x.snap.total[s.key]) || 0)));
+    const maxVal = Math.max(10, ...list.flatMap(x => SERIES.map(s => Number(s.value(x.snap)) || 0)));
     const yMax = Math.ceil(maxVal / 100) * 100 || 100;
     const x = h => pad.l + (h / 23) * iw;
     const y = v => pad.t + ih - (v / yMax) * ih;
@@ -353,7 +325,7 @@ function renderChart() {
         let segments = [], current = [];
         for (let h = 0; h < 24; h++) {
             const snap = dayData.hours[String(h).padStart(2,'0')];
-            if (snap && snap.total) current.push([x(h), y(Number(snap.total[series.key]) || 0)]);
+            if (snap && snap.total) current.push([x(h), y(Number(series.value(snap)) || 0)]);
             else { if (current.length) segments.push(current); current = []; }
         }
         if (current.length) segments.push(current);
@@ -385,11 +357,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderNodes(dayData.hours[String(selectedHour).padStart(2,'0')] || null);
     });
     $('#exportCsv').addEventListener('click', () => {
-        const rows = [['时段','在线人数','战斗中','4399渠道','战斗占比','节点数','采集时间(本地)','服务端版本']];
+        const rows = [['时段','在线人数','国服在线(扣4399)','战斗中','4399渠道','战斗占比','节点数','采集时间(本地)','服务端版本']];
         for (let h = 0; h < 24; h++) {
             const s = dayData.hours[String(h).padStart(2,'0')];
-            if (!s || !s.total) { rows.push([String(h).padStart(2,'0') + ':00','','','','','','','']); continue; }
-            rows.push([String(h).padStart(2,'0') + ':00', s.total.online, s.total.inbattles, s.total.my_4399_com || 0,
+            if (!s || !s.total) { rows.push([String(h).padStart(2,'0') + ':00','','','','','','','','']); continue; }
+            rows.push([String(h).padStart(2,'0') + ':00', s.total.online, cnOnline(s), s.total.inbattles, s.total.my_4399_com || 0,
                        s.total.online ? (s.total.inbattles / s.total.online * 100).toFixed(1) + '%' : '',
                        (s.nodes || []).length, s.ts_local || '', s.serverVersion || '']);
         }
@@ -413,7 +385,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                          online: n.online || 0, inbattles: n.inbattles || 0, my_4399_com: p };
             });
             renderNodes({ hour: null, serverVersion: raw.serverVersion, serverNamespace: raw.serverNamespace, total: t, nodes });
-            $('#dataStatus').textContent = '实时：在线 ' + t.online + ' · 战斗中 ' + t.inbattles;
+            $('#dataStatus').textContent = '实时：在线 ' + t.online + ' · 国服 ' +
+                cnOnline({ total: t }) + ' · 战斗中 ' + t.inbattles;
             toast('实时快照已载入节点明细');
         } catch (e) {
             $('#dataStatus').textContent = '实时接口读取失败（可能是 CORS/网络限制）';

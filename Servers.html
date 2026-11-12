@@ -437,6 +437,10 @@
                 <span class="stat-label">总在线人数</span>
                 <span class="stat-val" id="statOnline">--</span>
             </div>
+            <div class="stat-row" title="总在线人数 − 4399 渠道人数">
+                <span class="stat-label">国服在线</span>
+                <span class="stat-val" id="statCnOnline">--</span>
+            </div>
             <div class="stat-row">
                 <span class="stat-label">正在战斗中</span>
                 <span class="stat-val" id="statBattles">--</span>
@@ -1019,6 +1023,7 @@
                         });
 
                         document.getElementById('statOnline').innerText = totalOnline;
+                        document.getElementById('statCnOnline').innerText = Math.max(0, totalOnline - total4399);
                         document.getElementById('statBattles').innerText = totalInbattles;
                         document.getElementById('stat4399').innerText = total4399;
                     })

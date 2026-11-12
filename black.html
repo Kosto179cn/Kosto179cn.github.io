@@ -4,25 +4,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kosto 黑名单云管理后台</title>
+    <link rel="stylesheet" href="assets/kosto-theme.css">
+    <script src="assets/theme.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #0b0f1a; color: #cbd5e1; font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; }
-        .glass-card { background: rgba(22, 30, 46, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .rank-img { width: 32px; height: 16px; object-fit: contain; filter: drop-shadow(0 0 3px rgba(255,255,255,0.2)); }
-        input, select, textarea { background: #1e293b !important; color: white !important; border: 1px solid #334155 !important; }
-        input:focus { border-color: #3b82f6 !important; outline: none; }
-        .history-tag { background: rgba(51, 65, 85, 0.5); padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-right: 4px; display: inline-block; margin-bottom: 2px; }
-        .btn-action { transition: all 0.2s; }
-        .btn-action:hover { transform: translateY(-1px); }
-        /* Toast 通知 */
-        #toastBox { position: fixed; top: 16px; right: 16px; z-index: 100; display: flex; flex-direction: column; gap: 8px; }
-        .toast-item { padding: 12px 18px; border-radius: 10px; font-size: 13px; font-weight: bold; color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.4); animation: toastIn .25s ease; max-width: 320px; }
-        .toast-info { background: #1d4ed8; }
-        .toast-success { background: #047857; }
-        .toast-error { background: #b91c1c; }
-        .toast-warn { background: #b45309; }
-        @keyframes toastIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+
+    /* ===== Kosto Aurora 兼容层：保留 Tailwind 结构与全部业务逻辑 ===== */
+    body { background:
+        radial-gradient(1000px 620px at 8% -8%,  var(--k-glow-1), transparent 65%),
+        radial-gradient(900px 560px at 92% 4%,   var(--k-glow-3), transparent 62%),
+        radial-gradient(900px 700px at 50% 108%, var(--k-glow-2), transparent 62%),
+        linear-gradient(160deg, var(--k-bg) 0%, var(--k-bg-2) 100%) !important;
+        background-attachment: fixed !important;
+        color: var(--k-text) !important;
+        font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif; }
+    .glass-card { background: var(--k-surface) !important; backdrop-filter: blur(var(--k-blur));
+                  border: 1px solid var(--k-border) !important; border-radius: var(--k-radius) !important;
+                  box-shadow: var(--k-shadow) !important; }
+    .rank-img { width: 32px; height: 16px; object-fit: contain; }
+    input, select, textarea { background: var(--k-surface-solid) !important; color: var(--k-text) !important;
+                              border: 1px solid var(--k-border-strong) !important; border-radius: var(--k-radius-xs) !important; }
+    input:focus { border-color: var(--k-accent) !important; outline: none;
+                  box-shadow: 0 0 0 3px var(--k-accent-soft) !important; }
+    input::placeholder { color: var(--k-text-faint) !important; }
+    .history-tag { background: var(--k-surface-3) !important; color: var(--k-text-muted) !important;
+                   padding: 2px 6px; border-radius: 6px; font-size: 10px; margin-right: 4px;
+                   display: inline-block; margin-bottom: 2px; }
+    .btn-action { transition: all .2s; }
+    .btn-action:hover { transform: translateY(-2px); box-shadow: var(--k-shadow) !important; }
+    #toastBox { position: fixed; top: 16px; right: 16px; z-index: 100; display: flex; flex-direction: column; gap: 8px; }
+    .toast-item { padding: 12px 18px; border-radius: 12px; font-size: 13px; font-weight: bold;
+                  color: #fff; box-shadow: var(--k-shadow-lg); animation: toastIn .25s ease; max-width: 320px; }
+    .toast-info { background: var(--k-accent) !important; }
+    .toast-success { background: var(--k-ok) !important; }
+    .toast-error { background: var(--k-danger) !important; }
+    .toast-warn { background: var(--k-warn) !important; }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: none; } }
+
+    /* Tailwind 中性深色 class → 主题令牌（!important 压过运行时注入的 Tailwind 样式） */
+    .text-white { color: var(--k-text) !important; }
+    .text-slate-300, .text-slate-400, .text-slate-500, .text-slate-600, .text-slate-700 { color: var(--k-text-muted) !important; }
+    [class*="bg-slate-800"], [class*="bg-slate-900"], [class*="bg-slate-700"],
+    [class*="bg-gray-800"], [class*="bg-gray-900"] { background-color: var(--k-surface-2) !important; }
+    [class*="bg-indigo-900"], [class*="bg-blue-900"] { background-color: var(--k-accent-soft) !important; }
+    [class*="border-white/"], [class*="border-slate-700"], [class*="border-slate-800"] { border-color: var(--k-border) !important; }
+    h1.bg-clip-text { background-image: linear-gradient(100deg, var(--k-accent), var(--k-accent-2)) !important;
+                      -webkit-text-fill-color: transparent !important; }
+    table thead, table thead tr { background: var(--k-surface-3) !important; }
+    table th { color: var(--k-text-muted) !important; }
+    table td { color: var(--k-text) !important; border-bottom: 1px solid var(--k-border) !important; }
+    #pagination { border-top: 1px solid var(--k-border) !important; color: var(--k-text-muted) !important; }
+    #pagination button { color: var(--k-text) !important; }
+    button.bg-blue-600, button[class*="bg-gradient-to-r"] {
+        background-image: linear-gradient(135deg, var(--k-accent), var(--k-accent-2)) !important;
+        background-color: transparent !important; color: #fff !important;
+        border: none !important; border-radius: 999px !important; }
+
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -44,6 +82,7 @@
             <button onclick="fetchData()" class="bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-lg font-bold text-white btn-action shadow-lg shadow-blue-900/20">
                 <i class="fas fa-sync-alt mr-2"></i>拉取云端名单
             </button>
+            <button class="k-btn k-btn-sm k-theme-toggle" data-theme-toggle type="button"></button>
         </div>
     </div>
 
