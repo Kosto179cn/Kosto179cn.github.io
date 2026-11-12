@@ -1,12 +1,19 @@
 name: Collect CN Server Online Stats
 
-# 每小时第 5 分钟（UTC）访问一次官方状态接口，按 Asia/Shanghai 归到对应小时。
-# 与原 update-pages-json.yml（整点）错开 5 分钟，避开两个定时任务的并发 push。
-# 注意：GitHub Actions 的 schedule 不保证准点，高峰期可能延迟数分钟；
-#       数据以脚本采集到的本地小时为准，不是以 cron 触发时间为准。
+# 每小时第 23 分钟（UTC）访问一次官方状态接口，按 Asia/Shanghai 归到对应小时。
+# 分钟选 23 而不是整点/整点后 5 分：GitHub 官方明确「整点前后是 schedule 高负载窗口」，
+# 同仓库的 update-pages-json.yml 用整点 cron，实测延迟可达 40 分钟以上。
+# 本次同时通过「修改 cron 值」重新激活被 GitHub 停用的 scheduled 触发器
+# （官方文档：deactivated 的定时工作流必须由写权限用户提交一次 cron 变更才会重新激活）。
+# 注意：schedule 不保证准点，数据以脚本采集到的本地小时为准，不是以触发时间为准。
 on:
   schedule:
-    - cron: '5 * * * *'
+    - cron: '23 * * * *'
+  # 配置自检：改动本文件时立即跑一次，用于确认采集链路可用。
+  # 数据提交只改 data/online/**，不匹配这里的 paths，因此不会自触发成死循环。
+  push:
+    paths:
+      - '.github/workflows/collect-online-stats.yml'
   workflow_dispatch:
     inputs:
       date:
@@ -19,7 +26,7 @@ on:
 permissions:
   contents: write
 
-# 与 update-pages-json.yml 的整点任务错开，避免同时 push 产生冲突
+# 与 update-pages-json.yml 的整点任务错开 23 分钟，避免同时 push 产生冲突
 concurrency:
   group: kosto-hourly-data
   cancel-in-progress: false
