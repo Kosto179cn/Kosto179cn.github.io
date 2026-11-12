@@ -1,13 +1,5 @@
 [
   {
-    "filename": "kostotranslateapitest.html",
-    "title": "KOSTO 适配版测试",
-    "desc": "自动发现的新页面",
-    "icon": "fa-file",
-    "category": "other",
-    "theme": "theme-other"
-  },
-  {
     "filename": "replacement.html",
     "title": "屏蔽词测试工具 · 聊天工具箱",
     "desc": "屏蔽词替换 网页版",
