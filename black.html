@@ -90,6 +90,7 @@
     <div class="flex gap-1 mb-6 bg-slate-900/50 p-1 rounded-xl w-fit border border-white/5">
         <button id="tabCN" onclick="switchServer('cn')" class="px-6 py-2 rounded-lg font-bold text-sm transition bg-blue-600 text-white shadow-lg">国服 (3DTank)</button>
         <button id="tabEN" onclick="switchServer('en')" class="px-6 py-2 rounded-lg font-bold text-sm transition text-slate-400 hover:text-white">外服 (TankiOnline)</button>
+        <button id="tabTEST" onclick="switchServer('test')" class="px-6 py-2 rounded-lg font-bold text-sm transition text-slate-400 hover:text-white">🧪 测试服</button>
     </div>
 
     <!-- Toolbar -->
@@ -157,13 +158,23 @@
 </div>
 
 <script>
-    let currentServer = 'cn'; // 默认国服
+    // 与 history.html 共用 localStorage.selectedServer，保持两边服务器选择一致
+    let currentServer = localStorage.getItem('selectedServer') || 'cn';
 
     const CONFIG = {
         repo: "Kosto179/systemconfig",
-        // 动态返回路径
-        getPath: () => currentServer === 'cn' ? "player_blacklist_cn.json" : "player_blacklist_en.json",
-        getOtherPath: () => currentServer === 'cn' ? "player_blacklist_en.json" : "player_blacklist_cn.json"
+        // 与 history.html 的 FILE_NAMES 完全一致（含测试服）
+        files: {
+            cn: "player_blacklist_cn.json",
+            en: "player_blacklist_en.json",
+            test: "player_blacklist_test.json"
+        },
+        getPath: () => CONFIG.files[currentServer] || CONFIG.files.cn,
+        // 复制目标：国服→外服，外服/测试服→国服
+        getTarget: () => currentServer === 'cn'
+            ? { file: CONFIG.files.en, name: '外服' }
+            : { file: CONFIG.files.cn, name: '国服' },
+        getOtherPath: () => CONFIG.getTarget().file
     };
 
     // 验证权限配置是否存在
@@ -209,6 +220,7 @@
     let currentPage = 1;
     let dirty = false;           // 是否存在未推送的本地修改
     let historyPermissions = {}; // 历史记录查看权限 {uid: 'allow'/'deny'}，根据权限决定是否隐藏历史信息
+    let permissionServer = null;  // 权限配置所属服务器（来自 history.html 写入的 server 字段）
 
     // ---------- 通用工具 ----------
 
@@ -310,29 +322,53 @@
         return { sha: json.sha, players: parsed.players, clans: parsed.clans };
     }
 
-    // 拉取历史记录查看权限配置
+    // 拉取历史记录查看权限配置（遵从 history.html 的规则）
+    // history.html 写入结构：{ permissions: {uid:'allow'|'deny'}, lastSync, server }
+    //   · server 标记该份权限属于哪个服；跨服不应用，避免国服/外服/测试服权限串用
+    //   · 旧版文件没有 server 字段时按全局配置兼容读取
+    //   · 'default'（未设置）与 'allow' 均可查看，仅 'deny' 隐藏
     async function fetchHistoryPermissions() {
         const token = document.getElementById('giteeToken').value;
         if (!token) return;
         try {
             const url = `https://gitee.com/api/v5/repos/${CONFIG.repo}/contents/history_permissions.json?access_token=${token}&t=${Date.now()}`;
             const res = await fetchWithTimeout(url);
-            if (res.status === 404) { historyPermissions = {}; return; }
-            if (!res.ok) { historyPermissions = {}; return; }
+            if (res.status === 404) { historyPermissions = {}; permissionServer = null; return; }
+            if (!res.ok) { historyPermissions = {}; permissionServer = null; return; }
             const json = await res.json();
             const data = JSON.parse(b64ToUtf8(json.content));
-            historyPermissions = data.permissions || {};
-            console.log('历史查看权限已加载:', Object.keys(historyPermissions).length, '条');
+            const owner = data.server || null;
+            permissionServer = owner;
+            if (owner && owner !== currentServer) {
+                historyPermissions = {};
+                console.log(`权限配置属于 ${owner} 服，当前 ${currentServer} 服不应用`);
+            } else {
+                historyPermissions = data.permissions || {};
+                console.log(`历史查看权限已加载(${owner || '旧版全局'}): ${Object.keys(historyPermissions).length} 条`);
+            }
         } catch (e) {
             console.error('加载历史查看权限失败:', e);
             historyPermissions = {};
+            permissionServer = null;
         }
     }
 
     // 检查某 UID 是否允许查看历史
     function canViewHistory(uid) {
         const perm = historyPermissions[uid];
-        return perm !== 'deny'; // 默认允许，只有明确标记'deny'才禁止
+        return perm !== 'deny'; // 与 history.html 的 getPermission 一致：default/allow 可看，仅 deny 隐藏
+    }
+
+    // 统一同步三个 tab 的高亮与复制按钮文案
+    function syncServerTabs() {
+        const activeCls = 'px-6 py-2 rounded-lg font-bold text-sm transition bg-blue-600 text-white shadow-lg';
+        const idleCls = 'px-6 py-2 rounded-lg font-bold text-sm transition text-slate-400 hover:text-white';
+        const tabs = { cn: 'tabCN', en: 'tabEN', test: 'tabTEST' };
+        Object.keys(tabs).forEach(k => {
+            const el = document.getElementById(tabs[k]);
+            if (el) el.className = currentServer === k ? activeCls : idleCls;
+        });
+        document.getElementById('copyBtnLabel').textContent = '复制到' + CONFIG.getTarget().name;
     }
 
     async function fetchData() {
@@ -502,14 +538,10 @@
         if (srv === currentServer) return;
         if (dirty && !confirm('当前服务器有未推送的修改，切换后将丢失，确定继续吗？')) return;
         currentServer = srv;
-        // 样式切换
-        const activeCls = 'px-6 py-2 rounded-lg font-bold text-sm transition bg-blue-600 text-white shadow-lg';
-        const idleCls = 'px-6 py-2 rounded-lg font-bold text-sm transition text-slate-400 hover:text-white';
-        document.getElementById('tabCN').className = srv === 'cn' ? activeCls : idleCls;
-        document.getElementById('tabEN').className = srv === 'en' ? activeCls : idleCls;
-        document.getElementById('copyBtnLabel').textContent = srv === 'cn' ? '复制到外服' : '复制到国服';
+        localStorage.setItem('selectedServer', srv); // 与 history.html 共用
+        syncServerTabs();
 
-        // 重置本地状态并重新拉取
+        // 重置本地状态并重新拉取（fetchData 内会按当前服重新读取权限配置）
         blacklistData = {};
         clanBlacklistData = [];
         baseData = null;
@@ -576,22 +608,23 @@
         if (!token) return toast('请先输入 Gitee Token！', 'warn');
         if (Object.keys(blacklistData).length === 0) return toast('当前名单为空，无可复制数据', 'warn');
 
-        const targetName = currentServer === 'cn' ? '外服' : '国服';
+        const target = CONFIG.getTarget();
+        const targetName = target.name;
         if (!confirm(`确定将当前 ${Object.keys(blacklistData).length} 条记录覆盖复制到【${targetName}】名单吗？\n（目标文件现有数据将被完全替换）`)) return;
 
         toast(`正在读取${targetName}云端文件...`, 'info');
         try {
-            const target = await fetchRemoteFile(CONFIG.getOtherPath(), token);
-            const saveData = { players: blacklistData, clans: clanBlacklistData };
+            const remote = await fetchRemoteFile(target.file, token);
+            const saveData = { players: blacklistData, clans: clanBlacklistData, lastSync: new Date().toLocaleString('zh-CN') };
             const content = utf8ToB64(JSON.stringify(saveData, null, 2));
-            const url = `https://gitee.com/api/v5/repos/${CONFIG.repo}/contents/${CONFIG.getOtherPath()}`;
+            const url = `https://gitee.com/api/v5/repos/${CONFIG.repo}/contents/${target.file}`;
             const res = await fetchWithTimeout(url, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     access_token: token,
                     content: content,
-                    sha: target.sha,
+                    sha: remote.sha,
                     message: `Blacklist copied from ${currentServer} via Kosto Web UI: ` + new Date().toLocaleString()
                 })
             });
@@ -606,7 +639,7 @@
 
     // 构建推送载荷
     function buildSaveContent() {
-        const saveData = { players: blacklistData, clans: clanBlacklistData };
+        const saveData = { players: blacklistData, clans: clanBlacklistData, lastSync: new Date().toLocaleString('zh-CN') };
         return utf8ToB64(JSON.stringify(saveData, null, 2));
     }
 
@@ -674,6 +707,7 @@
     // ---------- 初始化 ----------
 
     window.onload = () => {
+        syncServerTabs(); // 恢复与 history.html 共用的服务器选择
         const savedToken = localStorage.getItem('gitee_token');
         if (savedToken) {
             document.getElementById('giteeToken').value = savedToken;
