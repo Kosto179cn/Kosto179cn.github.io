@@ -1501,7 +1501,7 @@
                 
                 if (res.status === 200) {
                     const json = await res.json();
-                    const decoded = base64Decode(json.content);
+                    const decoded = await base64DecodeMaybeGzip(json.content);
                     const data = JSON.parse(decoded);
                     
                     allPlayers = data.players || {};
@@ -1561,6 +1561,58 @@
                 }).join(''));
             } catch (e) {
                 return '{}';
+            }
+        }
+
+        // 2026-11-13：玩家名单文件已改为 gzip 存储（体积降约 90%）。
+        // 按 magic(1f 8b) 自适应解析，老文件仍是纯文本 JSON，两种都能读。
+        async function base64DecodeMaybeGzip(str) {
+            let raw;
+            try {
+                raw = atob(String(str || '').replace(/\s+/g, ''));
+            } catch (e) {
+                return '{}';
+            }
+            if (raw.length >= 2 && raw.charCodeAt(0) === 0x1f && raw.charCodeAt(1) === 0x8b) {
+                try {
+                    const bytes = new Uint8Array(raw.length);
+                    for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+                    const ds = new DecompressionStream('gzip');
+                    const w = ds.writable.getWriter();
+                    const reading = new Response(ds.readable).arrayBuffer();
+                    await w.write(bytes);
+                    await w.close();
+                    return new TextDecoder('utf-8').decode(await reading);
+                } catch (e) {
+                    console.error('名单文件解压失败:', e);
+                    return '{}';
+                }
+            }
+            return base64Decode(str);
+        }
+
+        // 与读取对称：写回时保持 gzip 压缩，避免名单文件被重新撑回 2MB。
+        // 浏览器不支持 CompressionStream 时退回纯文本，Worker 与各页面都能自适应。
+        async function base64EncodeMaybeGzip(str) {
+            if (typeof CompressionStream === 'undefined') {
+                return btoa(unescape(encodeURIComponent(str)));
+            }
+            try {
+                const cs = new CompressionStream('gzip');
+                const w = cs.writable.getWriter();
+                const reading = new Response(cs.readable).arrayBuffer();
+                await w.write(new TextEncoder().encode(str));
+                await w.close();
+                const bytes = new Uint8Array(await reading);
+                let bin = '';
+                const CHUNK = 0x8000;
+                for (let i = 0; i < bytes.length; i += CHUNK) {
+                    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+                }
+                return btoa(bin);
+            } catch (e) {
+                console.error('名单文件压缩失败，退回纯文本:', e);
+                return btoa(unescape(encodeURIComponent(str)));
             }
         }
         
@@ -1995,7 +2047,7 @@
                 
                 if (!res.ok) throw new Error('获取云端数据失败: HTTP ' + res.status);
                 const json = await res.json();
-                const decoded = base64Decode(json.content);
+                const decoded = await base64DecodeMaybeGzip(json.content);
                 const cloudData = JSON.parse(decoded);
                 
                 // 只替换 players，保留 clans
@@ -2005,7 +2057,7 @@
                     lastSync: new Date().toLocaleString('zh-CN')
                 };
                 
-                const base64Content = btoa(unescape(encodeURIComponent(JSON.stringify(saveData))));
+                const base64Content = await base64EncodeMaybeGzip(JSON.stringify(saveData));
                 const updateUrl = `https://gitee.com/api/v5/repos/${GITEE_REPO}/contents/${fileName}?access_token=${GITEE_TOKEN}`;
                 
                 const updateRes = await fetch(updateUrl, {
