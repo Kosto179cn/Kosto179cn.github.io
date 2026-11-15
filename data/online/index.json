@@ -4,9 +4,13 @@
   "granularity": "hourly",
   "layout": "data/online/<YYYY-MM-DD>/<HH>.json",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   "updatedAt": "2026-11-15T17:22:39Z",
 =======
   "updatedAt": "2026-11-15T17:22:49Z",
+>>>>>>> Stashed changes
+=======
+  "updatedAt": "2026-11-15T17:23:00Z",
 >>>>>>> Stashed changes
   "days": [
     {
@@ -79,9 +83,9 @@
       ],
       "peak_online": 214,
       "peak_hour": 0,
-      "low_online": 117,
-      "avg_online": 165.5,
-      "avg_inbattles": 93.0,
+      "low_online": 116,
+      "avg_online": 165.0,
+      "avg_inbattles": 92.5,
       "dir": "data/online/2026-11-16"
     }
   ],
