@@ -1,12 +1,10 @@
 name: Generate Pages JSON
 
 on:
-  schedule:
-    - cron: '0 * * * *'
   push:
     paths:
-      - '**.html'
-      - 'page-config.json'  # 新增：监听配置文件变更
+      - '*.html'
+      - 'page-config.json'
   workflow_dispatch:
 
 permissions:
