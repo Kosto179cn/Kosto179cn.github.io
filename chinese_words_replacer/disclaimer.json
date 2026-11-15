@@ -1,0 +1,223 @@
+{
+  "version": "1.0",
+  "source": "Kosto.disclaimer-changelog",
+  "language": [
+    "zh",
+    "en",
+    "ru"
+  ],
+  "disclaimer": {
+    "zh": [
+      "本脚本为个人学习与技术研究用途编写，仅供交流学习使用，不得用于任何商业用途、付费分发或任何形式的盈利活动。",
+      "使用本脚本产生的一切后果由使用者自行承担。作者不对因使用、误用或无法使用本脚本而造成的任何直接或间接损失承担责任，包括但不限于游戏账号被限制或封禁、虚拟财产损失、客户端异常、设备故障及数据丢失。",
+      "本脚本通过修改客户端运行环境实现相关功能，可能违反游戏运营方的用户协议及相关规则。是否使用本脚本，以及由此产生的一切风险，由使用者自行判断并承担。",
+      "本脚本不收集与个人身份相关的信息。涉及云端同步的功能仅保存使用者主动提交的游戏内数据（如标记名单、配置项），使用者可随时自行清除。",
+      "本脚本为独立开发项目，与游戏开发方、运营方无任何隶属或合作关系，未获其授权、认可或背书。文中涉及的游戏名称、商标及美术素材，其版权归各自权利人所有。",
+      "作者保留随时修改、暂停或终止本脚本更新与分发的权利，且无需事先通知。已发布版本亦可能因外部环境变化而失效。"
+    ],
+    "en": [
+      "This script was written for personal learning and technical research purposes, and is provided for exchange and study only; it must not be used for any commercial purpose, paid distribution, or any form of profit-making activity.",
+      "Users assume all consequences arising from the use of this script. The author shall not be liable for any direct or indirect losses caused by using, misusing, or being unable to use this script, including but not limited to game account restrictions or bans, loss of virtual property, client malfunctions, device failures, and data loss.",
+      "This script implements its features by modifying the client runtime environment, which may violate the game operator's Terms of Service and related rules. Whether to use this script, and all resulting risks, are to be judged and borne by the user.",
+      "This script does not collect personally identifiable information. Cloud-sync features only store game data actively submitted by the user (such as marked lists and configuration items), which the user may clear at any time.",
+      "This script is an independently developed project and has no affiliation or cooperation with the game's developer or operator, nor has it received their authorization, recognition, or endorsement. Game names, trademarks, and art assets mentioned herein are copyrighted by their respective owners.",
+      "The author reserves the right to modify, suspend, or terminate the update and distribution of this script at any time without prior notice. Released versions may also become non-functional due to changes in the external environment."
+    ],
+    "ru": [
+      "Данный скрипт написан в целях личного обучения и технических исследований и предназначен исключительно для обмена опытом; его запрещено использовать в любых коммерческих целях, платном распространении или любой иной деятельности, направленной на получение прибыли.",
+      "Вся ответственность за последствия использования скрипта лежит на пользователе. Автор не несёт ответственности за любые прямые или косвенные убытки, возникшие вследствие использования, неправильного использования или невозможности использования скрипта, включая, помимо прочего, ограничение или блокировку игрового аккаунта, потерю виртуального имущества, сбои клиента, неисправности оборудования и потерю данных.",
+      "Скрипт реализует свои функции путём изменения среды выполнения клиента, что может нарушать пользовательское соглашение и правила игрового оператора. Решение об использовании скрипта и все связанные с этим риски пользователь оценивает и принимает на себя самостоятельно.",
+      "Скрипт не собирает персональные данные. Функции облачной синхронизации хранят только те игровые данные, которые пользователь отправил самостоятельно (например, списки меток и настройки), и пользователь может удалить их в любой момент.",
+      "Данный скрипт — независимый проект, не имеющий никакого отношения к разработчику или оператору игры: он не аффилирован с ними, не сотрудничает с ними и не получил их авторизации, одобрения или поддержки. Названия игр, товарные знаки и художественные материалы, упомянутые здесь, принадлежат их законным правообладателям.",
+      "Автор оставляет за собой право в любой момент и без предварительного уведомления изменять, приостанавливать или прекращать обновление и распространение скрипта. Опубликованные версии также могут перестать работать из-за изменений во внешней среде."
+    ]
+  },
+  "changelog": {
+    "zh": [
+      {
+        "version": "5.7",
+        "date": "2026-11-13",
+        "items": [
+          "战场扫描提速：并发探测 + 固定 100 万 ID 范围，扫描更快更省事。",
+          "战场扫描不弹窗了：找不到战场时自动关掉提示框，扫到的卡片留在列表里。",
+          "昵称和军团标签可以按阵营来：想只改敌人、只改队友、还是全改都行。",
+          "昵称颜色多了个总开关：关掉就不覆盖，调色盘也会一起变灰。",
+          "修复昵称/血条相关开关不生效的问题。",
+          "修复「强制显示血条」和「强制隐藏血条」能同时打开会崩游戏的问题。",
+          "账号登录和续期不再动不动就超时。",
+          "远程拉素材和脚本排队时不会被误判超时。",
+          "自动开炮和模拟按键开炮都直接走游戏内的开火机制，不再靠模拟空格。",
+          "模拟按键开炮从「长按」切到「快速」时，不会卡住继续开火。",
+          "屏幕取色触发重做为「镭射开镜触发」：只在镭射开镜时扫描红色锁定框，命中后立刻停火，未开镜零开销。",
+          "开镜状态直接读游戏内部字段，不再需要手动校准。",
+          "移除屏幕取色的「持续保持」开关和相关按键守卫（改用原生接口后不再需要）。",
+          "检测区域边长范围调整为 100~500 像素，默认 200。",
+          "修复屏幕取色触发在脚本中途加载或中途换武器后不生效的问题：现在会自动认出当前武器，不用再关客户端重开。",
+          "修复开镜状态判断不准导致一直停在「待开镜」的问题。",
+          "地雷监控面板重新排版：卡片式外观，头部可拖动，人多时列表可滚动，鼠标移上去会高亮。",
+          "地雷监控面板可以自己调整体透明度，标题栏里有个「透明」滑条。",
+          "地雷监控的昵称宽度会跟着内容走，名字长面板就变宽。",
+          "战场聊天面板变宽了，真实ID能一行看完。",
+          "聊天里等级图标和昵称挨得更近，VIP 底图不再错位。",
+          "菜单里所有功能都补上了鼠标悬停说明：不管什么功能，鼠标放上去都能看到介绍。",
+          "镭射开镜时会自动把自身描边关掉，关镜后立刻恢复，不用手动去调。",
+          "修好了战绩面板被 Kosto 聊天框挡住的问题：按住 TAB 时面板会正常显示在最上面。",
+          "地雷可以开并发线程：菜单里加了「地雷并发线程数」滑块（1-10，默认 3），多条线程同时投雷，比单条更快。",
+          "地雷投放间隔可以调到 20ms，铺雷更密。",
+          "透视描边改为每秒整轮重发：不再只在颜色变化时发，描边被游戏覆盖或重建后 1 秒内自动补回。",
+          "修复游戏撤销描边后 ESP 不知道、永不补发的问题（广播方法名读取链路修复）。",
+          "主菜单 UI 按 UI/UX 设计系统重构：设计 token 化（颜色/间距/阴影变量）、标签导航可访问性（aria-current + tabindex）、模态框语义化（role/aria-modal/tabindex）、标签页可聚焦 + 焦点可见（reduced-motion 支持）。",
+          "模态框与菜单内控件统一可访问性：已有对话框补 aria-modal/tabindex，标签按钮补 tabindex，符合键盘导航与焦点可见规范。",
+          "菜单文案接入多语言层：175 条菜单文本（标签页/开关/滑块/装饰符）替换为模块名引用，内置中/英/俄三语对照表，映射表同步放在官网仓库 chinese_words_replacer 目录。",
+          "显示功能页加了「菜单语言」下拉：简体中文 / English / Русский 一键切换 Kosto 自身界面语言。"
+        ]
+      },
+      {
+        "version": "5.6",
+        "date": "2026-11-13",
+        "items": [
+          "网络请求更稳了：卡死的请求会自动放开，不会堵住后面的。",
+          "过期太久没回应的请求直接丢掉，不占带宽。",
+          "修复排队清理时偶尔崩一下的问题。",
+          "账号登录偶尔超时会自动重试一次。",
+          "云端名单改用压缩传输，体积缩到原来的十分之一左右。"
+        ]
+      },
+      {
+        "version": "5.5",
+        "date": "2026-11-12",
+        "items": [
+          "新增「声明与更新」页，版本记录一眼看完。",
+          "加了全局请求调度，远程请求排队执行不打架。",
+          "玩家探测器只显示当前服务器的标记，不再混进别的服。",
+          "云端标记同步在网差时不会直接放弃了。",
+          "瞄准夹角可以单独控制每个近战炮塔了。"
+        ]
+      }
+    ],
+    "en": [
+      {
+        "version": "5.7",
+        "date": "2026-11-13",
+        "items": [
+          "Faster battle scanning: concurrent probing + fixed 1,000,000 ID range — quicker and easier.",
+          "Battle scanning no longer pops dialogs: if no battle is found the prompt closes automatically, and scanned cards stay in the list.",
+          "Nicknames and clan tags can now follow team sides: change enemies only, teammates only, or everyone.",
+          "Nickname colors got a master switch: turn it off and nothing is overridden — the color palette grays out too.",
+          "Fixed nickname / health-bar related switches not taking effect.",
+          "Fixed a crash when 'force show health bars' and 'force hide health bars' were both enabled.",
+          "Account login and renewal no longer keep timing out.",
+          "Remote asset fetches and queued scripts are no longer falsely flagged as timed out.",
+          "Auto-fire and simulated-key fire now go straight through the game's internal fire mechanism instead of simulating the space bar.",
+          "Switching simulated-key fire from 'hold' to 'rapid' no longer gets stuck firing.",
+          "Screen color-pick trigger rebuilt as 'laser-scope trigger': it only scans for the red lock frame while the laser scope is active, stops firing immediately on a hit, and costs nothing when not scoped.",
+          "Scope state is now read directly from internal game fields — no manual calibration needed.",
+          "Removed the 'keep sustained' toggle of the color-pick trigger and related key guards (no longer needed after switching to the native API).",
+          "Detection area side length is now adjustable from 100 to 500 pixels, default 200.",
+          "Fixed the color-pick trigger not working when the script loads mid-game or the weapon is swapped mid-game: it now recognizes the current weapon automatically, no client restart needed.",
+          "Fixed inaccurate scope-state detection that left it stuck on 'waiting for scope'.",
+          "Mine monitor panel redesigned: card-style look, draggable header, scrollable list when crowded, hover highlighting.",
+          "The mine monitor panel now has an overall opacity control — a 'transparency' slider in the title bar.",
+          "Mine monitor nickname width now follows content: longer names widen the panel.",
+          "Battle chat panel is wider now — full real IDs fit on one line.",
+          "Level icons sit closer to nicknames in chat, and VIP backdrops no longer misalign.",
+          "Every menu feature now has a hover tooltip: whatever the feature, hover over it to see a description.",
+          "While the laser scope is active your own ESP outline is disabled automatically and restored instantly on exit — no manual tweaking.",
+          "Fixed the score panel being covered by the Kosto chat box: it now shows on top while TAB is held.",
+          "Mines now support concurrent threads: a 'mine thread count' slider (1-10, default 3) in the menu — several threads drop mines at once, faster than a single one.",
+          "Mine drop interval can now go down to 20ms for denser mine fields.",
+          "ESP outline is now re-sent in a full round every second: outlines are restored within 1s even after the game overrides or rebuilds them.",
+          "Fixed ESP never re-sending outlines after the game reverted them (broadcast method-name lookup chain fixed).",
+          "Main menu UI rebuilt on a UI/UX design system: design tokens (color/spacing/shadow variables), accessible tab navigation (aria-current + tabindex), semantic modals (role/aria-modal/tabindex), focusable tabs with visible focus (reduced-motion support).",
+          "Unified accessibility for modals and in-menu controls: existing dialogs got aria-modal/tabindex, tab buttons got tabindex, meeting keyboard-navigation and visible-focus standards.",
+          "Menu texts wired into the i18n layer: 175 menu strings (tabs/toggles/slides/decorations) now reference module names, with a built-in zh/en/ru mapping table mirrored in the site repo's chinese_words_replacer directory.",
+          "The Display page got a 'Menu language' dropdown: switch Kosto's own UI between 简体中文 / English / Русский in one click."
+        ]
+      },
+      {
+        "version": "5.6",
+        "date": "2026-11-13",
+        "items": [
+          "Network requests are more stable: stuck requests are released automatically instead of blocking the queue.",
+          "Requests long past their expiry are simply dropped, saving bandwidth.",
+          "Fixed an occasional crash during queue cleanup.",
+          "Occasional account-login timeouts now retry once automatically.",
+          "Cloud lists now use compressed transfer — roughly one-tenth the size."
+        ]
+      },
+      {
+        "version": "5.5",
+        "date": "2026-11-12",
+        "items": [
+          "New 'Disclaimer & Changelog' page — version history at a glance.",
+          "Added a global request scheduler: remote requests queue up instead of racing each other.",
+          "The player detector only shows marks from the current server now, no more mixing in other servers.",
+          "Cloud mark sync no longer just gives up on bad connections.",
+          "Aiming FOV angle can now be set per melee turret."
+        ]
+      }
+    ],
+    "ru": [
+      {
+        "version": "5.7",
+        "date": "2026-11-13",
+        "items": [
+          "Ускорено сканирование битвы: параллельное зондирование + фиксированный диапазон 1 000 000 ID — быстрее и удобнее.",
+          "Сканирование битвы больше не открывает окна: если битва не найдена, подсказка закрывается сама, а найденные карточки остаются в списке.",
+          "Никнеймы и теги клана можно менять по сторонам: только враги, только союзники или все сразу.",
+          "У цвета никнеймов появился общий переключатель: выключил — ничего не перекрашивается, палитра тоже становится серой.",
+          "Исправлены переключатели, связанные с никнеймами и полосками здоровья, которые не срабатывали.",
+          "Исправлен вылет игры при одновременном включении «принудительно показать полоски здоровья» и «принудительно скрыть полоски здоровья».",
+          "Вход в аккаунт и продление сессии больше не отваливаются по таймауту.",
+          "Загрузка удалённых материалов и скриптов в очереди больше не считается зависшей по таймауту.",
+          "Автострельба и стрельба с эмуляцией клавиш теперь идут напрямую через встроенный механизм игры, без эмуляции пробела.",
+          "При переключении стрельбы с эмуляцией клавиш с «удержания» на «быструю» огонь больше не залипает.",
+          "Триггер по цвету экрана переработан в «триггер при прицеливании с лазером»: красная рамка захвата сканируется только при лазерном прицеле, при попадании огонь мгновенно прекращается, без прицела — нулевая нагрузка.",
+          "Состояние прицеливания теперь читается напрямую из внутренних полей игры — ручная калибровка не нужна.",
+          "Удалён переключатель «удерживать постоянно» у триггера по цвету экрана и связанные проверки клавиш (после перехода на нативный интерфейс они больше не нужны).",
+          "Размер зоны детекции теперь регулируется от 100 до 500 пикселей, по умолчанию 200.",
+          "Исправлена работа триггера по цвету экрана при загрузке скрипта посреди боя или смене оружия: текущее оружие распознаётся автоматически, перезапускать клиент не нужно.",
+          "Исправлено зависание в состоянии «ожидание прицела» из-за неточного определения прицеливания.",
+          "Панель мониторинга мин переработана: вид карточек, заголовок можно перетаскивать, список прокручивается при большом количестве, наведение подсвечивает.",
+          "У панели мониторинга мин появилась общая настройка прозрачности — ползунок «прозрачность» в заголовке.",
+          "Ширина никнеймов в мониторинге мин подстраивается под содержимое: длинные имена расширяют панель.",
+          "Панель чата битвы стала шире — настоящий ID помещается в одну строку.",
+          "Иконки уровня в чате стоят ближе к никнеймам, подложки VIP больше не съезжают.",
+          "Все функции меню получили всплывающие подсказки: наведи курсор на любую функцию — увидишь описание.",
+          "При прицеливании с лазером собственная ESP-обводка автоматически отключается и сразу восстанавливается после выхода из прицела — вручную настраивать не нужно.",
+          "Исправлено перекрытие панели статистики окном чата Kosto: при удержании TAB панель корректно показывается поверх.",
+          "Мины теперь поддерживают параллельные потоки: в меню добавлен ползунок «число потоков мин» (1-10, по умолчанию 3) — несколько потоков ставят мины одновременно, быстрее одного.",
+          "Интервал постановки мин можно уменьшить до 20 мс — плотнее минное поле.",
+          "ESP-обводка теперь пересылается полностью каждую секунду: если игра перекрывает или пересоздаёт обводку, она восстанавливается в течение 1 секунды.",
+          "Исправлено, что ESP не замечал отмену обводки игрой и никогда не пересылал её (исправлена цепочка чтения имени метода broadcast).",
+          "Главное меню переработано по дизайн-системе UI/UX: дизайн-токены (переменные цветов/отступов/теней), доступная навигация по вкладкам (aria-current + tabindex), семантические модальные окна (role/aria-modal/tabindex), фокусируемые вкладки с видимой рамкой фокуса (поддержка reduced-motion).",
+          "Единая доступность модальных окон и элементов меню: у диалогов добавлены aria-modal/tabindex, у кнопок вкладок — tabindex, по стандартам клавиатурной навигации и видимого фокуса.",
+          "Тексты меню подключены к слою мультиязычности: 175 строк меню (вкладки/переключатели/ползунки/декоративные символы) заменены ссылками на модули, встроена таблица соответствий 中文/English/Русский, копия — в каталоге chinese_words_replacer репозитория сайта.",
+          "На странице отображения появился выпадающий список «язык меню»: переключение языка интерфейса самого Kosto между 简体中文 / English / Русский в один клик."
+        ]
+      },
+      {
+        "version": "5.6",
+        "date": "2026-11-13",
+        "items": [
+          "Сетевые запросы стабильнее: зависшие запросы освобождаются автоматически и не блокируют очередь.",
+          "Просроченные запросы, на которые давно нет ответа, просто отбрасываются — меньше трафика.",
+          "Исправлен редкий вылет при очистке очереди.",
+          "При редком таймауте входа в аккаунт выполняется одна автоматическая повторная попытка.",
+          "Облачные списки перешли на сжатую передачу — размер уменьшился примерно в десять раз."
+        ]
+      },
+      {
+        "version": "5.5",
+        "date": "2026-11-12",
+        "items": [
+          "Новая страница «Дисклеймер и обновления» — вся история версий перед глазами.",
+          "Добавлен глобальный планировщик запросов: удалённые запросы выполняются по очереди и не конфликтуют.",
+          "Детектор игроков теперь показывает метки только текущего сервера, без примеси чужих серверов.",
+          "Облачная синхронизация меток больше не сдаётся при плохой связи.",
+          "Угол прицеливания можно настраивать отдельно для каждой ближней турели."
+        ]
+      }
+    ]
+  }
+}
