@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "source": "Kosto.disclaimer-changelog",
+  "source": "Kosto.user.js header (fully externalized 2026-11-15)",
   "language": [
     "zh",
     "en",
@@ -69,7 +69,11 @@
           "主菜单 UI 按 UI/UX 设计系统重构：设计 token 化（颜色/间距/阴影变量）、标签导航可访问性（aria-current + tabindex）、模态框语义化（role/aria-modal/tabindex）、标签页可聚焦 + 焦点可见（reduced-motion 支持）。",
           "模态框与菜单内控件统一可访问性：已有对话框补 aria-modal/tabindex，标签按钮补 tabindex，符合键盘导航与焦点可见规范。",
           "菜单文案接入多语言层：175 条菜单文本（标签页/开关/滑块/装饰符）替换为模块名引用，内置中/英/俄三语对照表，映射表同步放在官网仓库 chinese_words_replacer 目录。",
-          "显示功能页加了「菜单语言」下拉：简体中文 / English / Русский 一键切换 Kosto 自身界面语言。"
+          "显示功能页加了「菜单语言」下拉：简体中文 / English / Русский 一键切换 Kosto 自身界面语言。",
+          "声明与更新记录搬到了官网仓库（chinese_words_replacer/disclaimer.json）：脚本启动自动拉取，菜单语言切到英文/俄语时声明和更新记录也跟着切换，断网时自动用内置中文兜底。",
+          "菜单语言切换变成实时的了：下拉一选，菜单立刻按新语言重建，不用刷新页面。",
+          "菜单语言包搬到云端（chinese_words_replacer/i18n.json）：脚本启动先拉语言包（带下载进度提示）再建菜单，词条存 IndexedDB 缓存，断网自动用缓存、无缓存显示英文模块名；新增文案只需改云端文件，不用动脚本。",
+          "脚本头部资源全部搬到云端：悬浮球底图、使用声明、更新记录都放在官网仓库（ball-image.txt / disclaimer.json），不再内嵌在脚本里；启动自动拉取并存 IndexedDB 缓存，断网用缓存，没缓存时悬浮球先显示字母 K、声明页显示加载提示。"
         ]
       },
       {
@@ -131,7 +135,11 @@
           "Main menu UI rebuilt on a UI/UX design system: design tokens (color/spacing/shadow variables), accessible tab navigation (aria-current + tabindex), semantic modals (role/aria-modal/tabindex), focusable tabs with visible focus (reduced-motion support).",
           "Unified accessibility for modals and in-menu controls: existing dialogs got aria-modal/tabindex, tab buttons got tabindex, meeting keyboard-navigation and visible-focus standards.",
           "Menu texts wired into the i18n layer: 175 menu strings (tabs/toggles/slides/decorations) now reference module names, with a built-in zh/en/ru mapping table mirrored in the site repo's chinese_words_replacer directory.",
-          "The Display page got a 'Menu language' dropdown: switch Kosto's own UI between 简体中文 / English / Русский in one click."
+          "The Display page got a 'Menu language' dropdown: switch Kosto's own UI between 简体中文 / English / Русский in one click.",
+          "Disclaimer and changelog moved to the official repo (chinese_words_replacer/disclaimer.json): fetched automatically on startup and following the menu language (English/Russian); falls back to built-in Chinese when offline.",
+          "Menu language switching is now instant: pick a language and the menu rebuilds immediately — no page refresh needed.",
+          "Menu language pack moved to the cloud (chinese_words_replacer/i18n.json): the script downloads it first (with a progress dialog) before building the menu; entries are cached in IndexedDB — offline uses the cache, and without a cache English module names are shown. New wording only needs a cloud-file edit, no script change.",
+          "All header assets moved to the cloud: the floating-ball image, disclaimer and changelog now live in the official repo (ball-image.txt / disclaimer.json) instead of inside the script; fetched on startup and cached in IndexedDB — offline uses the cache, and without a cache the ball shows the letter K and the About page shows a loading hint."
         ]
       },
       {
@@ -193,7 +201,11 @@
           "Главное меню переработано по дизайн-системе UI/UX: дизайн-токены (переменные цветов/отступов/теней), доступная навигация по вкладкам (aria-current + tabindex), семантические модальные окна (role/aria-modal/tabindex), фокусируемые вкладки с видимой рамкой фокуса (поддержка reduced-motion).",
           "Единая доступность модальных окон и элементов меню: у диалогов добавлены aria-modal/tabindex, у кнопок вкладок — tabindex, по стандартам клавиатурной навигации и видимого фокуса.",
           "Тексты меню подключены к слою мультиязычности: 175 строк меню (вкладки/переключатели/ползунки/декоративные символы) заменены ссылками на модули, встроена таблица соответствий 中文/English/Русский, копия — в каталоге chinese_words_replacer репозитория сайта.",
-          "На странице отображения появился выпадающий список «язык меню»: переключение языка интерфейса самого Kosto между 简体中文 / English / Русский в один клик."
+          "На странице отображения появился выпадающий список «язык меню»: переключение языка интерфейса самого Kosto между 简体中文 / English / Русский в один клик.",
+          "Дисклеймер и список изменений перенесены в официальный репозиторий (chinese_words_replacer/disclaimer.json): загружаются при запуске и следуют языку меню (английский/русский); при отсутствии сети используется встроенный китайский текст.",
+          "Переключение языка меню теперь мгновенное: выберите язык — меню сразу перестроится, без перезагрузки страницы.",
+          "Языковой пакет меню перенесён в облако (chinese_words_replacer/i18n.json): скрипт сначала загружает его (с индикатором прогресса), затем строит меню; записи кэшируются в IndexedDB — без сети используется кэш, без кэша показываются английские имена модулей. Новые тексты добавляются только в облачный файл, без правки скрипта.",
+          "Все ресурсы заголовка перенесены в облако: изображение плавающего шара, дисклеймер и список изменений теперь хранятся в официальном репозитории (ball-image.txt / disclaimer.json), а не внутри скрипта; загружаются при запуске и кэшируются в IndexedDB — без сети используется кэш, без кэша шар показывает букву K, а страница «О скрипте» — подсказку о загрузке."
         ]
       },
       {
