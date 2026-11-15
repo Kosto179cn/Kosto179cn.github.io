@@ -1,0 +1,1411 @@
+{
+  "version": "1.0",
+  "source": "Kosto.menu-display-text (menu-text-facts)",
+  "language": [
+    "zh",
+    "en",
+    "ru"
+  ],
+  "modules": [
+    {
+      "key": "TAB_autohang_NAME",
+      "modName": "autohang_module",
+      "zh": "自动挂机",
+      "en": "Auto-AFK",
+      "ru": "Авто-АФК",
+      "desc": ""
+    },
+    {
+      "key": "TAB_team_NAME",
+      "modName": "team_function",
+      "zh": "队伍功能",
+      "en": "Team Functions",
+      "ru": "Функции команд",
+      "desc": ""
+    },
+    {
+      "key": "TAB_display_NAME",
+      "modName": "display_function",
+      "zh": "显示功能",
+      "en": "Display Functions",
+      "ru": "Дисплей",
+      "desc": ""
+    },
+    {
+      "key": "TAB_utility_NAME",
+      "modName": "utility_function",
+      "zh": "辅助功能",
+      "en": "Utility",
+      "ru": "Утилиты",
+      "desc": ""
+    },
+    {
+      "key": "TAB_economy_NAME",
+      "modName": "economy_analysis",
+      "zh": "财务分析",
+      "en": "Economic Analysis",
+      "ru": "Экономический анализ",
+      "desc": ""
+    },
+    {
+      "key": "TAB_item_NAME",
+      "modName": "item_key_function",
+      "zh": "道具/按键",
+      "en": "Items & Keys",
+      "ru": "Итёмы и клавиши",
+      "desc": ""
+    },
+    {
+      "key": "TAB_testserver_NAME",
+      "modName": "testserver",
+      "zh": "测试服",
+      "en": "Test Server",
+      "ru": "Тестовая система",
+      "desc": ""
+    },
+    {
+      "key": "TAB_hack_NAME",
+      "modName": "hack_function",
+      "zh": "异常程序",
+      "en": "Hack Functions",
+      "ru": "Функции HACK",
+      "desc": ""
+    },
+    {
+      "key": "TAB_esp_NAME",
+      "modName": "esp_function",
+      "zh": "透视",
+      "en": "ESP",
+      "ru": "ЭПС",
+      "desc": ""
+    },
+    {
+      "key": "TAB_detector_NAME",
+      "modName": "player_detector",
+      "zh": "玩家探测器",
+      "en": "Player Detector",
+      "ru": "Детектор игроков",
+      "desc": ""
+    },
+    {
+      "key": "TAB_enemyscanner_NAME",
+      "modName": "equipment_analysis",
+      "zh": "装备分析",
+      "en": "Equipment Analysis",
+      "ru": "Анализ снаряжения",
+      "desc": ""
+    },
+    {
+      "key": "TAB_chattools_NAME",
+      "modName": "chat_tools",
+      "zh": "聊天工具箱",
+      "en": "Chat Tools",
+      "ru": "Чат-инструменты",
+      "desc": ""
+    },
+    {
+      "key": "TAB_battlelog_NAME",
+      "modName": "battlelog",
+      "zh": "战场记录",
+      "en": "Battlelog",
+      "ru": "Хроника сражений",
+      "desc": ""
+    },
+    {
+      "key": "TAB_battletpl_NAME",
+      "modName": "battle_template",
+      "zh": "战场模板",
+      "en": "Battle Template",
+      "ru": "Шаблон сражения",
+      "desc": ""
+    },
+    {
+      "key": "TAB_account_NAME",
+      "modName": "user_management",
+      "zh": "用户管理",
+      "en": "User Management",
+      "ru": "Управление пользователями",
+      "desc": ""
+    },
+    {
+      "key": "TAB_devtools_NAME",
+      "modName": "devtools",
+      "zh": "开发者调试",
+      "en": "Developer Tools",
+      "ru": "Debug-инструменты",
+      "desc": ""
+    },
+    {
+      "key": "TAB_about_NAME",
+      "modName": "about_info",
+      "zh": "声明与更新",
+      "en": "About & Updates",
+      "ru": "О софте и обновлений",
+      "desc": ""
+    },
+    {
+      "key": "TIP_17",
+      "modName": "mod_ignore_tank",
+      "zh": "忽略坦克",
+      "en": "Ignore Tank",
+      "ru": "Откат от танков",
+      "desc": "忽略坦克：可穿过所有其他坦克，无视碰撞体积。开启后不会被坦克挡路。"
+    },
+    {
+      "key": "TIP_18",
+      "modName": "bot_freeze",
+      "zh": "机器人冻结",
+      "en": "Freeze Bots",
+      "ru": "Заморозить ботов",
+      "desc": "机器人冻结：冻结战场中机器人 AI，使其静止不动。需刷新网页生效。"
+    },
+    {
+      "key": "TIP_19",
+      "modName": "infinite_shoot",
+      "zh": "无限射击",
+      "en": "Infinite Shooting",
+      "ru": "Безграниченная стрельба",
+      "desc": "无限射击（无伤害）：取消武器射速限制，可连续开火但伤害为零。用于测试或视觉效果。需刷新网页生效。"
+    },
+    {
+      "key": "TIP_20",
+      "modName": "tsunami_burst",
+      "zh": "海啸连发辅助",
+      "en": "Tsunami Autoburst",
+      "ru": "Паражнова «Ветровая» — авто",
+      "desc": "海啸连发辅助：自动识别海啸齐射组件并触发连发所有弹头。需装备海啸炮塔且在战场内才生效。"
+    },
+    {
+      "key": "TIP_21",
+      "modName": "collision_box_toggle",
+      "zh": "功能开关 [",
+      "en": "Collision Box Toggle",
+      "ru": "Отделка прывокс",
+      "desc": "敌方碰撞箱增强：放大敌方坦克的命中判定区域，使炮弹更容易命中。数值倍率可在下方滑条调整。"
+    },
+    {
+      "key": "TIP_22",
+      "modName": "aim_angle",
+      "zh": "瞄准夹角",
+      "en": "Aimbot Angle",
+      "ru": "Угол прывокс",
+      "desc": "瞄准夹角总开关：控制磁力炮 / 特斯拉 / 火焰 / 冰风暴 / 滑膛炮的自动瞄准角度。开启后需在下方分别勾选各子武器的子开关。数值越大范围越广。"
+    },
+    {
+      "key": "TIP_23",
+      "modName": "feature_toggle",
+      "zh": "功能总开关",
+      "en": "Feature Toggle",
+      "ru": "Главный переключатель",
+      "desc": "后坐力 / 冲击力总开关：关闭时全部恢复游戏原值。开启后配合下方滑条调整冲击力大小（100%=原值，50%=一半）。"
+    },
+    {
+      "key": "TIP_24",
+      "modName": "mine_impact_isolated",
+      "zh": "地雷冲击力独立开关",
+      "en": "Mine Impact Independent",
+      "ru": "Сила многощины (удельно)",
+      "desc": "地雷冲击力独立调节：不受总冲击力滑条影响，单独控制地雷爆炸的击退力度。开启后可独立调地雷威力。"
+    },
+    {
+      "key": "TIP_25",
+      "modName": "skip_tutorial_on_register",
+      "zh": "注册账号不进入教程",
+      "en": "Skip Tutorial on Register",
+      "ru": "Опуск учебника при регистрации",
+      "desc": "注册账号不进入教程：新号注册后跳过新手教程直接进入战场。省去每次注册的教程流程。"
+    },
+    {
+      "key": "TIP_26",
+      "modName": "main_toggle",
+      "zh": "主开关",
+      "en": "Main Toggle",
+      "ru": "Главный переключатель",
+      "desc": "反瞄准主开关：开启后你坦克在服务器端的坐标剧烈跳动，令敌人准星锁定失效。需刷新战场生效。\\n【警告】容易被服务器检测，建议不要在正式服使用。"
+    },
+    {
+      "key": "TIP_27",
+      "modName": "float_no_crash",
+      "zh": "悬浮不翻车",
+      "en": "Float Anti-Crash",
+      "ru": "Не повреждаться при полёте",
+      "desc": "悬浮不翻车主开关：动态调整悬浮底盘的俯仰角稳定性，使车辆更难被掀翻。建议搭配「自动应用最优配置」使用。"
+    },
+    {
+      "key": "TIP_28",
+      "modName": "auto_apply_opt_config",
+      "zh": "自动应用最优配置",
+      "en": "Auto Apply Optimal Config",
+      "ru": "Авто-подбирать оптимальное",
+      "desc": "自动应用最优悬浮配置：根据当前战场重力实时计算最佳俯仰角参数并自动写入，无需手动调滑条。开启后立即生效一次。"
+    },
+    {
+      "key": "TIP_29",
+      "modName": "lock_level_per_frame",
+      "zh": "每帧锁水平",
+      "en": "Lock Level Per Frame",
+      "ru": "Запирать уровень каждый кадр",
+      "desc": "每帧锁水平：翻车瞬间每帧把车身姿态掰回水平（只改姿态，不动位置和动量）。连抛地雷时尤其有用。"
+    },
+    {
+      "key": "TIP_30",
+      "modName": "tank_rectify",
+      "zh": "坦克回正",
+      "en": "Tank Rectify",
+      "ru": "Снова собраться в танк",
+      "desc": "坦克回正：检测到坦克倾角超阈值持续一段时间后，自动执行一次回正（归正姿态 + 抬升 + 清零动量）。静默无弹窗。"
+    },
+    {
+      "key": "TIP_31",
+      "modName": "speed_engine",
+      "zh": "倍速引擎",
+      "en": "Speed Engine",
+      "ru": "Твёрдое ускорение",
+      "desc": "倍速引擎：加速网页内所有动画和计时器。数值可在下方滑条调整。过快可能导致操作异常或被服务器检测。"
+    },
+    {
+      "key": "TIP_32",
+      "modName": "gravity_mod",
+      "zh": "重力修改",
+      "en": "Gravity Mod",
+      "ru": "Модификация гравитации",
+      "desc": "重力修改：调整战场重力参数。开启后坦克变轻变飘，跳跃更高。可搭配倍速使用。"
+    },
+    {
+      "key": "TIP_33",
+      "modName": "record_on",
+      "zh": "● 记录中",
+      "en": "● Recording",
+      "ru": "● Создание",
+      "desc": "战场信息记录总开关：开启后自动拦截战斗 ID / 名称 / 剩余时间 / 模式 / 水晶等数据，用于战场记录器和 AI 分析。"
+    },
+    {
+      "key": "TIP_34",
+      "modName": "record_off",
+      "zh": "○ 未记录",
+      "en": "○ Not Recording",
+      "ru": "○ Не записано",
+      "desc": "战场信息记录总开关：开启后自动拦截战斗 ID / 名称 / 剩余时间 / 模式 / 水晶等数据，用于战场记录器和 AI 分析。"
+    },
+    {
+      "key": "TIP_35",
+      "modName": "equipment_count_stat",
+      "zh": "装备数量统计",
+      "en": "Equipment Count Stats",
+      "ru": "Счёт снаряжения",
+      "desc": "装备数量统计主开关：在车库中显示所有敌方玩家使用的炮塔 / 底盘 / 模块数量统计，方便针对出装。"
+    },
+    {
+      "key": "TIP_36",
+      "modName": "garage_module_enemy_turret",
+      "zh": "车库模块中显示敌方炮塔数量",
+      "en": "Garage Module: Enemy Turret Count",
+      "ru": "Многощины врага в модулях",
+      "desc": "车库模块中显示敌方炮塔数量：子开关，单独控制炮塔数量显示。需主开关开启才生效。"
+    },
+    {
+      "key": "TIP_37",
+      "modName": "garage_turret_enemy_module",
+      "zh": "车库炮塔中显示敌方模块数量",
+      "en": "Garage Turret: Enemy Module Count",
+      "ru": "Многощины врага в модулях",
+      "desc": "车库炮塔中显示敌方模块数量：子开关，单独控制模块数量显示。需主开关开启才生效。"
+    },
+    {
+      "key": "TIP_38",
+      "modName": "auto_rectify",
+      "zh": "自动回正",
+      "en": "Auto Rectify",
+      "ru": "Авто-собраться в танк",
+      "desc": "自动回正：检测到坦克确实翻车（车身倾角超过阈值）持续一段时间后，自动执行一次回正（归正姿态 + 抬升 + 清零动量）。静默无弹窗。"
+    },
+    {
+      "key": "TIP_39",
+      "modName": "rectify_after_time",
+      "zh": "翻车多久后回正",
+      "en": "Rectify After Duration",
+      "ru": "Собраться через?",
+      "desc": "翻车持续多久后触发自动回正（0~3000ms）。太短可能在轻微倾斜时就触发，太长会翻太久才回正。默认 600ms。"
+    },
+    {
+      "key": "TIP_40",
+      "modName": "free_viewswitch",
+      "zh": "启用自由视角",
+      "en": "Enable Free View",
+      "ru": "Переключаю на свободный вид",
+      "desc": "自由视角主开关：开启后进入自由飞行相机模式。WASD 移动 / QE 升降 / 鼠标控制朝向。按热键可切换。"
+    },
+    {
+      "key": "TIP_41",
+      "modName": "hide_invite_friend",
+      "zh": "除去烦人的邀请好友",
+      "en": "Remove Annoying Invite",
+      "ru": "Убереги грубый инвит",
+      "desc": "除去烦人的邀请好友：自动隐藏游戏菜单中的「邀请好友」入口和相关弹窗，减少干扰。"
+    },
+    {
+      "key": "TIP_42",
+      "modName": "author_info",
+      "zh": "作者@Kosto",
+      "en": "Author Info",
+      "ru": "Автор и помещения",
+      "desc": "作者信息与使用提示。录屏模式下需长按菜单呼出键两秒才能呼出菜单。"
+    },
+    {
+      "key": "TIP_43",
+      "modName": "hide_client_info",
+      "zh": "隐藏客户端信息",
+      "en": "Hide Client Info",
+      "ru": "Прятать информацию о софте",
+      "desc": "隐藏右下角的客户端版本号、FPS、PING等信息。"
+    },
+    {
+      "key": "TIP_44",
+      "modName": "disguise_mode",
+      "zh": "伪装模式",
+      "en": "Disguise Mode",
+      "ru": "Режим тотана",
+      "desc": "录屏/直播模式：自动隐藏通知、状态窗、友军染色及特殊主题，防止直播露馅。"
+    },
+    {
+      "key": "TIP_45",
+      "modName": "hide_sensitive_info",
+      "zh": "隐藏敏感信息",
+      "en": "Hide Sensitive Info",
+      "ru": "Прятать контекстуальную информацию",
+      "desc": "隐藏顶部个人头像信息及战场内的右侧道具/暂停按钮。"
+    },
+    {
+      "key": "TIP_46",
+      "modName": "show_status_window",
+      "zh": "显示状态窗口",
+      "en": "Show Status Window",
+      "ru": "Показать окно состояния",
+      "desc": "在屏幕左下角实时显示当前已开启的功能列表。"
+    },
+    {
+      "key": "TIP_47",
+      "modName": "hide_account_info",
+      "zh": "隐藏账号信息",
+      "en": "Hide Account Info",
+      "ru": "Прятать информацию о аккаунте",
+      "desc": "隐藏菜单左上角的游戏昵称与 ID，保留首字符其余用 * 代替。"
+    },
+    {
+      "key": "TIP_48",
+      "modName": "auto_speedup",
+      "zh": "自动过速",
+      "en": "Auto Speedup",
+      "ru": "Автоматическое ускорение",
+      "desc": "自动过速：战场内以极高频率自动激活过速装置。"
+    },
+    {
+      "key": "TIP_49",
+      "modName": "auto_anti_kick",
+      "zh": "自动卡暂停",
+      "en": "Auto Anti-Kick",
+      "ru": "Защита от выхода из боя",
+      "desc": "自动卡暂停：战场内自动消除暂停弹窗防止被踢，时间到会重置。脚本已内置挂机功能。"
+    },
+    {
+      "key": "TIP_50",
+      "modName": "sim_key_burst",
+      "zh": "模拟按键开炮",
+      "en": "Simulate Key Burst",
+      "ru": "Приметать кнопку для огня",
+      "desc": "模拟按键开炮：长按 = 按住空格开炮；快速 = 每秒点一次空格。切换到「停止」自动释放。"
+    },
+    {
+      "key": "TIP_51",
+      "modName": "afk_walker",
+      "zh": "AFK走位器",
+      "en": "AFK Walker",
+      "ru": "Прагматор-коса",
+      "desc": "AFK走位器：模拟真人在战场活动。支持三种模式切换、按键白名单配置、C键防踢必按。用户真实按键时自动清掉模拟定时器。"
+    },
+    {
+      "key": "TIP_52",
+      "modName": "instant_quit",
+      "zh": "闪退",
+      "en": "Instant Quit",
+      "ru": "Мгновенное выход",
+      "desc": "闪退：点击变就绪后，按设置的热键可瞬间从当前战场快速退出。"
+    },
+    {
+      "key": "TIP_53",
+      "modName": "auto_self_destruct",
+      "zh": "自动自爆",
+      "en": "Auto Self-Destruct",
+      "ru": "Автоматическая самоуничтожение",
+      "desc": "自动自爆：根据开启的功能数量自动计算频率，循环在战场内自爆。"
+    },
+    {
+      "key": "TIP_54",
+      "modName": "auto_purchase_discount",
+      "zh": "自动买特惠",
+      "en": "Auto Buy Discounts",
+      "ru": "Авто-покупать аксions",
+      "desc": "自动买特惠：当打开商店展示柜时，自动购买所有带折扣的每日道具。"
+    },
+    {
+      "key": "TIP_55",
+      "modName": "skip_register_equip",
+      "zh": "自动跳过注册选装",
+      "en": "Skip Register & Equipment",
+      "ru": "Опуск выбора снаряжения",
+      "desc": "注册助手：自动跳过新账号注册时的装备选择环节。"
+    },
+    {
+      "key": "TIP_56",
+      "modName": "auto_register_new",
+      "zh": "自动注册小号",
+      "en": "Auto Register New",
+      "ru": "Авто-регистрация нового",
+      "desc": "自动注册小号：运行原版完整流程（进入注册页→填表→完成注册→触发彩蛋→选装→战场闪退）。"
+    },
+    {
+      "key": "TIP_57",
+      "modName": "multi_slot_click",
+      "zh": "三开",
+      "en": "Multi-Slot Click",
+      "ru": "Полноценный раз",
+      "desc": "三开：频繁按下配置的道具（护甲、伤害、速度等）。"
+    },
+    {
+      "key": "TIP_58",
+      "modName": "mine",
+      "zh": "地雷",
+      "en": "Mines",
+      "ru": "Многощины",
+      "desc": "地雷：以极高频率循环投放地雷。"
+    },
+    {
+      "key": "TIP_59",
+      "modName": "button_presser",
+      "zh": "按钮点击器",
+      "en": "Button Presser",
+      "ru": "Пресса кнопок",
+      "desc": "按钮点击器：自动点击领取任务奖励、确认购买、跳过教程等弹窗。"
+    },
+    {
+      "key": "TIP_60",
+      "modName": "team_a_join_mod",
+      "zh": "A队抢位",
+      "en": "Team A Join",
+      "ru": "Вступить в команду A",
+      "desc": "A队抢位：尝试加入左侧团队 A。"
+    },
+    {
+      "key": "TIP_61",
+      "modName": "team_b_join_mod",
+      "zh": "B队抢位",
+      "en": "Team B Join",
+      "ru": "Вступить в команду B",
+      "desc": "B队抢位：尝试加入右侧团队 B。"
+    },
+    {
+      "key": "TIP_62",
+      "modName": "all_team_join",
+      "zh": "所有队抢位",
+      "en": "Join Any Team",
+      "ru": "Вступить в любую команду",
+      "desc": "所有队抢位：循环检测 A队、B队及混战加入按钮，全自动抢位。"
+    },
+    {
+      "key": "TIP_63",
+      "modName": "auto_open_box",
+      "zh": "自动开箱",
+      "en": "Auto Open Chest",
+      "ru": "Авто-разгрузка сундака",
+      "desc": "自动开箱：用于测试服极速开启成千上万个集装箱。"
+    },
+    {
+      "key": "TIP_64",
+      "modName": "buy_box",
+      "zh": "购买箱子",
+      "en": "Buy Box",
+      "ru": "Покупать сундаки",
+      "desc": "购买箱子：在测试服商店页自动循环购买 240 钥匙包。"
+    },
+    {
+      "key": "TIP_65",
+      "modName": "buy_legion_slot",
+      "zh": "购买军团位置",
+      "en": "Buy Legion Slot",
+      "ru": "Покупать слот легиона",
+      "desc": "购买军团位置：在军团成员列表页面，自动循环点击购买位置并确认。用于测试服快速扩充军团容量。"
+    },
+    {
+      "key": "TIP_66",
+      "modName": "auto_agree_request",
+      "zh": "自动同意申请",
+      "en": "Auto Agree Request",
+      "ru": "Авто-одобрение просьб",
+      "desc": "自动同意申请：开启后自动扫描申请入团页面，发现新申请立即点击同意，实现无人值守加人。"
+    },
+    {
+      "key": "TIP_67",
+      "modName": "force_click_close",
+      "zh": "暴力连点关闭",
+      "en": "Force Click Close",
+      "ru": "Взрывное удаление",
+      "desc": "暴力连点关闭：点击任何弹窗的[X]号时，脚本会瞬间点击一万次，强制清理UI。"
+    },
+    {
+      "key": "TIP_68",
+      "modName": "auto_upgrade",
+      "zh": "自动升级",
+      "en": "Auto Upgrade",
+      "ru": "Автоматическое возрастание",
+      "desc": "自动升级：进入车库后，自动循环点击升级按钮，直到资源耗尽或满级。"
+    },
+    {
+      "key": "TIP_69",
+      "modName": "auto_swap_red_crystal",
+      "zh": "自动换红水晶",
+      "en": "Auto Swap Red Crystal",
+      "ru": "Авто-скачать кристалл красного",
+      "desc": "自动换红水晶：自动将普通硬币兑换为红水晶。"
+    },
+    {
+      "key": "TIP_70",
+      "modName": "observer_mode",
+      "zh": "观察者模式",
+      "en": "Observer Mode",
+      "ru": "Режим наблюдателя",
+      "desc": "观察者模式：模拟管理员视角。Ctrl+U 自由飞行，O 开启鼠标。需刷新生效。"
+    },
+    {
+      "key": "TIP_71",
+      "modName": "admin_fantasy",
+      "zh": "管理员意淫",
+      "en": "Admin Fantasy",
+      "ru": "Фантазия администратора",
+      "desc": "管理员意淫模式：本地模拟管理员权限，激活部分隐藏 UI 交互。"
+    },
+    {
+      "key": "TIP_72",
+      "modName": "aim_autoburst",
+      "zh": "瞄准自动开炮",
+      "en": "Aimbot Autoburst",
+      "ru": "Стрельба автоматически в игре",
+      "desc": "瞄准自动开炮：当准星锁定敌人时自动触发开火（走游戏原生开火机制）。"
+    },
+    {
+      "key": "TIP_73",
+      "modName": "history_chat",
+      "zh": "显示历史聊天",
+      "en": "History Chat",
+      "ru": "История переписки",
+      "desc": "显示历史聊天：国服特有，按回车发送信息时可查看战场聊天记录。"
+    },
+    {
+      "key": "TIP_74",
+      "modName": "show_hidden_match",
+      "zh": "显示隐藏匹配模式",
+      "en": "Show Hidden Matches",
+      "ru": "Показать скрытые рейтинги",
+      "desc": "显示隐藏匹配模式：使单人剑圣等隐藏模式在列表中可见。"
+    },
+    {
+      "key": "TIP_75",
+      "modName": "turret_autoshoot",
+      "zh": "炮塔自瞄",
+      "en": "Turret Autoshoot",
+      "ru": "Автозарядка турберна",
+      "desc": "炮塔自瞄增强：主开关开启后，需分别勾选「垂直仰角」「垂直俯角」「自瞄水平角度」子开关。数值越大范围越广。"
+    },
+    {
+      "key": "TIP_76",
+      "modName": "laser_mirror_shrink",
+      "zh": "镭射瞄准镜变小",
+      "en": "Laser Sticker Shrink",
+      "ru": "Уменьшить оптику лазера",
+      "desc": "镭射瞄准镜变小：将镭射炮的初始FOV和最小FOV都设为1.1，使瞄准镜视野更窄更精准。需刷新战场生效。"
+    },
+    {
+      "key": "TIP_77",
+      "modName": "laser_cancel_lerp",
+      "zh": "镭射取消前摇后摇",
+      "en": "Laser Cancel Lerp",
+      "ru": "Снять паузу для лазера",
+      "desc": "镭射取消前摇后摇：将镭射炮的前摇和后摇都设为最小值1，取消瞄准/发射延迟。需刷新战场生效。"
+    },
+    {
+      "key": "TIP_78",
+      "modName": "laser_no_cooldown",
+      "zh": "镭射无冷却",
+      "en": "Laser No Cooldown",
+      "ru": "Лазер без сосмерца",
+      "desc": "镭射无冷却：将镭射炮的充能速率与放电速率都设为9999，取消冷却，可连续发射。需刷新战场生效。"
+    },
+    {
+      "key": "TIP_79",
+      "modName": "laser_aim_accel",
+      "zh": "镭射瞄准加速",
+      "en": "Laser Aimbot Accel",
+      "ru": "Ускорение композицией лазера",
+      "desc": "镭射瞄准加速：调整镭射炮瞄准时的加速度。实际值 = 游戏原值 × 倍数。1倍=原版，最高3倍。"
+    },
+    {
+      "key": "TIP_80",
+      "modName": "infinite_mine_visibility",
+      "zh": "设置地雷可视范围为无限",
+      "en": "Infinite Mine Visibility",
+      "ru": "Просвещённость многощин",
+      "desc": "地雷可视范围无限：将地雷可视半径设为999999，使地雷在极远处也可见。需刷新战场生效。"
+    },
+    {
+      "key": "TIP_81",
+      "modName": "impact_strength",
+      "zh": "冲击力",
+      "en": "Impact Strength",
+      "ru": "Сила ударения",
+      "desc": "冲击力调整：降低射击时的后坐力，或减少被敌人击中时的位移。100%=原值，50%=一半。"
+    },
+    {
+      "key": "TIP_82",
+      "modName": "counter_aim",
+      "zh": "反瞄准",
+      "en": "Counter-Aimbot",
+      "ru": "Противоянление прывокс",
+      "desc": "反瞄准：使你坦克位置在服务器端剧烈跳动，令敌人自动瞄准失效。"
+    },
+    {
+      "key": "TIP_83",
+      "modName": "float_resist",
+      "zh": "悬浮不翻车",
+      "en": "Float Resist",
+      "ru": "Избегать полёта",
+      "desc": "悬浮不翻车：动态调整悬浮底盘俯仰角稳定性。建议开启自动应用最优配置或调强度到6。"
+    },
+    {
+      "key": "TIP_84",
+      "modName": "free_views_camera",
+      "zh": "自由视角相机",
+      "en": "Free View Camera",
+      "ru": "Камера свободного вида",
+      "desc": "自由视角相机：WASD 移动 / QE 升降，脱离坦克视角自由观察战场。"
+    },
+    {
+      "key": "TIP_85",
+      "modName": "tap_stats_panel",
+      "zh": "Tap战绩面板优化",
+      "en": "Tap Stats Panel",
+      "ru": "Лучше дефалтов PanelTap",
+      "desc": "Tap战绩面板优化：美化 TAB 战绩面板，直观看见当前战场防御模块情况。"
+    },
+    {
+      "key": "TIP_86",
+      "modName": "clear_login",
+      "zh": "清除登录状态",
+      "en": "Clear Login",
+      "ru": "Сначала выходи",
+      "desc": "清除当前登录缓存，刷新后需重新登录脚本账号。"
+    },
+    {
+      "key": "TIP_87",
+      "modName": "battlefield_scan",
+      "zh": "战场扫描",
+      "en": "Battlefield Scan",
+      "ru": "Собеседование на поле боя",
+      "desc": "战场扫描：在指定 ID 范围内并发探测存活战场，命中即弹出提示并可一键加入。支持自定义并发数与扫描间隔，范围写十六进制如 2aaaaaaab6a1731b 或八位短格式 b6a1731b。"
+    },
+    {
+      "key": "TIP_88",
+      "modName": "scan_start",
+      "zh": "开始扫描",
+      "en": "Start Scan",
+      "ru": "Начать сборку",
+      "desc": "开始扫描：启动战场扫描，命中战场会实时弹出卡片，可一键加入。"
+    },
+    {
+      "key": "TIP_89",
+      "modName": "scan_stop",
+      "zh": "停止扫描",
+      "en": "Stop Scan",
+      "ru": "Остановить сборку",
+      "desc": "停止扫描：终止当前战场扫描任务。"
+    },
+    {
+      "key": "TIP_90",
+      "modName": "clear_log",
+      "zh": "清空记录",
+      "en": "Clear Log",
+      "ru": "Очистить лог",
+      "desc": "清空战场记录列表。"
+    },
+    {
+      "key": "TIP_91",
+      "modName": "copy",
+      "zh": "复制",
+      "en": "Copy",
+      "ru": "Копирование",
+      "desc": "复制当前列表内容到剪贴板。"
+    },
+    {
+      "key": "TIP_92",
+      "modName": "scanning",
+      "zh": "扫描中...",
+      "en": "Scanning...",
+      "ru": "Собеседование",
+      "desc": "战场扫描进行中，请稍候。"
+    },
+    {
+      "key": "TIP_93",
+      "modName": "start",
+      "zh": "开始",
+      "en": "Start",
+      "ru": "Сход",
+      "desc": "启动当前功能。"
+    },
+    {
+      "key": "TIP_94",
+      "modName": "stop",
+      "zh": "停止",
+      "en": "Stop",
+      "ru": "Остановить",
+      "desc": "停止当前功能。"
+    },
+    {
+      "key": "TIP_95",
+      "modName": "reset",
+      "zh": "重置",
+      "en": "Reset",
+      "ru": "Перезагрузка",
+      "desc": "重置当前面板参数为默认值。"
+    },
+    {
+      "key": "TIP_96",
+      "modName": "test",
+      "zh": "测试",
+      "en": "Test",
+      "ru": "Проверка",
+      "desc": "测试当前功能是否生效。"
+    },
+    {
+      "key": "TIP_97",
+      "modName": "export",
+      "zh": "导出",
+      "en": "Export",
+      "ru": "Экспорт",
+      "desc": "导出当前配置为文件，便于备份或分享。"
+    },
+    {
+      "key": "TIP_98",
+      "modName": "import",
+      "zh": "导入",
+      "en": "Import",
+      "ru": "Импорт",
+      "desc": "从文件导入配置。"
+    },
+    {
+      "key": "TIP_99",
+      "modName": "save",
+      "zh": "保存",
+      "en": "Save",
+      "ru": "Загрузить",
+      "desc": "保存当前配置。"
+    },
+    {
+      "key": "TIP_100",
+      "modName": "load",
+      "zh": "加载",
+      "en": "Load",
+      "ru": "Загрузка",
+      "desc": "加载已保存的配置。"
+    },
+    {
+      "key": "TIP_101",
+      "modName": "select_color",
+      "zh": "选择颜色",
+      "en": "Select Color",
+      "ru": "Выбор цвета",
+      "desc": "点击选择颜色，用于昵称 / ESP 描边 / 状态窗等染色。"
+    },
+    {
+      "key": "TIP_102",
+      "modName": "hotkey",
+      "zh": "热键",
+      "en": "Hotkey",
+      "ru": "Настройка кнопки",
+      "desc": "热键：点击后按下你想要的按键即设置完成，默认空 = 未绑定。"
+    },
+    {
+      "key": "TIP_103",
+      "modName": "toggle_on",
+      "zh": "开启",
+      "en": "Toggled On",
+      "ru": "Случай: на",
+      "desc": "当前状态：已开启。再次点击关闭。"
+    },
+    {
+      "key": "TIP_104",
+      "modName": "toggle_off",
+      "zh": "关闭",
+      "en": "Toggled Off",
+      "ru": "Случай: выключен",
+      "desc": "当前状态：已关闭。再次点击开启。"
+    },
+    {
+      "key": "TIP_105",
+      "modName": "default",
+      "zh": "默认",
+      "en": "Default",
+      "ru": "Стандартное",
+      "desc": "恢复默认值。"
+    },
+    {
+      "key": "TIP_106",
+      "modName": "strength",
+      "zh": "强度",
+      "en": "Strength",
+      "ru": "Настройка",
+      "desc": "强度：调整当前功能的生效力度。数值越大效果越明显。"
+    },
+    {
+      "key": "TIP_107",
+      "modName": "smoothness",
+      "zh": "平滑度",
+      "en": "Smoothness",
+      "ru": "Скорекс",
+      "desc": "平滑度：数值越小响应越直接，越大越平滑。"
+    },
+    {
+      "key": "TIP_108",
+      "modName": "move_speed",
+      "zh": "移动速度",
+      "en": "Move Speed",
+      "ru": "Скорость продвижения",
+      "desc": "移动速度：相机或角色移动的速率。"
+    },
+    {
+      "key": "TIP_109",
+      "modName": "delay",
+      "zh": "延迟",
+      "en": "Delay",
+      "ru": "Оторужение",
+      "desc": "延迟：触发前的等待时间（毫秒）。数值越大等待越久。"
+    },
+    {
+      "key": "TIP_110",
+      "modName": "interval",
+      "zh": "间隔",
+      "en": "Interval",
+      "ru": "Режим между событиями",
+      "desc": "间隔：两次触发之间的时间间隔（毫秒）。"
+    },
+    {
+      "key": "TIP_111",
+      "modName": "threshold",
+      "zh": "阈值",
+      "en": "Threshold",
+      "ru": "Привиленный показатель",
+      "desc": "阈值：触发条件的最小数值。"
+    },
+    {
+      "key": "TIP_112",
+      "modName": "range",
+      "zh": "范围",
+      "en": "Range",
+      "ru": "Область",
+      "desc": "范围：作用范围或角度范围。"
+    },
+    {
+      "key": "TIP_113",
+      "modName": "multiplier",
+      "zh": "倍数",
+      "en": "Multiplier",
+      "ru": "Постоянный",
+      "desc": "倍数：放大或缩小的倍率。1 = 原版，2 = 双倍。"
+    },
+    {
+      "key": "TIP_114",
+      "modName": "mode",
+      "zh": "模式",
+      "en": "Mode",
+      "ru": "Режим",
+      "desc": "模式：切换当前功能的运行模式。不同模式适用不同场景。"
+    },
+    {
+      "key": "TIP_115",
+      "modName": "enable_sub",
+      "zh": "启用",
+      "en": "Enable Sub",
+      "ru": "Включить под",
+      "desc": "启用：开启当前子功能。关闭后主开关仍会运行，但此子项不生效。"
+    },
+    {
+      "key": "TIP_116",
+      "modName": "sub_toggle",
+      "zh": "子开关",
+      "en": "Sub Toggle",
+      "ru": "Подшвы",
+      "desc": "子开关：控制某个具体子功能。需主开关开启才生效。"
+    },
+    {
+      "key": "TIP_117",
+      "modName": "whitelist",
+      "zh": "白名单",
+      "en": "Whitelist",
+      "ru": "Белый список",
+      "desc": "白名单：勾选后此类型目标会被跳过，不会被当前功能影响。"
+    },
+    {
+      "key": "TIP_118",
+      "modName": "blacklist",
+      "zh": "黑名单",
+      "en": "Blacklist",
+      "ru": "Черный список",
+      "desc": "黑名单：勾选后此类型目标会被特殊处理（优先攻击或屏蔽）。"
+    },
+    {
+      "key": "TIP_119",
+      "modName": "hint",
+      "zh": "提示",
+      "en": "Hint",
+      "ru": "Примечание",
+      "desc": "提示：使用说明或注意事项。"
+    },
+    {
+      "key": "TIP_120",
+      "modName": "warning",
+      "zh": "警告",
+      "en": "Warning",
+      "ru": "Важно",
+      "desc": "警告：使用此功能可能有风险或副作用。"
+    },
+    {
+      "key": "TIP_121",
+      "modName": "description",
+      "zh": "说明",
+      "en": "Description",
+      "ru": "Описание",
+      "desc": "说明：当前功能的详细描述。"
+    },
+    {
+      "key": "TIP_122",
+      "modName": "version",
+      "zh": "版本",
+      "en": "Version",
+      "ru": "Версия",
+      "desc": "版本：当前脚本版本号。更新记录里可查看历史变更。"
+    },
+    {
+      "key": "TIP_123",
+      "modName": "author",
+      "zh": "作者",
+      "en": "Author",
+      "ru": "Автор",
+      "desc": "作者信息与使用提示。录屏模式下需长按菜单呼出键两秒才能呼出菜单。"
+    },
+    {
+      "key": "TIP_124",
+      "modName": "changelog",
+      "zh": "更新记录",
+      "en": "Changelog",
+      "ru": "Хроника обновлений",
+      "desc": "更新记录：查看每次版本更新的具体内容。"
+    },
+    {
+      "key": "TIP_125",
+      "modName": "license",
+      "zh": "声明",
+      "en": "License",
+      "ru": "Лицензия",
+      "desc": "使用声明与免责说明。"
+    },
+    {
+      "key": "TIP_126",
+      "modName": "zh_simplified",
+      "zh": "简体",
+      "en": "Simplified Chinese",
+      "ru": "Китайский (краткий)",
+      "desc": "切换为简体中文界面。"
+    },
+    {
+      "key": "TIP_127",
+      "modName": "zh_traditional",
+      "zh": "繁體",
+      "en": "Traditional Chinese",
+      "ru": "Китайский (утралированный)",
+      "desc": "切换為繁體中文介面。"
+    },
+    {
+      "key": "TIP_128",
+      "modName": "theme",
+      "zh": "主题",
+      "en": "Theme",
+      "ru": "Тема",
+      "desc": "主题：切换菜单配色方案。"
+    },
+    {
+      "key": "TIP_129",
+      "modName": "background_image",
+      "zh": "背景图",
+      "en": "Background Image",
+      "ru": "Фоном картинки",
+      "desc": "背景图：自定义菜单背景图片，支持 base64 或 URL。最多可添加多张。"
+    },
+    {
+      "key": "TIP_130",
+      "modName": "menu_opacity",
+      "zh": "菜单透明度",
+      "en": "Menu Opacity",
+      "ru": "Opacity меню",
+      "desc": "菜单透明度：调整菜单面板整体不透明度。"
+    },
+    {
+      "key": "TIP_131",
+      "modName": "font_size",
+      "zh": "字体大小",
+      "en": "Font Size",
+      "ru": "Размер шрифта",
+      "desc": "字体大小：调整菜单内文字尺寸。"
+    },
+    {
+      "key": "TIP_132",
+      "modName": "language",
+      "zh": "语言",
+      "en": "Language",
+      "ru": "Язык",
+      "desc": "语言：切换界面语言。"
+    },
+    {
+      "key": "TIP_133",
+      "modName": "reset_config",
+      "zh": "重置配置",
+      "en": "Reset Config",
+      "ru": "Переустановка",
+      "desc": "重置配置：恢复所有设置为出厂默认值，需确认。"
+    },
+    {
+      "key": "TIP_134",
+      "modName": "save_config",
+      "zh": "保存配置",
+      "en": "Save Config",
+      "ru": "Сохранение",
+      "desc": "保存配置：将当前所有设置持久化到本地存储。"
+    },
+    {
+      "key": "TIP_135",
+      "modName": "load_config",
+      "zh": "加载配置",
+      "en": "Load Config",
+      "ru": "Загрузка",
+      "desc": "加载配置：从本地存储读取上次保存的设置。"
+    },
+    {
+      "key": "TIP_136",
+      "modName": "export_config",
+      "zh": "导出配置",
+      "en": "Export Config",
+      "ru": "Экспорт",
+      "desc": "导出配置：将当前所有设置导出为 JSON 文件。"
+    },
+    {
+      "key": "TIP_137",
+      "modName": "import_config",
+      "zh": "导入配置",
+      "en": "Import Config",
+      "ru": "Импорт",
+      "desc": "导入配置：从 JSON 文件导入设置。"
+    },
+    {
+      "key": "TIP_138",
+      "modName": "clean_cache",
+      "zh": "清理缓存",
+      "en": "Clean Cache",
+      "ru": "Очистить кэш",
+      "desc": "清理缓存：清除本地存储的临时数据，不影响主配置。"
+    },
+    {
+      "key": "TIP_139",
+      "modName": "refresh",
+      "zh": "刷新",
+      "en": "Refresh",
+      "ru": "Обновления",
+      "desc": "刷新：重新加载当前页面或数据。"
+    },
+    {
+      "key": "TIP_140",
+      "modName": "close_menu",
+      "zh": "关闭菜单",
+      "en": "Close Menu",
+      "ru": "Закрыть меню",
+      "desc": "关闭菜单：隐藏当前菜单窗口。按呼出键可重新打开。"
+    },
+    {
+      "key": "TIP_141",
+      "modName": "minimize",
+      "zh": "最小化",
+      "en": "Minimize",
+      "ru": "Сокращённый",
+      "desc": "最小化：将菜单窗口缩到任务栏或角落。"
+    },
+    {
+      "key": "TIP_142",
+      "modName": "fullscreen",
+      "zh": "全屏",
+      "en": "Fullscreen",
+      "ru": "Фуллсескрин",
+      "desc": "全屏：切换菜单窗口全屏显示。"
+    },
+    {
+      "key": "TABTIP_autohang",
+      "modName": "tab_hangzone",
+      "zh": "挂机专区：AFK 走位器 / 模拟按键开炮 / 卡暂停 / 闪退 / 自动自爆 / 自动注册小号 / 自动买特惠 / 按钮点击器 / 三开 / 地雷。全自动挂机与刷战功。",
+      "en": "AFK Zone",
+      "ru": "Зонда невозвращения",
+      "desc": ""
+    },
+    {
+      "key": "TABTIP_team",
+      "modName": "tab_joinzone",
+      "zh": "抢位专区：A 队 / B 队 / 所有队抢位。自动加入指定或任意队伍。",
+      "en": "Team Join Zone",
+      "ru": "Зонда вступления",
+      "desc": ""
+    },
+    {
+      "key": "TABTIP_display",
+      "modName": "tab_displayzone",
+      "zh": "显示设置：隐藏客户端信息 / 伪装模式 / 隐藏敏感信息 / 显示状态窗 / 隐藏账号信息。控制菜单与 HUD 显隐。",
+      "en": "Display Settings Zone",
+      "ru": "Режим дисплей",
+      "desc": ""
+    },
+    {
+      "key": "TABTIP_utility",
+      "modName": "tab_utilityzone",
+      "zh": "实用工具：自动过速 / 卡暂停 / 跳过教程 / 注册小号 / 装备统计。战场外的实用功能。",
+      "en": "Utility Zone",
+      "ru": "Утилиты",
+      "desc": ""
+    },
+    {
+      "key": "TABTIP_economy",
+      "modName": "tab_economyzone",
+      "zh": "经济相关：商店折扣 / 资源兑换 / 物品获取。",
+      "en": "Economy Zone",
+      "ru": "Экономика",
+      "desc": ""
+    },
+    {
+      "key": "TABTIP_item",
+      "modName": "tab_itemzone",
+      "zh": "道具辅助：三开 / 地雷 / 按钮点击器。高频道具使用。",
+      "en": "Item Tool Zone",
+      "ru": "Инструмент изыскательства",
+      "desc": ""
+    },
+    {
+      "key": "TABTIP_testserver",
+      "modName": "tab_testserverzone",
+      "zh": "测试服：自动开箱 / 购买箱子 / 购买军团位置 / 自动同意申请 / 暴力连点 / 自动升级 / 换红水晶。仅测试服生效。",
+      "en": "Test Server Zone",
+      "ru": "Тестовая система",
+      "desc": ""
+    },
+    {
+      "key": "TABTIP_hack",
+      "modName": "tab_hackzone",
+      "zh": "HACK 区：观察者 / 管理员意淫 / 自动开炮 / 历史聊天 / 隐藏模式 / 炮塔自瞄 / 镭射四件套 / 地雷可视 / 冲击力 / 反瞄准 / 悬浮 / 自由视角。需权限。",
+      "en": "Hack Zone",
+      "ru": "Зонда HACK",
+      "desc": ""
+    },
+    {
+      "key": "TABTIP_esp",
+      "modName": "tab_espzone",
+      "zh": "透视：ESP 描边 / 名字颜色按阵营 / 昵称覆盖（隐藏军团标签、按阵营着色）。",
+      "en": "ESP Zone",
+      "ru": "Зонда ЭПС",
+      "desc": ""
+    },
+    {
+      "key": "TABTIP_detector",
+      "modName": "tab_detectorzone",
+      "zh": "探测器：玩家探测器 / 黑名单云同步。",
+      "en": "Detector Zone",
+      "ru": "Зонда детектора",
+      "desc": ""
+    },
+    {
+      "key": "TABTIP_enemyscanner",
+      "modName": "tab_enemyscannerzone",
+      "zh": "装备分析：统计战场所有玩家的炮塔 / 底盘 / 模块数量，出装参考。",
+      "en": "Equipment Analysis Zone",
+      "ru": "Анализ снаряжения",
+      "desc": ""
+    },
+    {
+      "key": "TABTIP_chattools",
+      "modName": "tab_chattoolszone",
+      "zh": "聊天工具箱：快捷短语 / 自动回复 / 关键词过滤 / 战场聊天拦截。",
+      "en": "Chat Tools Zone",
+      "ru": "Чат-инструменты",
+      "desc": ""
+    },
+    {
+      "key": "TABTIP_battlelog",
+      "modName": "tab_battlelogzone",
+      "zh": "战场记录：自动记录战场 ID / 模式 / 时间 / 水晶数据，供分析和复盘。",
+      "en": "Battlelog Zone",
+      "ru": "Хроника сражений",
+      "desc": ""
+    },
+    {
+      "key": "TABTIP_battletpl",
+      "modName": "tab_battletplzone",
+      "zh": "战场模板：一键发送战场消息模板（抢位 / 招人 / 通知）。",
+      "en": "Battle Template Zone",
+      "ru": "Шаблон сражения",
+      "desc": ""
+    },
+    {
+      "key": "TABTIP_account",
+      "modName": "tab_accountzone",
+      "zh": "账号管理：多账号切换 / 清除登录 / 登录状态。",
+      "en": "Account Zone",
+      "ru": "Аккаунты",
+      "desc": ""
+    },
+    {
+      "key": "TABTIP_devtools",
+      "modName": "tab_devtoolszone",
+      "zh": "开发者调试：控制台注入 / 配置导出 / 调试信息。",
+      "en": "Devtools Zone",
+      "ru": "Debug-инструменты",
+      "desc": ""
+    },
+    {
+      "key": "TABTIP_about",
+      "modName": "tab_aboutzone",
+      "zh": "关于：作者信息 / 版本更新记录 / 使用提示 / 录屏模式说明。",
+      "en": "About Zone",
+      "ru": "О софте",
+      "desc": ""
+    },
+    {
+      "key": "SLIDER_160",
+      "modName": "aim_accel_slider",
+      "zh": "瞄准加速倍数",
+      "en": "Aimbot Acceleration",
+      "ru": "Ускорение композицией",
+      "desc": ""
+    },
+    {
+      "key": "SLIDER_161",
+      "modName": "collision_box_mult",
+      "zh": "碰撞箱放大倍数",
+      "en": "Collision Box Multiplier",
+      "ru": "Постоянный прывокс-множитель",
+      "desc": ""
+    },
+    {
+      "key": "SLIDER_162",
+      "modName": "aim_angle_slider",
+      "zh": "瞄准夹角【建议30度】",
+      "en": "Aimbot Angle (Rec 30°)",
+      "ru": "Угол прывокс",
+      "desc": ""
+    },
+    {
+      "key": "SLIDER_163",
+      "modName": "fire_recoil",
+      "zh": "开火后坐力",
+      "en": "Fire Recoil",
+      "ru": "Привокск от выстрела",
+      "desc": ""
+    },
+    {
+      "key": "SLIDER_164",
+      "modName": "recv_impact",
+      "zh": "受到的冲击力",
+      "en": "Recv Impact",
+      "ru": "Привиленная ударённость",
+      "desc": ""
+    },
+    {
+      "key": "SLIDER_165",
+      "modName": "mine_impact_mult",
+      "zh": "地雷冲击力倍数 (0倍=无击退, 1倍=原版)",
+      "en": "Mine Impact Multiplier",
+      "ru": "Постоянный ударения многощин",
+      "desc": ""
+    },
+    {
+      "key": "SLIDER_166",
+      "modName": "stability",
+      "zh": "稳定性【可以选择是否自动根据重力调整 或者自行调整】",
+      "en": "Stability",
+      "ru": "Стабильность",
+      "desc": ""
+    },
+    {
+      "key": "SLIDER_167",
+      "modName": "multiplier_adjust",
+      "zh": "调整倍率 (0.1 - 5.0)",
+      "en": "Multiplier Adjust",
+      "ru": "Постоянный",
+      "desc": ""
+    },
+    {
+      "key": "SLIDER_168",
+      "modName": "gravity_value",
+      "zh": "重力数值 (-10-2000)",
+      "en": "Gravity Value",
+      "ru": "Значение гравитации",
+      "desc": ""
+    },
+    {
+      "key": "SLIDER_169",
+      "modName": "mine_delay",
+      "zh": "地雷投放间隔 (ms)",
+      "en": "Mine Delay",
+      "ru": "Режим между опусканием",
+      "desc": ""
+    },
+    {
+      "key": "SLIDER_170",
+      "modName": "mine_thread_count",
+      "zh": "地雷并发线程数 (1-10)",
+      "en": "Mine Thread Count",
+      "ru": "Число потоков многощин",
+      "desc": ""
+    },
+    {
+      "key": "MODAL_171",
+      "modName": "modal_decor_chicun_cuan",
+      "zh": "装饰符 ꧁꧂",
+      "en": "Decor Symbol: ꧁꧂",
+      "ru": "Декоративное символ: ꧁꧂",
+      "desc": "꧁, ꧂"
+    },
+    {
+      "key": "MODAL_172",
+      "modName": "modal_decor_chicun_kikun",
+      "zh": "装饰符 ꧌꧍",
+      "en": "Decor Symbol: ꧌꧍",
+      "ru": "Декоративное символ: ꧌꧍",
+      "desc": "꧌, ꧍"
+    },
+    {
+      "key": "MODAL_173",
+      "modName": "modal_decor_purpad",
+      "zh": "装饰符 ༺ཌ༈ ༈ད༻",
+      "en": "Decor Symbol: ༺ཌ༈ ༈ད༻",
+      "ru": "Декоративное символ: ༺ཌ༈ ༈ད༻",
+      "desc": "༺ཌ༈, ༈ད༻"
+    },
+    {
+      "key": "MODAL_174",
+      "modName": "modal_decor_parmp",
+      "zh": "装饰符 ༺ ༻",
+      "en": "Decor Symbol: ༺ ༻",
+      "ru": "Декоративное символ: ༺ ༻",
+      "desc": "༺, ༻"
+    }
+  ]
+}
