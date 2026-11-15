@@ -1,32 +1,22 @@
 {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-  "ts": "2026-11-15T17:22:39Z",
-  "ts_local": "2026-11-16T01:22:39+08:00",
-=======
-  "ts": "2026-11-15T17:22:49Z",
-  "ts_local": "2026-11-16T01:22:49+08:00",
->>>>>>> Stashed changes
-=======
-  "ts": "2026-11-15T17:23:00Z",
-  "ts_local": "2026-11-16T01:23:00+08:00",
->>>>>>> Stashed changes
+  "ts": "2026-11-15T17:23:52Z",
+  "ts_local": "2026-11-16T01:23:52+08:00",
   "date": "2026-11-16",
   "hour": 1,
   "timezone": "Asia/Shanghai",
   "serverNamespace": "CN",
   "serverVersion": "846",
   "total": {
-    "online": 116,
-    "inbattles": 57,
-    "my_4399_com": 47
+    "online": 112,
+    "inbattles": 61,
+    "my_4399_com": 45
   },
   "nodes": [
     {
       "id": "cn-main.c1",
       "host": "c1.3dtank.com",
       "status": "NORMAL",
-      "online": 44,
+      "online": 43,
       "inbattles": 22,
       "my_4399_com": 20
     },
@@ -34,9 +24,9 @@
       "id": "cn-main.c2",
       "host": "c2.3dtank.com",
       "status": "NORMAL",
-      "online": 72,
-      "inbattles": 35,
-      "my_4399_com": 27
+      "online": 69,
+      "inbattles": 39,
+      "my_4399_com": 25
     }
   ]
 }
