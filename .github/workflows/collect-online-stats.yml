@@ -8,7 +8,7 @@ name: Collect CN Server Online Stats
 # 注意：schedule 不保证准点，数据以脚本采集到的本地小时为准，不是以触发时间为准。
 on:
   schedule:
-    - cron: '23 * * * *'
+    - cron: '29 * * * *'
   # 配置自检：改动本文件时立即跑一次，用于确认采集链路可用。
   # 数据提交只改 data/online/**，不匹配这里的 paths，因此不会自触发成死循环。
   push:
