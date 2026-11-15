@@ -5,7 +5,7 @@ on:
     paths:
       - '*.html'
       - 'page-config.json'
-workflow_dispatch:
+  workflow_dispatch:
 
 permissions:
   contents: write
