@@ -3,7 +3,11 @@
   "source": "https://balancer.3dtank.com/balancer",
   "granularity": "hourly",
   "layout": "data/online/<YYYY-MM-DD>/<HH>.json",
+<<<<<<< Updated upstream
   "updatedAt": "2026-11-15T17:22:39Z",
+=======
+  "updatedAt": "2026-11-15T17:22:49Z",
+>>>>>>> Stashed changes
   "days": [
     {
       "date": "2026-11-12",
