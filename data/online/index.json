@@ -3,11 +3,7 @@
   "source": "https://balancer.3dtank.com/balancer",
   "granularity": "hourly",
   "layout": "data/online/<YYYY-MM-DD>/<HH>.json",
-<<<<<<< Updated upstream
-  "updatedAt": "2026-11-15T17:22:39Z",
-=======
-  "updatedAt": "2026-11-15T17:22:49Z",
->>>>>>> Stashed changes
+  "updatedAt": "2026-11-17T04:30:32Z",
   "days": [
     {
       "date": "2026-11-12",
@@ -72,18 +68,64 @@
     },
     {
       "date": "2026-11-16",
-      "samples": 2,
+      "samples": 23,
       "hours": [
         0,
-        1
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        23
       ],
-      "peak_online": 214,
-      "peak_hour": 0,
-      "low_online": 117,
-      "avg_online": 165.5,
-      "avg_inbattles": 93.0,
+      "peak_online": 747,
+      "peak_hour": 20,
+      "low_online": 29,
+      "avg_online": 355.4,
+      "avg_inbattles": 196.6,
       "dir": "data/online/2026-11-16"
+    },
+    {
+      "date": "2026-11-17",
+      "samples": 13,
+      "hours": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "peak_online": 449,
+      "peak_hour": 12,
+      "low_online": 57,
+      "avg_online": 194.4,
+      "avg_inbattles": 97.0,
+      "dir": "data/online/2026-11-17"
     }
   ],
-  "latestDate": "2026-11-16"
+  "latestDate": "2026-11-17"
 }
