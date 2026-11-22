@@ -3,7 +3,7 @@
   "source": "https://balancer.3dtank.com/balancer",
   "granularity": "hourly",
   "layout": "data/online/<YYYY-MM-DD>/<HH>.json",
-  "updatedAt": "2026-11-22T12:30:37Z",
+  "updatedAt": "2026-11-22T13:30:31Z",
   "days": [
     {
       "date": "2026-11-12",
@@ -282,7 +282,7 @@
     },
     {
       "date": "2026-11-22",
-      "samples": 21,
+      "samples": 22,
       "hours": [
         0,
         1,
@@ -304,13 +304,14 @@
         17,
         18,
         19,
-        20
+        20,
+        21
       ],
       "peak_online": 934,
       "peak_hour": 15,
       "low_online": 111,
-      "avg_online": 536.4,
-      "avg_inbattles": 315.8,
+      "avg_online": 547.3,
+      "avg_inbattles": 324.0,
       "dir": "data/online/2026-11-22"
     }
   ],
