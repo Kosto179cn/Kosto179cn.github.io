@@ -1,32 +1,32 @@
 {
-  "ts": "2026-11-27T02:30:35Z",
-  "ts_local": "2026-11-27T10:30:35+08:00",
+  "ts": "2026-11-27T03:30:31Z",
+  "ts_local": "2026-11-27T11:30:31+08:00",
   "date": "2026-11-27",
-  "hour": 10,
+  "hour": 11,
   "timezone": "Asia/Shanghai",
   "serverNamespace": "CN",
   "serverVersion": "848",
   "total": {
-    "online": 455,
-    "inbattles": 223,
-    "my_4399_com": 95
+    "online": 437,
+    "inbattles": 222,
+    "my_4399_com": 94
   },
   "nodes": [
     {
       "id": "cn-main.c1",
       "host": "c1.3dtank.com",
       "status": "NORMAL",
-      "online": 178,
-      "inbattles": 92,
-      "my_4399_com": 39
+      "online": 215,
+      "inbattles": 101,
+      "my_4399_com": 48
     },
     {
       "id": "cn-main.c2",
       "host": "c2.3dtank.com",
       "status": "NORMAL",
-      "online": 277,
-      "inbattles": 131,
-      "my_4399_com": 56
+      "online": 222,
+      "inbattles": 121,
+      "my_4399_com": 46
     }
   ]
 }
